@@ -1,0 +1,332 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get appTitle => 'Coffeeno';
+
+  @override
+  String get feedTab => 'Feed';
+
+  @override
+  String get libraryTab => 'Library';
+
+  @override
+  String get mapTab => 'Map';
+
+  @override
+  String get profileTab => 'Profile';
+
+  @override
+  String get welcomeTitle => 'Welcome to Coffeeno';
+
+  @override
+  String get welcomeSubtitle =>
+      'Discover, taste, and share your coffee journey';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get signUp => 'Sign Up';
+
+  @override
+  String get signInWithGoogle => 'Continue with Google';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get displayName => 'Display Name';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get bio => 'Bio';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get dontHaveAccount => 'Don\'t have an account?';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get orContinueWith => 'or continue with';
+
+  @override
+  String get scanCoffee => 'Scan Coffee';
+
+  @override
+  String get addCoffee => 'Add Coffee';
+
+  @override
+  String get addTasting => 'Add Tasting';
+
+  @override
+  String get myCoffees => 'My Coffees';
+
+  @override
+  String get coffeeDetail => 'Coffee Detail';
+
+  @override
+  String get noCoffeesYet => 'No coffees yet';
+
+  @override
+  String get noCoffeesYetSubtitle =>
+      'Scan a bag or add one manually to get started';
+
+  @override
+  String get roaster => 'Roaster';
+
+  @override
+  String get coffeeName => 'Coffee Name';
+
+  @override
+  String get originCountry => 'Country';
+
+  @override
+  String get originRegion => 'Region';
+
+  @override
+  String get farmName => 'Farm';
+
+  @override
+  String get farmerName => 'Farmer';
+
+  @override
+  String get altitude => 'Altitude';
+
+  @override
+  String get variety => 'Variety';
+
+  @override
+  String get processingMethod => 'Process';
+
+  @override
+  String get roastDate => 'Roast Date';
+
+  @override
+  String get roastLevel => 'Roast Level';
+
+  @override
+  String get flavorNotes => 'Flavor Notes';
+
+  @override
+  String get brewMethod => 'Brew Method';
+
+  @override
+  String get grindSize => 'Grind Size';
+
+  @override
+  String get dose => 'Dose (g)';
+
+  @override
+  String get waterAmount => 'Water (ml)';
+
+  @override
+  String get ratio => 'Ratio';
+
+  @override
+  String get brewTime => 'Brew Time';
+
+  @override
+  String get waterTemperature => 'Water Temp (°C)';
+
+  @override
+  String get aroma => 'Aroma';
+
+  @override
+  String get flavor => 'Flavor';
+
+  @override
+  String get acidity => 'Acidity';
+
+  @override
+  String get body => 'Body';
+
+  @override
+  String get sweetness => 'Sweetness';
+
+  @override
+  String get aftertaste => 'Aftertaste';
+
+  @override
+  String get overallRating => 'Overall Rating';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get tastings => 'Tastings';
+
+  @override
+  String get noTastingsYet => 'No tastings yet';
+
+  @override
+  String get noTastingsYetSubtitle => 'Add a tasting to rate this coffee';
+
+  @override
+  String get followers => 'Followers';
+
+  @override
+  String get following => 'Following';
+
+  @override
+  String get follow => 'Follow';
+
+  @override
+  String get unfollow => 'Unfollow';
+
+  @override
+  String get like => 'Like';
+
+  @override
+  String get comment => 'Comment';
+
+  @override
+  String get addComment => 'Add a comment...';
+
+  @override
+  String get leaderboard => 'Leaderboard';
+
+  @override
+  String get topRated => 'Top Rated';
+
+  @override
+  String get searchUsers => 'Search users...';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get coffeeOrigins => 'Coffee Origins';
+
+  @override
+  String mostLovedFrom(String country) {
+    return 'Most loved from $country';
+  }
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get darkMode => 'Dark Mode';
+
+  @override
+  String get scanReview => 'Review Scan';
+
+  @override
+  String get scanReviewSubtitle => 'Check and edit the extracted information';
+
+  @override
+  String get scanning => 'Scanning...';
+
+  @override
+  String get extractingInfo => 'Extracting coffee info...';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get error => 'Something went wrong';
+
+  @override
+  String ratingsCount(int count) {
+    return '$count ratings';
+  }
+
+  @override
+  String tastingsCount(int count) {
+    return '$count tastings';
+  }
+
+  @override
+  String get emptyFeed => 'Follow coffee lovers to see their tastings here';
+
+  @override
+  String get findPeople => 'Find people';
+
+  @override
+  String get noCommentsYet => 'No comments yet';
+
+  @override
+  String get beFirstToComment => 'Be the first to share your thoughts';
+
+  @override
+  String get comments => 'Comments';
+
+  @override
+  String get couldNotLoadComments => 'Could not load comments';
+
+  @override
+  String get noFollowersYet => 'No followers yet';
+
+  @override
+  String get notFollowingAnyone => 'Not following anyone yet';
+
+  @override
+  String get noRatedCoffeesYet => 'No rated coffees yet';
+
+  @override
+  String get selectCountry => 'Select a country to see its top coffees';
+
+  @override
+  String noRatedCoffeesFrom(String country) {
+    return 'No rated coffees from $country yet';
+  }
+
+  @override
+  String get searchForCoffeeLovers => 'Search for coffee lovers';
+
+  @override
+  String noUsersFound(String query) {
+    return 'No users found for \"$query\"';
+  }
+
+  @override
+  String get userNotFound => 'User not found';
+
+  @override
+  String get global => 'Global';
+
+  @override
+  String get byOrigin => 'By Origin';
+
+  @override
+  String get noOriginsYet => 'No coffee origins to display yet';
+
+  @override
+  String get addCoffeesForMap =>
+      'Add coffees with origin info to see them on the map';
+
+  @override
+  String get noCoffeesFromOrigin => 'No coffees found for this origin';
+}

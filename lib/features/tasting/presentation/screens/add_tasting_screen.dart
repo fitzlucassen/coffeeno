@@ -1,0 +1,259 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:coffeeno/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:coffeeno/core/widgets/app_button.dart';
+import 'package:coffeeno/core/widgets/app_text_field.dart';
+import '../../../coffee/presentation/providers/coffee_provider.dart';
+import '../../domain/tasting.dart';
+import '../providers/tasting_provider.dart';
+import '../widgets/brew_params_form.dart';
+import '../widgets/tasting_notes_input.dart';
+import 'package:coffeeno/core/constants/app_constants.dart';
+
+class AddTastingScreen extends ConsumerStatefulWidget {
+  const AddTastingScreen({super.key, required this.coffeeId});
+
+  final String coffeeId;
+
+  @override
+  ConsumerState<AddTastingScreen> createState() => _AddTastingScreenState();
+}
+
+class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _doseController = TextEditingController();
+  final _waterController = TextEditingController();
+  final _notesController = TextEditingController();
+
+  BrewMethod? _brewMethod;
+  GrindSize? _grindSize;
+  String _ratioDisplay = '';
+  int _brewTimeMinutes = 3;
+  int _brewTimeSeconds = 0;
+  int? _waterTempC;
+
+  int _aroma = 3;
+  int _flavor = 3;
+  int _acidity = 3;
+  int _body = 3;
+  int _sweetness = 3;
+  int _aftertaste = 3;
+  double _overallRating = 3.0;
+
+  bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _doseController.dispose();
+    _waterController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  void _calculateRatio() {
+    final dose = double.tryParse(_doseController.text);
+    final water = double.tryParse(_waterController.text);
+    if (dose != null && dose > 0 && water != null && water > 0) {
+      final ratio = water / dose;
+      setState(() => _ratioDisplay = '1:${ratio.toStringAsFixed(1)}');
+    } else {
+      setState(() => _ratioDisplay = '');
+    }
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final coffee =
+          await ref.read(coffeeDetailProvider(widget.coffeeId).future);
+      final repository = ref.read(tastingRepositoryProvider);
+
+      final dose = double.parse(_doseController.text);
+      final water = double.parse(_waterController.text);
+      final brewTimeSec = (_brewTimeMinutes * 60) + _brewTimeSeconds;
+
+      final tasting = Tasting(
+        id: '', // Assigned by Firestore
+        userId: userId,
+        coffeeId: widget.coffeeId,
+        coffeeName: coffee?.name ?? '',
+        coffeePhotoUrl: coffee?.photoUrl,
+        roasterName: coffee?.roaster ?? '',
+        brewMethod: _brewMethod!.label,
+        grindSize: _grindSize!.label,
+        doseGrams: dose,
+        waterMl: water,
+        ratio: _ratioDisplay,
+        brewTimeSec: brewTimeSec,
+        waterTempC: _waterTempC,
+        aroma: _aroma,
+        flavor: _flavor,
+        acidity: _acidity,
+        body: _body,
+        sweetness: _sweetness,
+        aftertaste: _aftertaste,
+        overallRating: _overallRating,
+        notes: _notesController.text.trim().isNotEmpty
+            ? _notesController.text.trim()
+            : null,
+        tastingDate: DateTime.now(),
+        createdAt: DateTime.now(),
+      );
+
+      await repository.addTasting(tasting);
+
+      if (mounted) context.pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final coffeeAsync = ref.watch(coffeeDetailProvider(widget.coffeeId));
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.addTasting),
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            // Coffee info header
+            coffeeAsync.when(
+              loading: () => const LinearProgressIndicator(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (coffee) {
+                if (coffee == null) return const SizedBox.shrink();
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor:
+                              theme.colorScheme.secondaryContainer,
+                          child: Icon(
+                            Icons.coffee_rounded,
+                            color:
+                                theme.colorScheme.onSecondaryContainer,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                coffee.name,
+                                style: theme.textTheme.titleMedium,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                coffee.roaster,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // ── SECTION 1: Brew Parameters ──
+            BrewParamsForm(
+              selectedBrewMethod: _brewMethod,
+              selectedGrindSize: _grindSize,
+              doseController: _doseController,
+              waterController: _waterController,
+              ratioDisplay: _ratioDisplay,
+              brewTimeMinutes: _brewTimeMinutes,
+              brewTimeSeconds: _brewTimeSeconds,
+              waterTempC: _waterTempC,
+              onBrewMethodChanged: (v) => setState(() => _brewMethod = v),
+              onGrindSizeChanged: (v) => setState(() => _grindSize = v),
+              onDoseOrWaterChanged: _calculateRatio,
+              onBrewTimeChanged: (min, sec) => setState(() {
+                _brewTimeMinutes = min;
+                _brewTimeSeconds = sec;
+              }),
+              onWaterTempChanged: (v) => setState(() => _waterTempC = v),
+            ),
+
+            const SizedBox(height: 32),
+            const Divider(),
+            const SizedBox(height: 24),
+
+            // ── SECTION 2: Tasting Scores ──
+            TastingNotesInput(
+              aroma: _aroma,
+              flavor: _flavor,
+              acidity: _acidity,
+              body: _body,
+              sweetness: _sweetness,
+              aftertaste: _aftertaste,
+              overallRating: _overallRating,
+              onAromaChanged: (v) => setState(() => _aroma = v),
+              onFlavorChanged: (v) => setState(() => _flavor = v),
+              onAcidityChanged: (v) => setState(() => _acidity = v),
+              onBodyChanged: (v) => setState(() => _body = v),
+              onSweetnessChanged: (v) => setState(() => _sweetness = v),
+              onAftertasteChanged: (v) => setState(() => _aftertaste = v),
+              onOverallRatingChanged: (v) =>
+                  setState(() => _overallRating = v),
+            ),
+
+            const SizedBox(height: 32),
+            const Divider(),
+            const SizedBox(height: 24),
+
+            // ── SECTION 3: Notes ──
+            Text(l10n.notes, style: theme.textTheme.titleMedium),
+            const SizedBox(height: 12),
+            AppTextField(
+              controller: _notesController,
+              hint: 'How was it? Any special observations...',
+              maxLines: 5,
+              minLines: 3,
+              textInputAction: TextInputAction.newline,
+              keyboardType: TextInputType.multiline,
+            ),
+
+            const SizedBox(height: 32),
+
+            // Save button
+            AppButton(
+              label: l10n.save,
+              icon: Icons.check_rounded,
+              isLoading: _isSaving,
+              onPressed: _isSaving ? null : _save,
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}

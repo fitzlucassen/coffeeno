@@ -1,0 +1,45 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "tastings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tastings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coffeeId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "coffees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "originCountry", "order": "ASCENDING" },
+        { "fieldPath": "avgRating", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "coffees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "avgRating", "order": "DESCENDING" },
+        { "fieldPath": "ratingsCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "coffees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "addedBy", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

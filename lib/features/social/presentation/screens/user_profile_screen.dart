@@ -1,0 +1,413 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:coffeeno/l10n/app_localizations.dart';
+import 'package:coffeeno/core/widgets/star_rating.dart';
+import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
+import 'package:coffeeno/features/social/presentation/providers/social_provider.dart';
+import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
+import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
+
+/// Displays a user profile. If [userId] is null, shows the current user's
+/// own profile with edit/settings/sign-out options.
+class UserProfileScreen extends ConsumerWidget {
+  const UserProfileScreen({super.key, this.userId});
+
+  final String? userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final currentUser = ref.watch(currentUserProvider).valueOrNull;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    // Determine which user to show.
+    final isOwnProfile =
+        userId == null || (currentUser != null && userId == currentUser.uid);
+    final profileUserId = userId ?? currentUser?.uid;
+
+    if (profileUserId == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.profileTab)),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final profileAsync = ref.watch(userProfileProvider(profileUserId));
+    final tastingsAsync = ref.watch(userTastingsProvider(profileUserId));
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isOwnProfile ? l10n.profileTab : ''),
+        actions: isOwnProfile
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.settings_outlined),
+                  tooltip: l10n.settings,
+                  onPressed: () {
+                    // Settings navigation placeholder.
+                  },
+                ),
+              ]
+            : null,
+      ),
+      body: profileAsync.when(
+        data: (profile) {
+          if (profile == null) {
+            return Center(
+              child: Text(
+                l10n.userNotFound,
+                style: textTheme.bodyLarge,
+              ),
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(userProfileProvider(profileUserId));
+              ref.invalidate(userTastingsProvider(profileUserId));
+            },
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 100),
+              children: [
+                const SizedBox(height: 16),
+
+                // ── Avatar ──
+                Center(
+                  child: UserAvatar(
+                    imageUrl: profile.avatarUrl,
+                    displayName: profile.displayName,
+                    size: UserAvatarSize.large,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // ── Display name ──
+                Center(
+                  child: Text(
+                    profile.displayName,
+                    style: textTheme.headlineSmall,
+                  ),
+                ),
+
+                // ── Username ──
+                if (profile.username != null &&
+                    profile.username!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Center(
+                    child: Text(
+                      '@${profile.username}',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+
+                // ── Bio ──
+                if (profile.bio != null && profile.bio!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      profile.bio!,
+                      style: textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+
+                // ── Stats row ──
+                _StatsRow(
+                  userId: profileUserId,
+                  tastingsCount: profile.tastingsCount,
+                  followersCount: profile.followersCount,
+                  followingCount: profile.followingCount,
+                ),
+                const SizedBox(height: 20),
+
+                // ── Action button ──
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: isOwnProfile
+                      ? _OwnProfileActions(l10n: l10n, ref: ref)
+                      : Center(
+                          child:
+                              FollowButton(targetUserId: profileUserId),
+                        ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Recent tastings header ──
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(l10n.tastings, style: textTheme.titleMedium),
+                ),
+                const SizedBox(height: 8),
+
+                // ── Tastings list ──
+                tastingsAsync.when(
+                  data: (tastings) {
+                    if (tastings.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Center(
+                          child: Text(
+                            l10n.noTastingsYet,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: tastings.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final tasting = tastings[index];
+                        return _TastingTile(
+                          tasting: tasting,
+                          onTap: () {
+                            final id = tasting['id'] as String;
+                            context.push('/tasting/$id');
+                          },
+                        );
+                      },
+                    );
+                  },
+                  loading: () => const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (_, __) => Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Text(
+                        l10n.error,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => Center(
+          child: Text(l10n.error, style: textTheme.bodyLarge),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({
+    required this.userId,
+    required this.tastingsCount,
+    required this.followersCount,
+    required this.followingCount,
+  });
+
+  final String userId;
+  final int tastingsCount;
+  final int followersCount;
+  final int followingCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _StatItem(
+          count: tastingsCount,
+          label: l10n.tastings,
+        ),
+        Container(
+          width: 1,
+          height: 32,
+          color: colorScheme.outlineVariant,
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+        ),
+        _StatItem(
+          count: followersCount,
+          label: l10n.followers,
+          onTap: () => context.push('/user/$userId/followers'),
+        ),
+        Container(
+          width: 1,
+          height: 32,
+          color: colorScheme.outlineVariant,
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+        ),
+        _StatItem(
+          count: followingCount,
+          label: l10n.following,
+          onTap: () => context.push('/user/$userId/following'),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  const _StatItem({
+    required this.count,
+    required this.label,
+    this.onTap,
+  });
+
+  final int count;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    final child = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '$count',
+          style: textTheme.titleLarge,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: textTheme.labelSmall,
+        ),
+      ],
+    );
+
+    if (onTap == null) return child;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: child,
+    );
+  }
+}
+
+class _OwnProfileActions extends StatelessWidget {
+  const _OwnProfileActions({
+    required this.l10n,
+    required this.ref,
+  });
+
+  final AppLocalizations l10n;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        OutlinedButton.icon(
+          onPressed: () {
+            // Edit profile navigation placeholder.
+          },
+          icon: const Icon(Icons.edit_outlined, size: 18),
+          label: Text(l10n.editProfile),
+        ),
+        const SizedBox(width: 12),
+        OutlinedButton.icon(
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+          },
+          icon: Icon(Icons.logout, size: 18, color: colorScheme.error),
+          label: Text(
+            l10n.signOut,
+            style: TextStyle(color: colorScheme.error),
+          ),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: colorScheme.error.withValues(alpha: 0.5)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TastingTile extends StatelessWidget {
+  const _TastingTile({
+    required this.tasting,
+    this.onTap,
+  });
+
+  final Map<String, dynamic> tasting;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    final coffeeName = tasting['coffeeName'] as String? ?? 'Unknown Coffee';
+    final roasterName = tasting['roasterName'] as String? ?? '';
+    final overallRating = (tasting['overallRating'] as num?)?.toDouble() ?? 0;
+    final brewMethod = tasting['brewMethod'] as String?;
+
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      coffeeName,
+                      style: textTheme.titleSmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (roasterName.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        roasterName,
+                        style: textTheme.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    if (brewMethod != null && brewMethod.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        brewMethod,
+                        style: textTheme.labelSmall?.copyWith(
+                          color: colorScheme.secondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              StarRating(rating: overallRating, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
