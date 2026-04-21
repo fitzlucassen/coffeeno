@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/core/constants/app_constants.dart';
@@ -144,9 +148,20 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
       final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       final repository = ref.read(coffeeRepositoryProvider);
 
+      String? photoUrl;
+      if (_photoPath != null) {
+        final file = File(_photoPath!);
+        final ext = _photoPath!.split('.').last;
+        final ref = FirebaseStorage.instance
+            .ref('users/$userId/coffees/${const Uuid().v4()}.$ext');
+        await ref.putFile(file);
+        photoUrl = await ref.getDownloadURL();
+      }
+
       final coffee = Coffee(
         id: '',
         uid: userId,
+        photoUrl: photoUrl,
         roaster: _roasterController.text.trim(),
         name: _nameController.text.trim(),
         originCountry: _countryController.text.trim(),
@@ -223,8 +238,8 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
                 child: _photoPath != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: Image.asset(
-                          _photoPath!,
+                        child: Image.file(
+                          File(_photoPath!),
                           fit: BoxFit.cover,
                           width: double.infinity,
                           errorBuilder: (_, __, ___) => _PhotoPlaceholder(

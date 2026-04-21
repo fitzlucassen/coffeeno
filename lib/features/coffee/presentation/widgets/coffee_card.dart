@@ -27,7 +27,7 @@ class CoffeeCard extends StatelessWidget {
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(16)),
             child: SizedBox(
-              height: 140,
+              height: 100,
               width: double.infinity,
               child: coffee.photoUrl != null
                   ? CachedNetworkImage(
