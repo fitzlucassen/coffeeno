@@ -24,7 +24,7 @@ class LeaderboardEntry {
     return LeaderboardEntry(
       coffeeId: doc.id,
       coffeeName: data['name'] as String,
-      roasterName: data['roasterName'] as String,
+      roasterName: (data['roasterName'] ?? data['roaster'] ?? '') as String,
       photoUrl: data['photoUrl'] as String?,
       avgRating: (data['avgRating'] as num).toDouble(),
       ratingsCount: (data['ratingsCount'] as num?)?.toInt() ?? 0,

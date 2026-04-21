@@ -17,6 +17,7 @@ import 'package:coffeeno/core/widgets/app_card.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/coffee_score_badge.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
+import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../providers/coffee_provider.dart';
 import '../widgets/coffee_metadata_section.dart';
 import '../../../tasting/presentation/providers/tasting_provider.dart';
@@ -116,11 +117,12 @@ class CoffeeDetailScreen extends ConsumerWidget {
                 expandedHeight: 260,
                 pinned: true,
                 actions: [
-                  IconButton(
-                    icon: const Icon(Icons.add_a_photo_outlined),
-                    tooltip: 'Update photo',
-                    onPressed: () => _updatePhoto(context, ref),
-                  ),
+                  if (ref.watch(isPremiumProvider))
+                    IconButton(
+                      icon: const Icon(Icons.add_a_photo_outlined),
+                      tooltip: 'Update photo',
+                      onPressed: () => _updatePhoto(context, ref),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline_rounded),
                     tooltip: l10n.delete,
@@ -129,7 +131,9 @@ class CoffeeDetailScreen extends ConsumerWidget {
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: GestureDetector(
-                    onTap: () => _updatePhoto(context, ref),
+                    onTap: ref.watch(isPremiumProvider)
+                        ? () => _updatePhoto(context, ref)
+                        : null,
                     child: coffee.photoUrl != null
                         ? CachedNetworkImage(
                             imageUrl: coffee.photoUrl!,
@@ -215,7 +219,37 @@ class CoffeeDetailScreen extends ConsumerWidget {
                       ],
 
                       // Roaster info
-                      if (coffee.roasterDescription != null) ...[
+                      if (coffee.roasterId != null) ...[
+                        Text(l10n.aboutRoaster,
+                            style: theme.textTheme.titleSmall),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () => context
+                              .push('/roaster/${coffee.roasterId}'),
+                          child: AppCard(
+                            child: Row(
+                              children: [
+                                Icon(Icons.store_rounded,
+                                    size: 20, color: colorScheme.primary),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    coffee.roaster,
+                                    style: theme.textTheme.bodyMedium
+                                        ?.copyWith(
+                                      color: colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right,
+                                    size: 20,
+                                    color: colorScheme.onSurfaceVariant),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ] else if (coffee.roasterDescription != null) ...[
                         Text(l10n.aboutRoaster,
                             style: theme.textTheme.titleSmall),
                         const SizedBox(height: 8),
@@ -248,7 +282,37 @@ class CoffeeDetailScreen extends ConsumerWidget {
                       ],
 
                       // Farm info
-                      if (coffee.farmDescription != null) ...[
+                      if (coffee.farmId != null) ...[
+                        Text(l10n.aboutFarm,
+                            style: theme.textTheme.titleSmall),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () =>
+                              context.push('/farm/${coffee.farmId}'),
+                          child: AppCard(
+                            child: Row(
+                              children: [
+                                Icon(Icons.agriculture_rounded,
+                                    size: 20, color: colorScheme.primary),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    coffee.farmName ?? coffee.originRegion ?? l10n.aboutFarm,
+                                    style: theme.textTheme.bodyMedium
+                                        ?.copyWith(
+                                      color: colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right,
+                                    size: 20,
+                                    color: colorScheme.onSurfaceVariant),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ] else if (coffee.farmDescription != null) ...[
                         Text(l10n.aboutFarm,
                             style: theme.textTheme.titleSmall),
                         const SizedBox(height: 8),

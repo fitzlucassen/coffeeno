@@ -399,4 +399,118 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noInfoFound => 'Aucune info trouvée';
+
+  @override
+  String get roasterProfile => 'Profil torréfacteur';
+
+  @override
+  String get farmProfile => 'Profil ferme';
+
+  @override
+  String coffeesFromRoaster(String roaster) {
+    return 'Cafés de $roaster';
+  }
+
+  @override
+  String coffeesFromFarm(String farm) {
+    return 'Cafés de $farm';
+  }
+
+  @override
+  String get keyPeople => 'Personnes clés';
+
+  @override
+  String get locationLabel => 'Localisation';
+
+  @override
+  String get noDescription => 'Aucune description disponible';
+
+  @override
+  String get claimProfile => 'Revendiquer ce profil';
+
+  @override
+  String get pendingClaim => 'Revendication en attente';
+
+  @override
+  String get approvedClaim => 'Vérifié';
+
+  @override
+  String get editProfileInfo => 'Modifier les infos';
+
+  @override
+  String get claimMessage => 'Pourquoi devriez-vous gérer ce profil ?';
+
+  @override
+  String get submitClaim => 'Soumettre';
+
+  @override
+  String get adminClaims => 'Revendications en attente';
+
+  @override
+  String get approveClaim => 'Approuver';
+
+  @override
+  String get rejectClaim => 'Rejeter';
+
+  @override
+  String get noPendingClaims => 'Aucune revendication en attente';
+
+  @override
+  String get claimSubmitted => 'Revendication soumise pour vérification';
+
+  @override
+  String get premium => 'Premium';
+
+  @override
+  String get freePlan => 'Offre gratuite';
+
+  @override
+  String get upgradeToPremium => 'Passer à Premium';
+
+  @override
+  String get premiumFeatures => 'Débloquer toutes les fonctionnalités';
+
+  @override
+  String get premiumPrice => '1,99 \$/mois';
+
+  @override
+  String get subscribe => 'S\'abonner';
+
+  @override
+  String get restorePurchases => 'Restaurer les achats';
+
+  @override
+  String get premiumRequired => 'Premium requis';
+
+  @override
+  String get premiumRequiredDesc =>
+      'Cette fonctionnalité nécessite un abonnement premium';
+
+  @override
+  String coffeeLimitReached(int max) {
+    return 'Vous avez atteint la limite gratuite de $max cafés';
+  }
+
+  @override
+  String tastingLimitReached(int max) {
+    return 'Vous avez atteint la limite gratuite de $max dégustations ce mois-ci';
+  }
+
+  @override
+  String get unlimitedCoffees => 'Cafés illimités';
+
+  @override
+  String get unlimitedTastings => 'Dégustations illimitées';
+
+  @override
+  String get aiFeatures => 'Fonctionnalités IA';
+
+  @override
+  String get photoUploads => 'Upload de photos';
+
+  @override
+  String get shareCards => 'Cartes de dégustation';
+
+  @override
+  String get admin => 'Admin';
 }

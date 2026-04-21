@@ -59,4 +59,7 @@ abstract final class AppConstants {
   static const feedPageSize = 20;
   static const libraryPageSize = 30;
   static const leaderboardSize = 50;
+
+  static const freeTierMaxCoffees = 10;
+  static const freeTierMaxTastingsPerMonth = 3;
 }

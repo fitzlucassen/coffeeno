@@ -841,6 +841,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No info found'**
   String get noInfoFound;
+
+  /// Roaster profile screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Roaster Profile'**
+  String get roasterProfile;
+
+  /// Farm profile screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Farm Profile'**
+  String get farmProfile;
+
+  /// Coffees from a specific roaster
+  ///
+  /// In en, this message translates to:
+  /// **'Coffees from {roaster}'**
+  String coffeesFromRoaster(String roaster);
+
+  /// Coffees from a specific farm
+  ///
+  /// In en, this message translates to:
+  /// **'Coffees from {farm}'**
+  String coffeesFromFarm(String farm);
+
+  /// Key people section label
+  ///
+  /// In en, this message translates to:
+  /// **'Key People'**
+  String get keyPeople;
+
+  /// Location section label
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get locationLabel;
+
+  /// Fallback when no description
+  ///
+  /// In en, this message translates to:
+  /// **'No description available'**
+  String get noDescription;
+
+  /// Claim profile button
+  ///
+  /// In en, this message translates to:
+  /// **'Claim this profile'**
+  String get claimProfile;
+
+  /// Pending claim status
+  ///
+  /// In en, this message translates to:
+  /// **'Claim pending approval'**
+  String get pendingClaim;
+
+  /// Approved claim badge
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get approvedClaim;
+
+  /// Edit entity profile button
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Info'**
+  String get editProfileInfo;
+
+  /// Claim form message label
+  ///
+  /// In en, this message translates to:
+  /// **'Why should you manage this profile?'**
+  String get claimMessage;
+
+  /// Submit claim button
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Claim'**
+  String get submitClaim;
+
+  /// Admin claims screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Claims'**
+  String get adminClaims;
+
+  /// Approve claim button
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approveClaim;
+
+  /// Reject claim button
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get rejectClaim;
+
+  /// Empty claims message
+  ///
+  /// In en, this message translates to:
+  /// **'No pending claims'**
+  String get noPendingClaims;
+
+  /// Claim submitted confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Claim submitted for review'**
+  String get claimSubmitted;
+
+  /// Premium label
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get premium;
+
+  /// Free plan label
+  ///
+  /// In en, this message translates to:
+  /// **'Free Plan'**
+  String get freePlan;
+
+  /// Upgrade button
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to Premium'**
+  String get upgradeToPremium;
+
+  /// Premium features tagline
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock all features'**
+  String get premiumFeatures;
+
+  /// Premium price display
+  ///
+  /// In en, this message translates to:
+  /// **'\$1.99/month'**
+  String get premiumPrice;
+
+  /// Subscribe button
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get subscribe;
+
+  /// Restore purchases button
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Purchases'**
+  String get restorePurchases;
+
+  /// Premium required title
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Required'**
+  String get premiumRequired;
+
+  /// Premium required description
+  ///
+  /// In en, this message translates to:
+  /// **'This feature requires a premium subscription'**
+  String get premiumRequiredDesc;
+
+  /// Coffee limit reached message
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the free limit of {max} coffees'**
+  String coffeeLimitReached(int max);
+
+  /// Tasting limit reached message
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the free limit of {max} tastings this month'**
+  String tastingLimitReached(int max);
+
+  /// Premium feature: unlimited coffees
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited coffees'**
+  String get unlimitedCoffees;
+
+  /// Premium feature: unlimited tastings
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited tastings'**
+  String get unlimitedTastings;
+
+  /// Premium feature: AI
+  ///
+  /// In en, this message translates to:
+  /// **'AI-powered features'**
+  String get aiFeatures;
+
+  /// Premium feature: photos
+  ///
+  /// In en, this message translates to:
+  /// **'Photo uploads'**
+  String get photoUploads;
+
+  /// Premium feature: share cards
+  ///
+  /// In en, this message translates to:
+  /// **'Share tasting cards'**
+  String get shareCards;
+
+  /// Admin label
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get admin;
 }
 
 class _AppLocalizationsDelegate

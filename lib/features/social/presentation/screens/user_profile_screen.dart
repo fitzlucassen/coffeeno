@@ -5,11 +5,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
 import 'package:coffeeno/core/router/app_router.dart';
+import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
 import 'package:coffeeno/features/social/presentation/providers/social_provider.dart';
 import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
 
-void _showSettingsSheet(BuildContext context) {
+void _showSettingsSheet(BuildContext context, {bool isAdmin = false}) {
   final l10n = AppLocalizations.of(context);
   final colorScheme = Theme.of(context).colorScheme;
 
@@ -29,6 +30,16 @@ void _showSettingsSheet(BuildContext context) {
             ),
           ),
           const SizedBox(height: 16),
+          if (isAdmin)
+            ListTile(
+              leading: Icon(Icons.admin_panel_settings,
+                  color: colorScheme.primary),
+              title: Text(l10n.adminClaims),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                context.push(AppRoutes.adminClaims);
+              },
+            ),
           ListTile(
             leading: Icon(Icons.logout, color: colorScheme.error),
             title: Text(l10n.signOut,
@@ -81,7 +92,12 @@ class UserProfileScreen extends ConsumerWidget {
                 IconButton(
                   icon: const Icon(Icons.settings_outlined),
                   tooltip: l10n.settings,
-                  onPressed: () => _showSettingsSheet(context),
+                  onPressed: () {
+                    final appUser =
+                        ref.read(currentUserProvider).valueOrNull;
+                    _showSettingsSheet(context,
+                        isAdmin: appUser?.isAdmin ?? false);
+                  },
                 ),
               ]
             : null,

@@ -104,8 +104,27 @@ class CoffeeRepository {
     }).toList();
   }
 
-  /// Streams coffees from a given origin country, ordered by average rating
-  /// descending.
+  Stream<List<Coffee>> getCoffeesForRoaster(String roasterId,
+      {int limit = 30}) {
+    return _collection
+        .where('roasterId', isEqualTo: roasterId)
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList());
+  }
+
+  Stream<List<Coffee>> getCoffeesForFarm(String farmId, {int limit = 30}) {
+    return _collection
+        .where('farmId', isEqualTo: farmId)
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList());
+  }
+
   Stream<List<Coffee>> getCoffeesByOrigin(String country, {int limit = 30}) {
     return _collection
         .where('originCountry', isEqualTo: country)

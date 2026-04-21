@@ -6,13 +6,15 @@ import 'package:go_router/go_router.dart';
 
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
+import 'package:coffeeno/core/constants/app_constants.dart';
 import '../../../coffee/presentation/providers/coffee_provider.dart';
+import '../../../subscription/presentation/providers/subscription_provider.dart';
+import '../../../subscription/presentation/widgets/upgrade_prompt.dart';
 import '../../data/brew_suggestion_service.dart';
 import '../../domain/tasting.dart';
 import '../providers/tasting_provider.dart';
 import '../widgets/brew_params_form.dart';
 import '../widgets/tasting_notes_input.dart';
-import 'package:coffeeno/core/constants/app_constants.dart';
 
 class AddTastingScreen extends ConsumerStatefulWidget {
   const AddTastingScreen({super.key, required this.coffeeId});
@@ -123,6 +125,19 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final isPremium = ref.read(isPremiumProvider);
+
+    if (!isPremium) {
+      final subRepo = ref.read(subscriptionRepositoryProvider);
+      final tastingCount = await subRepo.getUserTastingsThisMonth();
+      if (tastingCount >= AppConstants.freeTierMaxTastingsPerMonth && mounted) {
+        final l10n = AppLocalizations.of(context);
+        showUpgradePrompt(context,
+            l10n.tastingLimitReached(AppConstants.freeTierMaxTastingsPerMonth));
+        return;
+      }
+    }
 
     setState(() => _isSaving = true);
 
@@ -242,21 +257,22 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ── AI Brew Suggestion ──
-            OutlinedButton.icon(
-              onPressed: _isSuggesting ? null : _fetchSuggestion,
-              icon: _isSuggesting
-                  ? SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: theme.colorScheme.primary,
-                      ),
-                    )
-                  : const Icon(Icons.auto_awesome),
-              label: Text(l10n.getSuggestion),
-            ),
+            // ── AI Brew Suggestion (premium only) ──
+            if (ref.watch(isPremiumProvider))
+              OutlinedButton.icon(
+                onPressed: _isSuggesting ? null : _fetchSuggestion,
+                icon: _isSuggesting
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.colorScheme.primary,
+                        ),
+                      )
+                    : const Icon(Icons.auto_awesome),
+                label: Text(l10n.getSuggestion),
+              ),
 
             if (_suggestionTips != null) ...[
               const SizedBox(height: 12),

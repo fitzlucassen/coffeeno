@@ -23,6 +23,8 @@ class Coffee {
     this.roasterDescription,
     this.farmUrl,
     this.farmDescription,
+    this.roasterId,
+    this.farmId,
     required this.createdAt,
   });
 
@@ -47,6 +49,8 @@ class Coffee {
   final String? roasterDescription;
   final String? farmUrl;
   final String? farmDescription;
+  final String? roasterId;
+  final String? farmId;
   final DateTime createdAt;
 
   factory Coffee.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -76,6 +80,8 @@ class Coffee {
       roasterDescription: data['roasterDescription'] as String?,
       farmUrl: data['farmUrl'] as String?,
       farmDescription: data['farmDescription'] as String?,
+      roasterId: data['roasterId'] as String?,
+      farmId: data['farmId'] as String?,
       createdAt:
           (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -104,6 +110,8 @@ class Coffee {
       'roasterDescription': roasterDescription,
       'farmUrl': farmUrl,
       'farmDescription': farmDescription,
+      'roasterId': roasterId,
+      'farmId': farmId,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -130,6 +138,8 @@ class Coffee {
     String? roasterDescription,
     String? farmUrl,
     String? farmDescription,
+    String? roasterId,
+    String? farmId,
     DateTime? createdAt,
   }) {
     return Coffee(
@@ -154,6 +164,8 @@ class Coffee {
       roasterDescription: roasterDescription ?? this.roasterDescription,
       farmUrl: farmUrl ?? this.farmUrl,
       farmDescription: farmDescription ?? this.farmDescription,
+      roasterId: roasterId ?? this.roasterId,
+      farmId: farmId ?? this.farmId,
       createdAt: createdAt ?? this.createdAt,
     );
   }

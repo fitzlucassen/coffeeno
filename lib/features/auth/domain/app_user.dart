@@ -11,6 +11,9 @@ class AppUser {
     this.followersCount = 0,
     this.followingCount = 0,
     this.tastingsCount = 0,
+    this.role = 'user',
+    this.premium = false,
+    this.premiumUntil,
     required this.createdAt,
   });
 
@@ -23,7 +26,16 @@ class AppUser {
   final int followersCount;
   final int followingCount;
   final int tastingsCount;
+  final String role; // 'user', 'roaster', 'farmer', 'admin'
+  final bool premium;
+  final DateTime? premiumUntil;
   final DateTime createdAt;
+
+  bool get isAdmin => role == 'admin';
+  bool get isRoaster => role == 'roaster';
+  bool get isFarmer => role == 'farmer';
+  bool get isPremiumActive =>
+      premium && (premiumUntil == null || premiumUntil!.isAfter(DateTime.now()));
 
   factory AppUser.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
@@ -37,6 +49,9 @@ class AppUser {
       followersCount: data['followersCount'] as int? ?? 0,
       followingCount: data['followingCount'] as int? ?? 0,
       tastingsCount: data['tastingsCount'] as int? ?? 0,
+      role: data['role'] as String? ?? 'user',
+      premium: data['premium'] as bool? ?? false,
+      premiumUntil: (data['premiumUntil'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -53,6 +68,10 @@ class AppUser {
       'followersCount': followersCount,
       'followingCount': followingCount,
       'tastingsCount': tastingsCount,
+      'role': role,
+      'premium': premium,
+      'premiumUntil':
+          premiumUntil != null ? Timestamp.fromDate(premiumUntil!) : null,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -67,6 +86,9 @@ class AppUser {
     int? followersCount,
     int? followingCount,
     int? tastingsCount,
+    String? role,
+    bool? premium,
+    DateTime? premiumUntil,
     DateTime? createdAt,
   }) {
     return AppUser(
@@ -79,6 +101,9 @@ class AppUser {
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
       tastingsCount: tastingsCount ?? this.tastingsCount,
+      role: role ?? this.role,
+      premium: premium ?? this.premium,
+      premiumUntil: premiumUntil ?? this.premiumUntil,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -97,6 +122,9 @@ class AppUser {
           followersCount == other.followersCount &&
           followingCount == other.followingCount &&
           tastingsCount == other.tastingsCount &&
+          role == other.role &&
+          premium == other.premium &&
+          premiumUntil == other.premiumUntil &&
           createdAt == other.createdAt;
 
   @override
@@ -110,6 +138,9 @@ class AppUser {
         followersCount,
         followingCount,
         tastingsCount,
+        role,
+        premium,
+        premiumUntil,
         createdAt,
       );
 

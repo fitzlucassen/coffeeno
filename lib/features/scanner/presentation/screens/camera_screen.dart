@@ -6,6 +6,8 @@ import 'package:coffeeno/l10n/app_localizations.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../subscription/presentation/providers/subscription_provider.dart';
+import '../../../subscription/presentation/widgets/premium_gate.dart';
 import '../providers/scanner_provider.dart';
 
 /// Screen that lets the user capture a photo of a coffee bag and runs the
@@ -55,6 +57,21 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
         context.push(AppRoutes.scanReview, extra: next.result);
       }
     });
+
+    final isPremium = ref.watch(isPremiumProvider);
+
+    if (!isPremium) {
+      return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => context.pop(),
+          ),
+          title: Text(l10n.scanCoffee),
+        ),
+        body: const PremiumGate(child: SizedBox.shrink()),
+      );
+    }
 
     // Auto-launch camera once when the screen first builds.
     if (!_hasLaunched && scanState.status == ScanStatus.idle) {

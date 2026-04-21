@@ -394,4 +394,118 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noInfoFound => 'No info found';
+
+  @override
+  String get roasterProfile => 'Roaster Profile';
+
+  @override
+  String get farmProfile => 'Farm Profile';
+
+  @override
+  String coffeesFromRoaster(String roaster) {
+    return 'Coffees from $roaster';
+  }
+
+  @override
+  String coffeesFromFarm(String farm) {
+    return 'Coffees from $farm';
+  }
+
+  @override
+  String get keyPeople => 'Key People';
+
+  @override
+  String get locationLabel => 'Location';
+
+  @override
+  String get noDescription => 'No description available';
+
+  @override
+  String get claimProfile => 'Claim this profile';
+
+  @override
+  String get pendingClaim => 'Claim pending approval';
+
+  @override
+  String get approvedClaim => 'Verified';
+
+  @override
+  String get editProfileInfo => 'Edit Info';
+
+  @override
+  String get claimMessage => 'Why should you manage this profile?';
+
+  @override
+  String get submitClaim => 'Submit Claim';
+
+  @override
+  String get adminClaims => 'Pending Claims';
+
+  @override
+  String get approveClaim => 'Approve';
+
+  @override
+  String get rejectClaim => 'Reject';
+
+  @override
+  String get noPendingClaims => 'No pending claims';
+
+  @override
+  String get claimSubmitted => 'Claim submitted for review';
+
+  @override
+  String get premium => 'Premium';
+
+  @override
+  String get freePlan => 'Free Plan';
+
+  @override
+  String get upgradeToPremium => 'Upgrade to Premium';
+
+  @override
+  String get premiumFeatures => 'Unlock all features';
+
+  @override
+  String get premiumPrice => '\$1.99/month';
+
+  @override
+  String get subscribe => 'Subscribe';
+
+  @override
+  String get restorePurchases => 'Restore Purchases';
+
+  @override
+  String get premiumRequired => 'Premium Required';
+
+  @override
+  String get premiumRequiredDesc =>
+      'This feature requires a premium subscription';
+
+  @override
+  String coffeeLimitReached(int max) {
+    return 'You\'ve reached the free limit of $max coffees';
+  }
+
+  @override
+  String tastingLimitReached(int max) {
+    return 'You\'ve reached the free limit of $max tastings this month';
+  }
+
+  @override
+  String get unlimitedCoffees => 'Unlimited coffees';
+
+  @override
+  String get unlimitedTastings => 'Unlimited tastings';
+
+  @override
+  String get aiFeatures => 'AI-powered features';
+
+  @override
+  String get photoUploads => 'Photo uploads';
+
+  @override
+  String get shareCards => 'Share tasting cards';
+
+  @override
+  String get admin => 'Admin';
 }

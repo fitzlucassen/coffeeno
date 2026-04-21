@@ -48,6 +48,46 @@
         { "fieldPath": "ratingsCount", "order": "ASCENDING" },
         { "fieldPath": "avgRating", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "coffees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roasterId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "coffees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "farmId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "claims",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "claims",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tastings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "tastingDate", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

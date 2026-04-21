@@ -14,7 +14,15 @@ import 'package:coffeeno/core/constants/app_constants.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import 'package:coffeeno/core/utils/validators.dart';
+import '../../../subscription/presentation/providers/subscription_provider.dart';
+import '../../../subscription/presentation/widgets/upgrade_prompt.dart';
 import '../../../scanner/domain/scan_result.dart';
+import '../../../roaster/data/roaster_repository.dart';
+import '../../../roaster/domain/roaster.dart';
+import '../../../roaster/presentation/providers/roaster_provider.dart';
+import '../../../farm/data/farm_repository.dart';
+import '../../../farm/domain/farm.dart';
+import '../../../farm/presentation/providers/farm_provider.dart';
 import '../../data/coffee_enrichment_service.dart';
 import '../../data/coffee_repository.dart';
 import '../../domain/coffee.dart';
@@ -185,39 +193,148 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
 
   void _enrichInBackground(
     CoffeeEnrichmentService enrichmentService,
-    CoffeeRepository repository,
+    CoffeeRepository coffeeRepo,
+    RoasterRepository roasterRepo,
+    FarmRepository farmRepo,
     String coffeeId,
     Coffee coffee,
   ) {
-    enrichmentService
-        .lookupInfo(
-          roaster: coffee.roaster,
-          farmName: coffee.farmName,
-          originCountry: coffee.originCountry,
-          originRegion: coffee.originRegion,
-        )
-        .then((result) async {
-      debugPrint('[COFFEENO] Enrichment result for $coffeeId: '
-          'roasterUrl=${result.roasterUrl}, '
-          'farmUrl=${result.farmUrl}, '
-          'isEmpty=${result.isEmpty}');
-      if (result.isEmpty) return;
-      final saved = await repository.getCoffee(coffeeId);
-      if (saved == null) return;
-      await repository.updateCoffee(saved.copyWith(
-        roasterUrl: result.roasterUrl,
-        roasterDescription: result.roasterDescription,
-        farmUrl: result.farmUrl,
-        farmDescription: result.farmDescription,
-      ));
-      debugPrint('[COFFEENO] Enrichment saved for $coffeeId');
-    }).catchError((e) {
+    _resolveEntities(
+      enrichmentService,
+      coffeeRepo,
+      roasterRepo,
+      farmRepo,
+      coffeeId,
+      coffee,
+    ).catchError((e) {
       debugPrint('[COFFEENO] Enrichment failed for $coffeeId: $e');
     });
   }
 
+  Future<void> _resolveEntities(
+    CoffeeEnrichmentService enrichmentService,
+    CoffeeRepository coffeeRepo,
+    RoasterRepository roasterRepo,
+    FarmRepository farmRepo,
+    String coffeeId,
+    Coffee coffee,
+  ) async {
+    final now = DateTime.now();
+    String? roasterId;
+    String? farmId;
+    String? roasterUrl;
+    String? roasterDescription;
+    String? farmUrl;
+    String? farmDescription;
+
+    // Check if roaster already exists
+    final existingRoaster = await roasterRepo.findByName(coffee.roaster);
+    if (existingRoaster != null) {
+      roasterId = existingRoaster.id;
+      roasterUrl = existingRoaster.url;
+      roasterDescription = existingRoaster.description;
+      debugPrint('[COFFEENO] Reusing roaster: ${existingRoaster.name}');
+    }
+
+    // Check if farm already exists
+    Farm? existingFarm;
+    if (coffee.farmName != null && coffee.farmName!.isNotEmpty) {
+      existingFarm = await farmRepo.findByName(
+        coffee.farmName!,
+        country: coffee.originCountry,
+      );
+      if (existingFarm != null) {
+        farmId = existingFarm.id;
+        farmUrl = existingFarm.url;
+        farmDescription = existingFarm.description;
+        debugPrint('[COFFEENO] Reusing farm: ${existingFarm.name}');
+      }
+    }
+
+    // Call Gemini only if we need info for either entity
+    final needsRoasterInfo = existingRoaster == null;
+    final needsFarmInfo =
+        coffee.farmName != null && coffee.farmName!.isNotEmpty && existingFarm == null;
+
+    if ((needsRoasterInfo || needsFarmInfo) && enrichmentService.isAvailable) {
+      final result = await enrichmentService.lookupInfo(
+        roaster: coffee.roaster,
+        farmName: coffee.farmName,
+        originCountry: coffee.originCountry,
+        originRegion: coffee.originRegion,
+      );
+      debugPrint('[COFFEENO] Enrichment result for $coffeeId: '
+          'roasterUrl=${result.roasterUrl}, farmUrl=${result.farmUrl}');
+
+      if (needsRoasterInfo) {
+        roasterUrl = result.roasterUrl;
+        roasterDescription = result.roasterDescription;
+        final roaster = Roaster(
+          id: '',
+          name: coffee.roaster,
+          description: result.roasterDescription,
+          url: result.roasterUrl,
+          country: result.roasterCountry,
+          city: result.roasterCity,
+          keyPeople: result.roasterKeyPeople,
+          source: 'ai',
+          createdAt: now,
+          updatedAt: now,
+        );
+        roasterId = await roasterRepo.addRoaster(roaster);
+        debugPrint('[COFFEENO] Created roaster $roasterId');
+      }
+
+      if (needsFarmInfo) {
+        farmUrl = result.farmUrl;
+        farmDescription = result.farmDescription;
+        final farm = Farm(
+          id: '',
+          name: coffee.farmName!,
+          description: result.farmDescription,
+          url: result.farmUrl,
+          country: coffee.originCountry,
+          region: result.farmRegion ?? coffee.originRegion,
+          farmerName: result.farmFarmerName ?? coffee.farmerName,
+          altitude: result.farmAltitude ?? coffee.altitude,
+          source: 'ai',
+          createdAt: now,
+          updatedAt: now,
+        );
+        farmId = await farmRepo.addFarm(farm);
+        debugPrint('[COFFEENO] Created farm $farmId');
+      }
+    }
+
+    // Update the coffee with entity references + inline fields
+    final saved = await coffeeRepo.getCoffee(coffeeId);
+    if (saved == null) return;
+    await coffeeRepo.updateCoffee(saved.copyWith(
+      roasterId: roasterId,
+      farmId: farmId,
+      roasterUrl: roasterUrl,
+      roasterDescription: roasterDescription,
+      farmUrl: farmUrl,
+      farmDescription: farmDescription,
+    ));
+    debugPrint('[COFFEENO] Enrichment saved for $coffeeId');
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final isPremium = ref.read(isPremiumProvider);
+
+    if (!isPremium) {
+      final subRepo = ref.read(subscriptionRepositoryProvider);
+      final coffeeCount = await subRepo.getUserCoffeeCount();
+      if (coffeeCount >= AppConstants.freeTierMaxCoffees && mounted) {
+        final l10n = AppLocalizations.of(context);
+        showUpgradePrompt(
+            context, l10n.coffeeLimitReached(AppConstants.freeTierMaxCoffees));
+        return;
+      }
+    }
 
     setState(() => _isSaving = true);
 
@@ -240,7 +357,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
         );
       }
 
-      final photoUrl = await _uploadPhoto(userId);
+      final photoUrl = isPremium ? await _uploadPhoto(userId) : null;
 
       final coffee = Coffee(
         id: '',
@@ -273,8 +390,13 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
 
       final coffeeId = await repository.addCoffee(coffee);
 
-      final enrichmentService = ref.read(coffeeEnrichmentProvider);
-      _enrichInBackground(enrichmentService, repository, coffeeId, coffee);
+      if (isPremium) {
+        final enrichmentService = ref.read(coffeeEnrichmentProvider);
+        final roasterRepo = ref.read(roasterRepositoryProvider);
+        final farmRepo = ref.read(farmRepositoryProvider);
+        _enrichInBackground(
+            enrichmentService, repository, roasterRepo, farmRepo, coffeeId, coffee);
+      }
 
       if (mounted) context.go(AppRoutes.library);
     } catch (e) {

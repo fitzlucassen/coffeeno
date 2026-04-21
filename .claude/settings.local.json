@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(export PATH=\"$PATH:/c/Users/ThibaultDulon/Documents/perso/flutter/bin\")",
+      "Bash(flutter gen-l10n *)",
+      "Bash(flutter analyze *)"
+    ]
+  }
+}

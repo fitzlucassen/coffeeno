@@ -23,6 +23,11 @@ import '../../features/social/presentation/screens/user_search_screen.dart';
 import '../../features/map/presentation/screens/coffee_map_screen.dart';
 import '../../features/map/presentation/screens/origin_detail_screen.dart';
 import '../../features/stats/presentation/screens/stats_screen.dart';
+import '../../features/roaster/presentation/screens/roaster_profile_screen.dart';
+import '../../features/farm/presentation/screens/farm_profile_screen.dart';
+import '../../features/admin/presentation/screens/admin_claims_screen.dart';
+import '../../features/admin/presentation/screens/claim_form_screen.dart';
+import '../../features/subscription/presentation/screens/paywall_screen.dart';
 import '../widgets/main_shell.dart';
 
 abstract final class AppRoutes {
@@ -48,6 +53,11 @@ abstract final class AppRoutes {
   static const userSearch = '/search/users';
   static const originDetail = '/origin/:country';
   static const stats = '/stats';
+  static const roasterProfile = '/roaster/:id';
+  static const farmProfile = '/farm/:id';
+  static const adminClaims = '/admin/claims';
+  static const claimForm = '/claim/:entityType/:entityId';
+  static const paywall = '/paywall';
 }
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -213,6 +223,34 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.stats,
         builder: (context, state) => const StatsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.roasterProfile,
+        builder: (context, state) => RoasterProfileScreen(
+          roasterId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.farmProfile,
+        builder: (context, state) => FarmProfileScreen(
+          farmId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.paywall,
+        builder: (context, state) => const PaywallScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminClaims,
+        builder: (context, state) => const AdminClaimsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.claimForm,
+        builder: (context, state) => ClaimFormScreen(
+          entityType: state.pathParameters['entityType']!,
+          entityId: state.pathParameters['entityId']!,
+          entityName: state.uri.queryParameters['name'] ?? '',
+        ),
       ),
     ],
   );
