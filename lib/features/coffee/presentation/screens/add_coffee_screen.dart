@@ -152,10 +152,13 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
       if (_photoPath != null) {
         final file = File(_photoPath!);
         final ext = _photoPath!.split('.').last;
-        final ref = FirebaseStorage.instance
+        final storageRef = FirebaseStorage.instance
             .ref('users/$userId/coffees/${const Uuid().v4()}.$ext');
-        await ref.putFile(file);
-        photoUrl = await ref.getDownloadURL();
+        final uploadTask = await storageRef.putFile(
+          file,
+          SettableMetadata(contentType: 'image/$ext'),
+        );
+        photoUrl = await uploadTask.ref.getDownloadURL();
       }
 
       final coffee = Coffee(
