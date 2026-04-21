@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
@@ -45,6 +51,44 @@ class CoffeeDetailScreen extends ConsumerWidget {
     if (context.mounted) context.go(AppRoutes.library);
   }
 
+  Future<void> _updatePhoto(BuildContext context, WidgetRef ref) async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (image == null) return;
+
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final file = File(image.path);
+      final fileName = '${const Uuid().v4()}.jpg';
+      final storageRef = FirebaseStorage.instance
+          .ref('users/$userId/coffees/$fileName');
+      await storageRef.putFile(
+        file,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+      final photoUrl = await storageRef.getDownloadURL();
+
+      final repository = ref.read(coffeeRepositoryProvider);
+      final coffee = await repository.getCoffee(coffeeId);
+      if (coffee != null) {
+        await repository.updateCoffee(coffee.copyWith(photoUrl: photoUrl));
+        ref.invalidate(coffeeDetailProvider(coffeeId));
+      }
+    } catch (e) {
+      debugPrint('[COFFEENO] Photo update failed: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -71,22 +115,30 @@ class CoffeeDetailScreen extends ConsumerWidget {
                 pinned: true,
                 actions: [
                   IconButton(
+                    icon: const Icon(Icons.add_a_photo_outlined),
+                    tooltip: 'Update photo',
+                    onPressed: () => _updatePhoto(context, ref),
+                  ),
+                  IconButton(
                     icon: const Icon(Icons.delete_outline_rounded),
                     tooltip: l10n.delete,
                     onPressed: () => _deleteCoffee(context, ref),
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
-                  background: coffee.photoUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: coffee.photoUrl!,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) =>
-                              _ImagePlaceholder(colorScheme),
-                          errorWidget: (_, __, ___) =>
-                              _ImagePlaceholder(colorScheme),
-                        )
-                      : _ImagePlaceholder(colorScheme),
+                  background: GestureDetector(
+                    onTap: () => _updatePhoto(context, ref),
+                    child: coffee.photoUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: coffee.photoUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) =>
+                                _ImagePlaceholder(colorScheme),
+                            errorWidget: (_, __, ___) =>
+                                _ImagePlaceholder(colorScheme),
+                          )
+                        : _ImagePlaceholder(colorScheme),
+                  ),
                 ),
               ),
 

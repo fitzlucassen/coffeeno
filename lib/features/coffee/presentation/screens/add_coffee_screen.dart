@@ -152,16 +152,25 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
       if (_photoPath != null) {
         try {
           final file = File(_photoPath!);
+          debugPrint('[COFFEENO] Photo path: $_photoPath');
+          debugPrint('[COFFEENO] File exists: ${file.existsSync()}, size: ${file.lengthSync()}');
           final fileName = '${const Uuid().v4()}.jpg';
           final storageRef = FirebaseStorage.instance
               .ref('users/$userId/coffees/$fileName');
-          await storageRef.putFile(
+          final task = storageRef.putFile(
             file,
             SettableMetadata(contentType: 'image/jpeg'),
           );
+          task.snapshotEvents.listen((snapshot) {
+            debugPrint('[COFFEENO] Upload state: ${snapshot.state}, '
+                '${snapshot.bytesTransferred}/${snapshot.totalBytes}');
+          });
+          await task;
           photoUrl = await storageRef.getDownloadURL();
-        } catch (e) {
+          debugPrint('[COFFEENO] Photo uploaded: $photoUrl');
+        } catch (e, stack) {
           debugPrint('[COFFEENO] Photo upload failed: $e');
+          debugPrint('[COFFEENO] Stack: $stack');
         }
       }
 
