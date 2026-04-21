@@ -29,9 +29,19 @@ class CoffeeRepository {
     await _collection.doc(coffee.id).update(coffee.toFirestore());
   }
 
-  /// Deletes a coffee document.
+  /// Deletes a coffee document and all its associated tastings.
   Future<void> deleteCoffee(String coffeeId) async {
-    await _collection.doc(coffeeId).delete();
+    final tastingsSnapshot = await _firestore
+        .collection('tastings')
+        .where('coffeeId', isEqualTo: coffeeId)
+        .get();
+
+    final batch = _firestore.batch();
+    for (final doc in tastingsSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(_collection.doc(coffeeId));
+    await batch.commit();
   }
 
   /// Streams the coffees belonging to a specific user, ordered by creation
