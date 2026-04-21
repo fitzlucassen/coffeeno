@@ -21,11 +21,11 @@ final userCoffeesProvider =
   return repository.getUserCoffees(userId);
 });
 
-/// Fetches a single coffee by its [coffeeId].
+/// Streams a single coffee by its [coffeeId] for real-time updates.
 final coffeeDetailProvider =
-    FutureProvider.family<Coffee?, String>((ref, coffeeId) {
+    StreamProvider.family<Coffee?, String>((ref, coffeeId) {
   final repository = ref.watch(coffeeRepositoryProvider);
-  return repository.getCoffee(coffeeId);
+  return repository.watchCoffee(coffeeId);
 });
 
 /// Streams coffees from a specific origin [country].

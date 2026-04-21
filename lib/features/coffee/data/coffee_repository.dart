@@ -24,6 +24,14 @@ class CoffeeRepository {
     return Coffee.fromFirestore(doc);
   }
 
+  /// Streams a single coffee document for real-time updates.
+  Stream<Coffee?> watchCoffee(String coffeeId) {
+    return _collection.doc(coffeeId).snapshots().map((doc) {
+      if (!doc.exists || doc.data() == null) return null;
+      return Coffee.fromFirestore(doc);
+    });
+  }
+
   /// Updates an existing coffee document.
   Future<void> updateCoffee(Coffee coffee) async {
     await _collection.doc(coffee.id).update(coffee.toFirestore());

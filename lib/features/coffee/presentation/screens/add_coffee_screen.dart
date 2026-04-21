@@ -15,6 +15,7 @@ import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import 'package:coffeeno/core/utils/validators.dart';
 import '../../../scanner/domain/scan_result.dart';
+import '../../data/coffee_enrichment_service.dart';
 import '../../data/coffee_repository.dart';
 import '../../domain/coffee.dart';
 import '../providers/coffee_provider.dart';
@@ -183,12 +184,11 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
   }
 
   void _enrichInBackground(
-    WidgetRef ref,
+    CoffeeEnrichmentService enrichmentService,
     CoffeeRepository repository,
     String coffeeId,
     Coffee coffee,
   ) {
-    final enrichmentService = ref.read(coffeeEnrichmentProvider);
     enrichmentService
         .lookupInfo(
           roaster: coffee.roaster,
@@ -197,6 +197,10 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
           originRegion: coffee.originRegion,
         )
         .then((result) async {
+      debugPrint('[COFFEENO] Enrichment result for $coffeeId: '
+          'roasterUrl=${result.roasterUrl}, '
+          'farmUrl=${result.farmUrl}, '
+          'isEmpty=${result.isEmpty}');
       if (result.isEmpty) return;
       final saved = await repository.getCoffee(coffeeId);
       if (saved == null) return;
@@ -206,6 +210,9 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
         farmUrl: result.farmUrl,
         farmDescription: result.farmDescription,
       ));
+      debugPrint('[COFFEENO] Enrichment saved for $coffeeId');
+    }).catchError((e) {
+      debugPrint('[COFFEENO] Enrichment failed for $coffeeId: $e');
     });
   }
 
@@ -266,7 +273,8 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
 
       final coffeeId = await repository.addCoffee(coffee);
 
-      _enrichInBackground(ref, repository, coffeeId, coffee);
+      final enrichmentService = ref.read(coffeeEnrichmentProvider);
+      _enrichInBackground(enrichmentService, repository, coffeeId, coffee);
 
       if (mounted) context.go(AppRoutes.library);
     } catch (e) {
