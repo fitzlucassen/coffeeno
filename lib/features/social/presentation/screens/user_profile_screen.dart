@@ -4,13 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
-import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
 import 'package:coffeeno/features/social/presentation/providers/social_provider.dart';
 import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
 
-/// Displays a user profile. If [userId] is null, shows the current user's
-/// own profile with edit/settings/sign-out options.
 class UserProfileScreen extends ConsumerWidget {
   const UserProfileScreen({super.key, this.userId});
 
@@ -19,19 +16,20 @@ class UserProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final currentUser = ref.watch(currentUserProvider).valueOrNull;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    // Determine which user to show.
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    final profileUserId = userId ?? firebaseUser?.uid;
     final isOwnProfile =
-        userId == null || (currentUser != null && userId == currentUser.uid);
-    final profileUserId = userId ?? currentUser?.uid;
+        userId == null || profileUserId == firebaseUser?.uid;
 
     if (profileUserId == null) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.profileTab)),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Text(l10n.error, style: textTheme.bodyLarge),
+        ),
       );
     }
 
@@ -46,9 +44,7 @@ class UserProfileScreen extends ConsumerWidget {
                 IconButton(
                   icon: const Icon(Icons.settings_outlined),
                   tooltip: l10n.settings,
-                  onPressed: () {
-                    // Settings navigation placeholder.
-                  },
+                  onPressed: () {},
                 ),
               ]
             : null,
@@ -74,7 +70,6 @@ class UserProfileScreen extends ConsumerWidget {
               children: [
                 const SizedBox(height: 16),
 
-                // ── Avatar ──
                 Center(
                   child: UserAvatar(
                     imageUrl: profile.avatarUrl,
@@ -84,7 +79,6 @@ class UserProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
 
-                // ── Display name ──
                 Center(
                   child: Text(
                     profile.displayName,
@@ -92,7 +86,6 @@ class UserProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
-                // ── Username ──
                 if (profile.username != null &&
                     profile.username!.isNotEmpty) ...[
                   const SizedBox(height: 2),
@@ -106,7 +99,6 @@ class UserProfileScreen extends ConsumerWidget {
                   ),
                 ],
 
-                // ── Bio ──
                 if (profile.bio != null && profile.bio!.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Padding(
@@ -120,7 +112,6 @@ class UserProfileScreen extends ConsumerWidget {
                 ],
                 const SizedBox(height: 20),
 
-                // ── Stats row ──
                 _StatsRow(
                   userId: profileUserId,
                   tastingsCount: profile.tastingsCount,
@@ -129,11 +120,10 @@ class UserProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // ── Action button ──
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: isOwnProfile
-                      ? _OwnProfileActions(l10n: l10n, ref: ref)
+                      ? _OwnProfileActions(l10n: l10n)
                       : Center(
                           child:
                               FollowButton(targetUserId: profileUserId),
@@ -141,14 +131,12 @@ class UserProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // ── Recent tastings header ──
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(l10n.tastings, style: textTheme.titleMedium),
                 ),
                 const SizedBox(height: 8),
 
-                // ── Tastings list ──
                 tastingsAsync.when(
                   data: (tastings) {
                     if (tastings.isEmpty) {
@@ -187,11 +175,11 @@ class UserProfileScreen extends ConsumerWidget {
                     padding: EdgeInsets.all(24),
                     child: Center(child: CircularProgressIndicator()),
                   ),
-                  error: (_, __) => Padding(
+                  error: (error, __) => Padding(
                     padding: const EdgeInsets.all(24),
                     child: Center(
-                      child: Text(
-                        l10n.error,
+                      child: SelectableText(
+                        error.toString(),
                         style: textTheme.bodyMedium?.copyWith(
                           color: colorScheme.error,
                         ),
@@ -204,8 +192,14 @@ class UserProfileScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(
-          child: Text(l10n.error, style: textTheme.bodyLarge),
+        error: (error, __) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: SelectableText(
+              error.toString(),
+              style: textTheme.bodyLarge,
+            ),
+          ),
         ),
       ),
     );
@@ -306,11 +300,9 @@ class _StatItem extends StatelessWidget {
 class _OwnProfileActions extends StatelessWidget {
   const _OwnProfileActions({
     required this.l10n,
-    required this.ref,
   });
 
   final AppLocalizations l10n;
-  final WidgetRef ref;
 
   @override
   Widget build(BuildContext context) {
@@ -320,9 +312,7 @@ class _OwnProfileActions extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         OutlinedButton.icon(
-          onPressed: () {
-            // Edit profile navigation placeholder.
-          },
+          onPressed: () {},
           icon: const Icon(Icons.edit_outlined, size: 18),
           label: Text(l10n.editProfile),
         ),

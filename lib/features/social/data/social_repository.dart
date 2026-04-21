@@ -193,19 +193,17 @@ class SocialRepository {
   }
 
   /// Fetches user tastings ordered by creation date.
-  Stream<List<Map<String, dynamic>>> getUserTastings(String userId) {
-    return _firestore
+  Future<List<Map<String, dynamic>>> getUserTastings(String userId) async {
+    final snapshot = await _firestore
         .collection('tastings')
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .limit(30)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs.map((doc) {
-            final data = doc.data();
-            data['id'] = doc.id;
-            return data;
-          }).toList(),
-        );
+        .get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
   }
 }

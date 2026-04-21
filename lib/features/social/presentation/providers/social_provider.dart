@@ -41,16 +41,16 @@ final userSearchResultsProvider =
   return repository.searchUsers(query);
 });
 
-/// Streams a single user profile.
+/// Fetches a single user profile.
 final userProfileProvider =
-    StreamProvider.family<UserSearchResult?, String>((ref, userId) {
+    FutureProvider.family<UserSearchResult?, String>((ref, userId) {
   final repository = ref.watch(socialRepositoryProvider);
-  return repository.getUserProfileStream(userId);
+  return repository.getUserProfile(userId);
 });
 
-/// Streams a user's tastings.
+/// Fetches a user's tastings.
 final userTastingsProvider =
-    StreamProvider.family<List<Map<String, dynamic>>, String>((ref, userId) {
+    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, userId) {
   final repository = ref.watch(socialRepositoryProvider);
   return repository.getUserTastings(userId);
 });
