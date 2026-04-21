@@ -47,7 +47,7 @@ Do not include any text outside the JSON object.''';
     }
 
     final model = GenerativeModel(
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       apiKey: _apiKey,
       systemInstruction: Content.system(_systemPrompt),
       generationConfig: GenerationConfig(

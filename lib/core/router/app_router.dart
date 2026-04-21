@@ -51,6 +51,7 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final currentUser = ref.watch(currentUserProvider);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -60,9 +61,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = state.matchedLocation == AppRoutes.welcome ||
           state.matchedLocation == AppRoutes.signIn ||
           state.matchedLocation == AppRoutes.signUp;
+      final isProfileSetup =
+          state.matchedLocation == AppRoutes.profileSetup;
 
       if (!isLoggedIn && !isAuthRoute) return AppRoutes.welcome;
       if (isLoggedIn && isAuthRoute) return AppRoutes.feed;
+
+      // Authenticated but no Firestore user doc — force profile setup.
+      if (isLoggedIn &&
+          !isProfileSetup &&
+          currentUser.hasValue &&
+          currentUser.value == null) {
+        return AppRoutes.profileSetup;
+      }
+
       return null;
     },
     routes: [

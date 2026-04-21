@@ -43,11 +43,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.signInWithEmail(
+      final credential = await authRepo.signInWithEmail(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      if (mounted) context.go(AppRoutes.feed);
+      if (!mounted) return;
+      final userRepo = ref.read(userRepositoryProvider);
+      final existingUser = await userRepo.getUser(credential.user!.uid);
+      if (!mounted) return;
+      if (existingUser == null) {
+        context.go(AppRoutes.profileSetup);
+      } else {
+        context.go(AppRoutes.feed);
+      }
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _mapAuthError(e.code));
     } catch (_) {
@@ -72,15 +80,14 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         return;
       }
 
-      if (mounted) {
-        // Check if this is a new user — navigate to profile setup if so.
-        final userRepo = ref.read(userRepositoryProvider);
-        final existingUser = await userRepo.getUser(credential.user!.uid);
-        if (existingUser == null) {
-          context.go(AppRoutes.profileSetup);
-        } else {
-          context.go(AppRoutes.feed);
-        }
+      if (!mounted) return;
+      final userRepo = ref.read(userRepositoryProvider);
+      final existingUser = await userRepo.getUser(credential.user!.uid);
+      if (!mounted) return;
+      if (existingUser == null) {
+        context.go(AppRoutes.profileSetup);
+      } else {
+        context.go(AppRoutes.feed);
       }
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _mapAuthError(e.code));

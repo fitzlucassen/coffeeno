@@ -68,10 +68,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       final existing = await userRepo.getUser(user.uid);
 
       if (existing != null) {
-        // Update the existing document.
+        final displayName = _displayNameController.text.trim();
+        final username = _usernameController.text.trim().toLowerCase();
         await userRepo.updateUser(user.uid, {
-          'displayName': _displayNameController.text.trim(),
-          'username': _usernameController.text.trim().toLowerCase(),
+          'displayName': displayName,
+          'displayNameLower': displayName.toLowerCase(),
+          'username': username,
+          'usernameLower': username.toLowerCase(),
           'bio': _bioController.text.trim().isEmpty
               ? null
               : _bioController.text.trim(),
@@ -107,7 +110,26 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     }
   }
 
-  void _skip() => context.go(AppRoutes.feed);
+  Future<void> _skip() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userRepo = ref.read(userRepositoryProvider);
+    final existing = await userRepo.getUser(user.uid);
+    if (existing == null) {
+      final appUser = AppUser(
+        uid: user.uid,
+        email: user.email ?? '',
+        displayName: user.displayName ?? user.email?.split('@').first ?? '',
+        username: user.email?.split('@').first.toLowerCase() ?? user.uid,
+        avatarUrl: user.photoURL,
+        createdAt: DateTime.now(),
+      );
+      await userRepo.createUser(appUser);
+    }
+
+    if (mounted) context.go(AppRoutes.feed);
+  }
 
   @override
   Widget build(BuildContext context) {

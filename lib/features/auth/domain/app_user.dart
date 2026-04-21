@@ -45,7 +45,9 @@ class AppUser {
     return {
       'email': email,
       'displayName': displayName,
+      'displayNameLower': displayName.toLowerCase(),
       'username': username,
+      'usernameLower': username.toLowerCase(),
       'avatarUrl': avatarUrl,
       'bio': bio,
       'followersCount': followersCount,
