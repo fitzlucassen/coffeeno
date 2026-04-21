@@ -5,6 +5,7 @@ import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/core/constants/app_constants.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
@@ -175,7 +176,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
       final docId = await repository.addCoffee(coffee);
       print('[COFFEENO] Coffee saved with id: $docId');
 
-      if (mounted) context.pop();
+      if (mounted) context.go(AppRoutes.library);
     } catch (e, stack) {
       print('[COFFEENO] Save coffee FAILED: $e');
       print('[COFFEENO] Stack: $stack');
