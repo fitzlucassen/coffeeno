@@ -72,9 +72,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   }
 
   Future<void> _save() async {
-    // Navigate to the add-coffee screen passing the scan result as extra data
-    // so it can be used to pre-fill the coffee form.
-    context.go(AppRoutes.addCoffee, extra: _result);
+    context.push(AppRoutes.addCoffee, extra: _result);
   }
 
   @override

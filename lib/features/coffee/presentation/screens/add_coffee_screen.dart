@@ -9,6 +9,7 @@ import 'package:coffeeno/core/constants/app_constants.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import 'package:coffeeno/core/utils/validators.dart';
+import '../../../scanner/domain/scan_result.dart';
 import '../../domain/coffee.dart';
 import '../providers/coffee_provider.dart';
 
@@ -37,6 +38,47 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
   final List<String> _flavorNotes = [];
   String? _photoPath;
   bool _isSaving = false;
+  bool _prefilled = false;
+
+  void _prefillFromScan(BuildContext context) {
+    if (_prefilled) return;
+    _prefilled = true;
+
+    final extra = GoRouterState.of(context).extra;
+    if (extra is! ScanResult) return;
+
+    _nameController.text = extra.name ?? '';
+    _roasterController.text = extra.roaster ?? '';
+    _countryController.text = extra.originCountry ?? '';
+    _regionController.text = extra.originRegion ?? '';
+    _farmController.text = extra.farmName ?? '';
+    _farmerController.text = extra.farmerName ?? '';
+    _altitudeController.text = extra.altitude ?? '';
+    _varietyController.text = extra.variety ?? '';
+    _flavorNotes.addAll(extra.flavorNotes);
+
+    if (extra.processingMethod != null) {
+      for (final m in ProcessingMethod.values) {
+        if (m.label.toLowerCase() == extra.processingMethod!.toLowerCase()) {
+          _processingMethod = m;
+          break;
+        }
+      }
+    }
+
+    if (extra.roastLevel != null) {
+      for (final r in RoastLevel.values) {
+        if (r.label.toLowerCase() == extra.roastLevel!.toLowerCase()) {
+          _roastLevel = r;
+          break;
+        }
+      }
+    }
+
+    if (extra.roastDate != null) {
+      _roastDate = DateTime.tryParse(extra.roastDate!);
+    }
+  }
 
   @override
   void dispose() {
@@ -152,6 +194,8 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _prefillFromScan(context);
+
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
