@@ -93,12 +93,19 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
       ),
       body: coffeesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Text(
-            l10n.error,
-            style: theme.textTheme.bodyLarge,
-          ),
-        ),
+        error: (error, stack) {
+          debugPrint('Library error: $error');
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: SelectableText(
+                error.toString(),
+                style: theme.textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        },
         data: (coffees) {
           // Collect available countries for filter
           final countries = coffees

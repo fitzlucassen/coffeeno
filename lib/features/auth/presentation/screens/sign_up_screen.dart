@@ -71,8 +71,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (mounted) context.go(AppRoutes.profileSetup);
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _mapAuthError(e.code));
-    } catch (_) {
-      setState(() => _errorMessage = AppLocalizations.of(context).error);
+    } catch (e) {
+      debugPrint('Sign up error: $e');
+      setState(() => _errorMessage = e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

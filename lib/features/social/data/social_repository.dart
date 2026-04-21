@@ -196,7 +196,7 @@ class SocialRepository {
   Stream<List<Map<String, dynamic>>> getUserTastings(String userId) {
     return _firestore
         .collection('tastings')
-        .where('authorId', isEqualTo: userId)
+        .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .limit(30)
         .snapshots()
