@@ -24,11 +24,11 @@ final authStateProvider = StreamProvider<User?>((ref) {
   }
 });
 
-final currentUserProvider = FutureProvider<AppUser?>((ref) async {
+final currentUserProvider = StreamProvider<AppUser?>((ref) {
   final authState = ref.watch(authStateProvider);
   final user = authState.valueOrNull;
-  if (user == null) return null;
+  if (user == null) return Stream.value(null);
 
   final userRepo = ref.watch(userRepositoryProvider);
-  return userRepo.getUser(user.uid);
+  return userRepo.watchUser(user.uid);
 });
