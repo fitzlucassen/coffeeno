@@ -102,7 +102,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
       final repository = ref.read(coffeeRepositoryProvider);
 
       final coffee = Coffee(
-        id: '', // Will be assigned by Firestore
+        id: '',
         uid: userId,
         roaster: _roasterController.text.trim(),
         name: _nameController.text.trim(),
@@ -129,16 +129,20 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
         createdAt: DateTime.now(),
       );
 
-      // TODO: Upload photo to Firebase Storage and set photoUrl
-      await repository.addCoffee(coffee);
+      print('[COFFEENO] Saving coffee: ${coffee.name} by ${coffee.roaster}, uid=$userId');
+      final docId = await repository.addCoffee(coffee);
+      print('[COFFEENO] Coffee saved with id: $docId');
 
       if (mounted) context.pop();
     } catch (e, stack) {
-      debugPrint('Save coffee error: $e');
-      debugPrint('$stack');
+      print('[COFFEENO] Save coffee FAILED: $e');
+      print('[COFFEENO] Stack: $stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(
+            content: Text(e.toString()),
+            duration: const Duration(seconds: 10),
+          ),
         );
       }
     } finally {
