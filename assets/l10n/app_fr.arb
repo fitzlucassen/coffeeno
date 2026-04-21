@@ -103,5 +103,6 @@
   "byOrigin": "Par origine",
   "noOriginsYet": "Aucune origine de café à afficher",
   "addCoffeesForMap": "Ajoutez des cafés avec une origine pour les voir sur la carte",
-  "noCoffeesFromOrigin": "Aucun café trouvé pour cette origine"
+  "noCoffeesFromOrigin": "Aucun café trouvé pour cette origine",
+  "deleteCoffeeConfirm": "Supprimer ce café et toutes ses dégustations ?"
 }

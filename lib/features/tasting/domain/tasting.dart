@@ -4,6 +4,8 @@ class Tasting {
   const Tasting({
     required this.id,
     required this.userId,
+    this.authorName,
+    this.authorAvatar,
     required this.coffeeId,
     required this.coffeeName,
     this.coffeePhotoUrl,
@@ -31,6 +33,8 @@ class Tasting {
 
   final String id;
   final String userId;
+  final String? authorName;
+  final String? authorAvatar;
   final String coffeeId;
   final String coffeeName;
   final String? coffeePhotoUrl;
@@ -60,6 +64,8 @@ class Tasting {
     return Tasting(
       id: doc.id,
       userId: data['userId'] as String? ?? '',
+      authorName: data['authorName'] as String?,
+      authorAvatar: data['authorAvatar'] as String?,
       coffeeId: data['coffeeId'] as String? ?? '',
       coffeeName: data['coffeeName'] as String? ?? '',
       coffeePhotoUrl: data['coffeePhotoUrl'] as String?,
@@ -91,6 +97,8 @@ class Tasting {
   Map<String, dynamic> toFirestore() {
     return {
       'userId': userId,
+      'authorName': authorName,
+      'authorAvatar': authorAvatar,
       'coffeeId': coffeeId,
       'coffeeName': coffeeName,
       'coffeePhotoUrl': coffeePhotoUrl,
@@ -120,6 +128,8 @@ class Tasting {
   Tasting copyWith({
     String? id,
     String? userId,
+    String? authorName,
+    String? authorAvatar,
     String? coffeeId,
     String? coffeeName,
     String? coffeePhotoUrl,
@@ -147,6 +157,8 @@ class Tasting {
     return Tasting(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      authorName: authorName ?? this.authorName,
+      authorAvatar: authorAvatar ?? this.authorAvatar,
       coffeeId: coffeeId ?? this.coffeeId,
       coffeeName: coffeeName ?? this.coffeeName,
       coffeePhotoUrl: coffeePhotoUrl ?? this.coffeePhotoUrl,

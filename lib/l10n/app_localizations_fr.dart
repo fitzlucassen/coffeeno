@@ -333,4 +333,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noCoffeesFromOrigin => 'Aucun café trouvé pour cette origine';
+
+  @override
+  String get deleteCoffeeConfirm =>
+      'Supprimer ce café et toutes ses dégustations ?';
 }

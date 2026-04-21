@@ -8,6 +8,42 @@ import 'package:coffeeno/features/social/presentation/providers/social_provider.
 import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
 
+void _showSettingsSheet(BuildContext context) {
+  final l10n = AppLocalizations.of(context);
+  final colorScheme = Theme.of(context).colorScheme;
+
+  showModalBottomSheet(
+    context: context,
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 32,
+            height: 4,
+            decoration: BoxDecoration(
+              color: colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            leading: Icon(Icons.logout, color: colorScheme.error),
+            title: Text(l10n.signOut,
+                style: TextStyle(color: colorScheme.error)),
+            onTap: () async {
+              Navigator.of(ctx).pop();
+              await FirebaseAuth.instance.signOut();
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+}
+
 class UserProfileScreen extends ConsumerWidget {
   const UserProfileScreen({super.key, this.userId});
 
@@ -44,7 +80,7 @@ class UserProfileScreen extends ConsumerWidget {
                 IconButton(
                   icon: const Icon(Icons.settings_outlined),
                   tooltip: l10n.settings,
-                  onPressed: () {},
+                  onPressed: () => _showSettingsSheet(context),
                 ),
               ]
             : null,

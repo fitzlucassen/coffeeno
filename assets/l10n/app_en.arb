@@ -243,5 +243,7 @@
   "addCoffeesForMap": "Add coffees with origin info to see them on the map",
   "@addCoffeesForMap": { "description": "Empty map subtitle" },
   "noCoffeesFromOrigin": "No coffees found for this origin",
-  "@noCoffeesFromOrigin": { "description": "Empty origin ranking" }
+  "@noCoffeesFromOrigin": { "description": "Empty origin ranking" },
+  "deleteCoffeeConfirm": "Delete this coffee and all its tastings?",
+  "@deleteCoffeeConfirm": { "description": "Delete coffee confirmation message" }
 }

@@ -79,9 +79,12 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
       final water = double.parse(_waterController.text);
       final brewTimeSec = (_brewTimeMinutes * 60) + _brewTimeSeconds;
 
+      final currentUser = FirebaseAuth.instance.currentUser;
       final tasting = Tasting(
-        id: '', // Assigned by Firestore
+        id: '',
         userId: userId,
+        authorName: currentUser?.displayName ?? currentUser?.email?.split('@').first ?? '',
+        authorAvatar: currentUser?.photoURL,
         coffeeId: widget.coffeeId,
         coffeeName: coffee?.name ?? '',
         coffeePhotoUrl: coffee?.photoUrl,

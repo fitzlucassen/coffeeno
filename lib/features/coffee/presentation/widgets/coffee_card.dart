@@ -39,72 +39,71 @@ class CoffeeCard extends StatelessWidget {
                   : _Placeholder(colorScheme),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Name + score
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        coffee.name,
-                        style: theme.textTheme.titleMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          coffee.name,
+                          style: theme.textTheme.titleMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (coffee.ratingsCount > 0)
+                        CoffeeScoreBadge(
+                          score: coffee.avgRating,
+                          size: CoffeeScoreBadgeSize.small,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    coffee.roaster,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    coffee.originCountry,
+                    style: theme.textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (coffee.flavorNotes.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Flexible(
+                      child: Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        clipBehavior: Clip.hardEdge,
+                        children: coffee.flavorNotes
+                            .take(3)
+                            .map(
+                              (note) => Chip(
+                                label: Text(note),
+                                visualDensity: VisualDensity.compact,
+                                labelPadding:
+                                    const EdgeInsets.symmetric(horizontal: 2),
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                labelStyle: theme.textTheme.labelSmall,
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
-                    if (coffee.ratingsCount > 0)
-                      CoffeeScoreBadge(
-                        score: coffee.avgRating,
-                        size: CoffeeScoreBadgeSize.small,
-                      ),
                   ],
-                ),
-                const SizedBox(height: 4),
-
-                // Roaster
-                Text(
-                  coffee.roaster,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-
-                // Origin country
-                Text(
-                  coffee.originCountry,
-                  style: theme.textTheme.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-
-                // Flavor notes preview (first 3)
-                if (coffee.flavorNotes.isNotEmpty)
-                  Wrap(
-                    spacing: 4,
-                    runSpacing: 4,
-                    children: coffee.flavorNotes
-                        .take(3)
-                        .map(
-                          (note) => Chip(
-                            label: Text(note),
-                            visualDensity: VisualDensity.compact,
-                            labelPadding:
-                                const EdgeInsets.symmetric(horizontal: 2),
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            labelStyle: theme.textTheme.labelSmall,
-                          ),
-                        )
-                        .toList(),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

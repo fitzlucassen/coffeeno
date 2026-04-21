@@ -5,6 +5,7 @@ import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/coffee_score_badge.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
@@ -16,6 +17,33 @@ class CoffeeDetailScreen extends ConsumerWidget {
   const CoffeeDetailScreen({super.key, required this.coffeeId});
 
   final String coffeeId;
+
+  Future<void> _deleteCoffee(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.delete),
+        content: Text(l10n.deleteCoffeeConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => ctx.pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => ctx.pop(true),
+            child: Text(l10n.delete,
+                style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final repository = ref.read(coffeeRepositoryProvider);
+    await repository.deleteCoffee(coffeeId);
+    if (context.mounted) context.go(AppRoutes.library);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,6 +69,13 @@ class CoffeeDetailScreen extends ConsumerWidget {
               SliverAppBar(
                 expandedHeight: 260,
                 pinned: true,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    tooltip: l10n.delete,
+                    onPressed: () => _deleteCoffee(context, ref),
+                  ),
+                ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: coffee.photoUrl != null
                       ? CachedNetworkImage(

@@ -715,6 +715,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No coffees found for this origin'**
   String get noCoffeesFromOrigin;
+
+  /// Delete coffee confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this coffee and all its tastings?'**
+  String get deleteCoffeeConfirm;
 }
 
 class _AppLocalizationsDelegate

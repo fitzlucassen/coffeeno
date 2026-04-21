@@ -35,18 +35,18 @@ class FeedItem {
     final data = doc.data()!;
     return FeedItem(
       tastingId: doc.id,
-      authorId: data['authorId'] as String,
-      authorName: data['authorName'] as String,
+      authorId: (data['authorId'] ?? data['userId'] ?? '') as String,
+      authorName: (data['authorName'] ?? data['coffeeName'] ?? '') as String,
       authorAvatar: data['authorAvatar'] as String?,
-      coffeeName: data['coffeeName'] as String,
-      roasterName: data['roasterName'] as String,
+      coffeeName: (data['coffeeName'] ?? '') as String,
+      roasterName: (data['roasterName'] ?? '') as String,
       coffeePhotoUrl: data['coffeePhotoUrl'] as String?,
-      overallRating: (data['overallRating'] as num).toDouble(),
+      overallRating: (data['overallRating'] as num?)?.toDouble() ?? 0,
       brewMethod: data['brewMethod'] as String?,
       notes: data['notes'] as String?,
       likesCount: (data['likesCount'] as num?)?.toInt() ?? 0,
       commentsCount: (data['commentsCount'] as num?)?.toInt() ?? 0,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
