@@ -133,10 +133,12 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
       await repository.addCoffee(coffee);
 
       if (mounted) context.pop();
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Save coffee error: $e');
+      debugPrint('$stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).error)),
+          SnackBar(content: Text(e.toString())),
         );
       }
     } finally {
