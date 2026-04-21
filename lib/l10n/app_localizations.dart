@@ -721,6 +721,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete this coffee and all its tastings?'**
   String get deleteCoffeeConfirm;
+
+  /// Alert when a similar coffee exists
+  ///
+  /// In en, this message translates to:
+  /// **'You have a similar coffee from {roaster}'**
+  String similarCoffeeAlert(String roaster);
+
+  /// View similar coffee button
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get viewSimilar;
+
+  /// Stats tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get statsTab;
+
+  /// Insights section title
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get insights;
+
+  /// Top origins stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Top Origins'**
+  String get topOrigins;
+
+  /// Top processing methods stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Top Processing Methods'**
+  String get topProcessing;
+
+  /// Flavor profile section title
+  ///
+  /// In en, this message translates to:
+  /// **'Flavor Profile'**
+  String get flavorProfile;
+
+  /// Tasting timeline section title
+  ///
+  /// In en, this message translates to:
+  /// **'Tasting Timeline'**
+  String get tastingTimeline;
+
+  /// Average score stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Score'**
+  String get avgScore;
+
+  /// Total tastings stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Tastings'**
+  String get totalTastings;
+
+  /// Total coffees stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Coffees'**
+  String get totalCoffees;
+
+  /// Brew suggestion section title
+  ///
+  /// In en, this message translates to:
+  /// **'Brew Suggestion'**
+  String get brewSuggestion;
+
+  /// Get AI suggestion button
+  ///
+  /// In en, this message translates to:
+  /// **'Get AI Suggestion'**
+  String get getSuggestion;
+
+  /// Suggested parameters section title
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested Parameters'**
+  String get suggestedParams;
+
+  /// Share tasting button
+  ///
+  /// In en, this message translates to:
+  /// **'Share Tasting'**
+  String get shareTasting;
+
+  /// About the roaster section title
+  ///
+  /// In en, this message translates to:
+  /// **'About the Roaster'**
+  String get aboutRoaster;
+
+  /// About the farm section title
+  ///
+  /// In en, this message translates to:
+  /// **'About the Farm'**
+  String get aboutFarm;
+
+  /// Visit website link
+  ///
+  /// In en, this message translates to:
+  /// **'Visit Website'**
+  String get visitWebsite;
+
+  /// Enrichment loading message
+  ///
+  /// In en, this message translates to:
+  /// **'Looking up info...'**
+  String get enriching;
+
+  /// No enrichment info found message
+  ///
+  /// In en, this message translates to:
+  /// **'No info found'**
+  String get noInfoFound;
 }
 
 class _AppLocalizationsDelegate

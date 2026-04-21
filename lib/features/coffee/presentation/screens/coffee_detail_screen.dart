@@ -9,9 +9,11 @@ import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:coffeeno/core/router/app_router.dart';
+import 'package:coffeeno/core/widgets/app_card.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/coffee_score_badge.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
@@ -208,6 +210,72 @@ class CoffeeDetailScreen extends ConsumerWidget {
                           children: coffee.flavorNotes
                               .map((note) => Chip(label: Text(note)))
                               .toList(),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
+                      // Roaster info
+                      if (coffee.roasterDescription != null) ...[
+                        Text(l10n.aboutRoaster,
+                            style: theme.textTheme.titleSmall),
+                        const SizedBox(height: 8),
+                        AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(coffee.roasterDescription!,
+                                  style: theme.textTheme.bodyMedium),
+                              if (coffee.roasterUrl != null) ...[
+                                const SizedBox(height: 8),
+                                GestureDetector(
+                                  onTap: () => launchUrl(
+                                      Uri.parse(coffee.roasterUrl!),
+                                      mode: LaunchMode.externalApplication),
+                                  child: Text(
+                                    l10n.visitWebsite,
+                                    style:
+                                        theme.textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.primary,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Farm info
+                      if (coffee.farmDescription != null) ...[
+                        Text(l10n.aboutFarm,
+                            style: theme.textTheme.titleSmall),
+                        const SizedBox(height: 8),
+                        AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(coffee.farmDescription!,
+                                  style: theme.textTheme.bodyMedium),
+                              if (coffee.farmUrl != null) ...[
+                                const SizedBox(height: 8),
+                                GestureDetector(
+                                  onTap: () => launchUrl(
+                                      Uri.parse(coffee.farmUrl!),
+                                      mode: LaunchMode.externalApplication),
+                                  child: Text(
+                                    l10n.visitWebsite,
+                                    style:
+                                        theme.textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.primary,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 24),
                       ],

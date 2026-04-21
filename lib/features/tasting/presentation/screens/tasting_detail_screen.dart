@@ -9,6 +9,7 @@ import 'package:coffeeno/core/widgets/app_card.dart';
 import 'package:coffeeno/core/widgets/coffee_score_badge.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
 import '../providers/tasting_provider.dart';
+import '../utils/share_tasting.dart';
 import '../widgets/flavor_wheel.dart';
 
 class TastingDetailScreen extends ConsumerWidget {
@@ -27,6 +28,19 @@ class TastingDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.tastings),
+        actions: [
+          tastingAsync.whenOrNull(
+                data: (tasting) {
+                  if (tasting == null) return null;
+                  return IconButton(
+                    icon: const Icon(Icons.share_outlined),
+                    tooltip: l10n.shareTasting,
+                    onPressed: () => shareTasting(context, tasting),
+                  );
+                },
+              ) ??
+              const SizedBox.shrink(),
+        ],
       ),
       body: tastingAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -1,11 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/coffee_enrichment_service.dart';
 import '../../data/coffee_repository.dart';
 import '../../domain/coffee.dart';
 
 /// Provides the singleton [CoffeeRepository].
 final coffeeRepositoryProvider = Provider<CoffeeRepository>((ref) {
   return CoffeeRepository();
+});
+
+/// Provides the singleton [CoffeeEnrichmentService].
+final coffeeEnrichmentProvider = Provider<CoffeeEnrichmentService>((ref) {
+  return CoffeeEnrichmentService();
 });
 
 /// Streams the current user's coffees, keyed by [userId].

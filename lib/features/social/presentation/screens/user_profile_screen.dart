@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
+import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/features/social/presentation/providers/social_provider.dart';
 import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
@@ -342,14 +343,12 @@ class _OwnProfileActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Flexible(
           child: OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () => context.push(AppRoutes.editProfile),
             icon: const Icon(Icons.edit_outlined, size: 18),
             label: Text(l10n.editProfile, overflow: TextOverflow.ellipsis),
           ),
@@ -357,18 +356,9 @@ class _OwnProfileActions extends StatelessWidget {
         const SizedBox(width: 12),
         Flexible(
           child: OutlinedButton.icon(
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-            },
-            icon: Icon(Icons.logout, size: 18, color: colorScheme.error),
-            label: Text(
-              l10n.signOut,
-              style: TextStyle(color: colorScheme.error),
-              overflow: TextOverflow.ellipsis,
-            ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: colorScheme.error.withValues(alpha: 0.5)),
-            ),
+            onPressed: () => context.push(AppRoutes.stats),
+            icon: const Icon(Icons.insights_rounded, size: 18),
+            label: Text(l10n.statsTab, overflow: TextOverflow.ellipsis),
           ),
         ),
       ],

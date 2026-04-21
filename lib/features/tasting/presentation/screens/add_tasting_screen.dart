@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import '../../../coffee/presentation/providers/coffee_provider.dart';
+import '../../data/brew_suggestion_service.dart';
 import '../../domain/tasting.dart';
 import '../providers/tasting_provider.dart';
 import '../widgets/brew_params_form.dart';
@@ -44,6 +45,8 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
   double _overallRating = 3.0;
 
   bool _isSaving = false;
+  bool _isSuggesting = false;
+  String? _suggestionTips;
 
   @override
   void dispose() {
@@ -61,6 +64,60 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
       setState(() => _ratioDisplay = '1:${ratio.toStringAsFixed(1)}');
     } else {
       setState(() => _ratioDisplay = '');
+    }
+  }
+
+  Future<void> _fetchSuggestion() async {
+    setState(() {
+      _isSuggesting = true;
+      _suggestionTips = null;
+    });
+
+    try {
+      final coffee =
+          await ref.read(coffeeDetailProvider(widget.coffeeId).future);
+      if (coffee == null) return;
+
+      final service = BrewSuggestionService();
+      final suggestion = await service.suggest(
+        name: coffee.name,
+        originCountry: coffee.originCountry,
+        originRegion: coffee.originRegion,
+        variety: coffee.variety,
+        processingMethod: coffee.processingMethod,
+        roastLevel: coffee.roastLevel,
+      );
+
+      if (!mounted) return;
+
+      // Match brew method label to enum value.
+      final matchedBrewMethod = BrewMethod.values.cast<BrewMethod?>().firstWhere(
+        (e) => e!.label.toLowerCase() == suggestion.brewMethod.toLowerCase(),
+        orElse: () => null,
+      );
+
+      // Match grind size label to enum value.
+      final matchedGrindSize = GrindSize.values.cast<GrindSize?>().firstWhere(
+        (e) => e!.label.toLowerCase() == suggestion.grindSize.toLowerCase(),
+        orElse: () => null,
+      );
+
+      setState(() {
+        if (matchedBrewMethod != null) _brewMethod = matchedBrewMethod;
+        if (matchedGrindSize != null) _grindSize = matchedGrindSize;
+        _doseController.text = suggestion.doseGrams.toString();
+        _waterController.text = suggestion.waterMl.toString();
+        _waterTempC = suggestion.waterTempC;
+        _brewTimeMinutes = suggestion.brewTimeSec ~/ 60;
+        _brewTimeSeconds = suggestion.brewTimeSec % 60;
+        _suggestionTips = suggestion.tips;
+      });
+
+      _calculateRatio();
+    } catch (_) {
+      // Silently hide suggestion on failure.
+    } finally {
+      if (mounted) setState(() => _isSuggesting = false);
     }
   }
 
@@ -183,6 +240,65 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
                 );
               },
             ),
+            const SizedBox(height: 16),
+
+            // ── AI Brew Suggestion ──
+            OutlinedButton.icon(
+              onPressed: _isSuggesting ? null : _fetchSuggestion,
+              icon: _isSuggesting
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.primary,
+                      ),
+                    )
+                  : const Icon(Icons.auto_awesome),
+              label: Text(l10n.getSuggestion),
+            ),
+
+            if (_suggestionTips != null) ...[
+              const SizedBox(height: 12),
+              Card(
+                color: theme.colorScheme.tertiaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.lightbulb_outline,
+                        size: 20,
+                        color: theme.colorScheme.onTertiaryContainer,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.suggestedParams,
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: theme.colorScheme.onTertiaryContainer,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _suggestionTips!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onTertiaryContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
             const SizedBox(height: 24),
 
             // ── SECTION 1: Brew Parameters ──

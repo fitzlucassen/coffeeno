@@ -332,4 +332,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteCoffeeConfirm => 'Delete this coffee and all its tastings?';
+
+  @override
+  String similarCoffeeAlert(String roaster) {
+    return 'You have a similar coffee from $roaster';
+  }
+
+  @override
+  String get viewSimilar => 'View';
+
+  @override
+  String get statsTab => 'Stats';
+
+  @override
+  String get insights => 'Insights';
+
+  @override
+  String get topOrigins => 'Top Origins';
+
+  @override
+  String get topProcessing => 'Top Processing Methods';
+
+  @override
+  String get flavorProfile => 'Flavor Profile';
+
+  @override
+  String get tastingTimeline => 'Tasting Timeline';
+
+  @override
+  String get avgScore => 'Avg Score';
+
+  @override
+  String get totalTastings => 'Total Tastings';
+
+  @override
+  String get totalCoffees => 'Total Coffees';
+
+  @override
+  String get brewSuggestion => 'Brew Suggestion';
+
+  @override
+  String get getSuggestion => 'Get AI Suggestion';
+
+  @override
+  String get suggestedParams => 'Suggested Parameters';
+
+  @override
+  String get shareTasting => 'Share Tasting';
+
+  @override
+  String get aboutRoaster => 'About the Roaster';
+
+  @override
+  String get aboutFarm => 'About the Farm';
+
+  @override
+  String get visitWebsite => 'Visit Website';
+
+  @override
+  String get enriching => 'Looking up info...';
+
+  @override
+  String get noInfoFound => 'No info found';
 }

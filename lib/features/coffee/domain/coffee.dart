@@ -19,6 +19,10 @@ class Coffee {
     this.photoUrl,
     this.avgRating = 0.0,
     this.ratingsCount = 0,
+    this.roasterUrl,
+    this.roasterDescription,
+    this.farmUrl,
+    this.farmDescription,
     required this.createdAt,
   });
 
@@ -39,6 +43,10 @@ class Coffee {
   final String? photoUrl;
   final double avgRating;
   final int ratingsCount;
+  final String? roasterUrl;
+  final String? roasterDescription;
+  final String? farmUrl;
+  final String? farmDescription;
   final DateTime createdAt;
 
   factory Coffee.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -64,6 +72,10 @@ class Coffee {
       photoUrl: data['photoUrl'] as String?,
       avgRating: (data['avgRating'] as num?)?.toDouble() ?? 0.0,
       ratingsCount: data['ratingsCount'] as int? ?? 0,
+      roasterUrl: data['roasterUrl'] as String?,
+      roasterDescription: data['roasterDescription'] as String?,
+      farmUrl: data['farmUrl'] as String?,
+      farmDescription: data['farmDescription'] as String?,
       createdAt:
           (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -88,6 +100,10 @@ class Coffee {
       'photoUrl': photoUrl,
       'avgRating': avgRating,
       'ratingsCount': ratingsCount,
+      'roasterUrl': roasterUrl,
+      'roasterDescription': roasterDescription,
+      'farmUrl': farmUrl,
+      'farmDescription': farmDescription,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -110,6 +126,10 @@ class Coffee {
     String? photoUrl,
     double? avgRating,
     int? ratingsCount,
+    String? roasterUrl,
+    String? roasterDescription,
+    String? farmUrl,
+    String? farmDescription,
     DateTime? createdAt,
   }) {
     return Coffee(
@@ -130,6 +150,10 @@ class Coffee {
       photoUrl: photoUrl ?? this.photoUrl,
       avgRating: avgRating ?? this.avgRating,
       ratingsCount: ratingsCount ?? this.ratingsCount,
+      roasterUrl: roasterUrl ?? this.roasterUrl,
+      roasterDescription: roasterDescription ?? this.roasterDescription,
+      farmUrl: farmUrl ?? this.farmUrl,
+      farmDescription: farmDescription ?? this.farmDescription,
       createdAt: createdAt ?? this.createdAt,
     );
   }

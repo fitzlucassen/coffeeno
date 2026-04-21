@@ -6,6 +6,7 @@ import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/welcome_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
+import '../../features/auth/presentation/screens/edit_profile_screen.dart';
 import '../../features/auth/presentation/screens/profile_setup_screen.dart';
 import '../../features/coffee/presentation/screens/coffee_library_screen.dart';
 import '../../features/coffee/presentation/screens/coffee_detail_screen.dart';
@@ -21,6 +22,7 @@ import '../../features/social/presentation/screens/leaderboard_screen.dart';
 import '../../features/social/presentation/screens/user_search_screen.dart';
 import '../../features/map/presentation/screens/coffee_map_screen.dart';
 import '../../features/map/presentation/screens/origin_detail_screen.dart';
+import '../../features/stats/presentation/screens/stats_screen.dart';
 import '../widgets/main_shell.dart';
 
 abstract final class AppRoutes {
@@ -41,9 +43,11 @@ abstract final class AppRoutes {
   static const userProfile = '/user/:id';
   static const followers = '/user/:id/followers';
   static const following = '/user/:id/following';
+  static const editProfile = '/edit-profile';
   static const leaderboard = '/leaderboard';
   static const userSearch = '/search/users';
   static const originDetail = '/origin/:country';
+  static const stats = '/stats';
 }
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -189,6 +193,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: AppRoutes.editProfile,
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.leaderboard,
         builder: (context, state) => const LeaderboardScreen(),
       ),
@@ -201,6 +209,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => OriginDetailScreen(
           country: state.pathParameters['country']!,
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.stats,
+        builder: (context, state) => const StatsScreen(),
       ),
     ],
   );

@@ -104,5 +104,26 @@
   "noOriginsYet": "Aucune origine de café à afficher",
   "addCoffeesForMap": "Ajoutez des cafés avec une origine pour les voir sur la carte",
   "noCoffeesFromOrigin": "Aucun café trouvé pour cette origine",
-  "deleteCoffeeConfirm": "Supprimer ce café et toutes ses dégustations ?"
+  "deleteCoffeeConfirm": "Supprimer ce café et toutes ses dégustations ?",
+
+  "similarCoffeeAlert": "Vous avez un café similaire de {roaster}",
+  "viewSimilar": "Voir",
+  "statsTab": "Stats",
+  "insights": "Analyses",
+  "topOrigins": "Origines favorites",
+  "topProcessing": "Procédés favoris",
+  "flavorProfile": "Profil aromatique",
+  "tastingTimeline": "Historique",
+  "avgScore": "Note moy.",
+  "totalTastings": "Total dégustations",
+  "totalCoffees": "Total cafés",
+  "brewSuggestion": "Suggestion d'infusion",
+  "getSuggestion": "Suggestion IA",
+  "suggestedParams": "Paramètres suggérés",
+  "shareTasting": "Partager la dégustation",
+  "aboutRoaster": "À propos du torréfacteur",
+  "aboutFarm": "À propos de la ferme",
+  "visitWebsite": "Voir le site",
+  "enriching": "Recherche d'infos...",
+  "noInfoFound": "Aucune info trouvée"
 }

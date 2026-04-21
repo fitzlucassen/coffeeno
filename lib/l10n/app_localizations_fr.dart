@@ -337,4 +337,66 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get deleteCoffeeConfirm =>
       'Supprimer ce café et toutes ses dégustations ?';
+
+  @override
+  String similarCoffeeAlert(String roaster) {
+    return 'Vous avez un café similaire de $roaster';
+  }
+
+  @override
+  String get viewSimilar => 'Voir';
+
+  @override
+  String get statsTab => 'Stats';
+
+  @override
+  String get insights => 'Analyses';
+
+  @override
+  String get topOrigins => 'Origines favorites';
+
+  @override
+  String get topProcessing => 'Procédés favoris';
+
+  @override
+  String get flavorProfile => 'Profil aromatique';
+
+  @override
+  String get tastingTimeline => 'Historique';
+
+  @override
+  String get avgScore => 'Note moy.';
+
+  @override
+  String get totalTastings => 'Total dégustations';
+
+  @override
+  String get totalCoffees => 'Total cafés';
+
+  @override
+  String get brewSuggestion => 'Suggestion d\'infusion';
+
+  @override
+  String get getSuggestion => 'Suggestion IA';
+
+  @override
+  String get suggestedParams => 'Paramètres suggérés';
+
+  @override
+  String get shareTasting => 'Partager la dégustation';
+
+  @override
+  String get aboutRoaster => 'À propos du torréfacteur';
+
+  @override
+  String get aboutFarm => 'À propos de la ferme';
+
+  @override
+  String get visitWebsite => 'Voir le site';
+
+  @override
+  String get enriching => 'Recherche d\'infos...';
+
+  @override
+  String get noInfoFound => 'Aucune info trouvée';
 }

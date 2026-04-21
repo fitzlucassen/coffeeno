@@ -15,6 +15,7 @@ import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import 'package:coffeeno/core/utils/validators.dart';
 import '../../../scanner/domain/scan_result.dart';
+import '../../data/coffee_repository.dart';
 import '../../domain/coffee.dart';
 import '../providers/coffee_provider.dart';
 
@@ -139,6 +140,75 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
     setState(() => _flavorNotes.remove(note));
   }
 
+  Future<String?> _uploadPhoto(String userId) async {
+    if (_photoPath == null) return null;
+
+    final file = File(_photoPath!);
+    final fileName = '${const Uuid().v4()}.jpg';
+    final storageRef = FirebaseStorage.instance
+        .ref('users/$userId/coffees/$fileName');
+    await storageRef.putFile(
+      file,
+      SettableMetadata(contentType: 'image/jpeg'),
+    );
+    return storageRef.getDownloadURL();
+  }
+
+  Future<Coffee?> _findSimilarCoffee(String userId) async {
+    final country = _countryController.text.trim();
+    final farm = _farmController.text.trim();
+    final region = _regionController.text.trim();
+    if (country.isEmpty) return null;
+
+    final repository = ref.read(coffeeRepositoryProvider);
+    final coffees = await repository.getUserCoffees(userId).first;
+
+    for (final c in coffees) {
+      if (c.originCountry.toLowerCase() != country.toLowerCase()) continue;
+      if (farm.isNotEmpty &&
+          c.farmName != null &&
+          c.farmName!.toLowerCase() == farm.toLowerCase() &&
+          c.roaster.toLowerCase() != _roasterController.text.trim().toLowerCase()) {
+        return c;
+      }
+      if (farm.isEmpty &&
+          region.isNotEmpty &&
+          c.originRegion != null &&
+          c.originRegion!.toLowerCase() == region.toLowerCase() &&
+          c.roaster.toLowerCase() != _roasterController.text.trim().toLowerCase()) {
+        return c;
+      }
+    }
+    return null;
+  }
+
+  void _enrichInBackground(
+    WidgetRef ref,
+    CoffeeRepository repository,
+    String coffeeId,
+    Coffee coffee,
+  ) {
+    final enrichmentService = ref.read(coffeeEnrichmentProvider);
+    enrichmentService
+        .lookupInfo(
+          roaster: coffee.roaster,
+          farmName: coffee.farmName,
+          originCountry: coffee.originCountry,
+          originRegion: coffee.originRegion,
+        )
+        .then((result) async {
+      if (result.isEmpty) return;
+      final saved = await repository.getCoffee(coffeeId);
+      if (saved == null) return;
+      await repository.updateCoffee(saved.copyWith(
+        roasterUrl: result.roasterUrl,
+        roasterDescription: result.roasterDescription,
+        farmUrl: result.farmUrl,
+        farmDescription: result.farmDescription,
+      ));
+    });
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -148,31 +218,22 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
       final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       final repository = ref.read(coffeeRepositoryProvider);
 
-      String? photoUrl;
-      if (_photoPath != null) {
-        try {
-          final file = File(_photoPath!);
-          debugPrint('[COFFEENO] Photo path: $_photoPath');
-          debugPrint('[COFFEENO] File exists: ${file.existsSync()}, size: ${file.lengthSync()}');
-          final fileName = '${const Uuid().v4()}.jpg';
-          final storageRef = FirebaseStorage.instance
-              .ref('users/$userId/coffees/$fileName');
-          final task = storageRef.putFile(
-            file,
-            SettableMetadata(contentType: 'image/jpeg'),
-          );
-          task.snapshotEvents.listen((snapshot) {
-            debugPrint('[COFFEENO] Upload state: ${snapshot.state}, '
-                '${snapshot.bytesTransferred}/${snapshot.totalBytes}');
-          });
-          await task;
-          photoUrl = await storageRef.getDownloadURL();
-          debugPrint('[COFFEENO] Photo uploaded: $photoUrl');
-        } catch (e, stack) {
-          debugPrint('[COFFEENO] Photo upload failed: $e');
-          debugPrint('[COFFEENO] Stack: $stack');
-        }
+      final similar = await _findSimilarCoffee(userId);
+      if (similar != null && mounted) {
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.similarCoffeeAlert(similar.roaster)),
+            action: SnackBarAction(
+              label: l10n.viewSimilar,
+              onPressed: () => context.push('/coffee/${similar.id}'),
+            ),
+            duration: const Duration(seconds: 5),
+          ),
+        );
       }
+
+      final photoUrl = await _uploadPhoto(userId);
 
       final coffee = Coffee(
         id: '',
@@ -203,14 +264,12 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
         createdAt: DateTime.now(),
       );
 
-      print('[COFFEENO] Saving coffee: ${coffee.name} by ${coffee.roaster}, uid=$userId');
-      final docId = await repository.addCoffee(coffee);
-      print('[COFFEENO] Coffee saved with id: $docId');
+      final coffeeId = await repository.addCoffee(coffee);
+
+      _enrichInBackground(ref, repository, coffeeId, coffee);
 
       if (mounted) context.go(AppRoutes.library);
-    } catch (e, stack) {
-      print('[COFFEENO] Save coffee FAILED: $e');
-      print('[COFFEENO] Stack: $stack');
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
