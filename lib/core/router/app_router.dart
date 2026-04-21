@@ -24,7 +24,9 @@ import '../../features/map/presentation/screens/coffee_map_screen.dart';
 import '../../features/map/presentation/screens/origin_detail_screen.dart';
 import '../../features/stats/presentation/screens/stats_screen.dart';
 import '../../features/roaster/presentation/screens/roaster_profile_screen.dart';
+import '../../features/roaster/presentation/screens/edit_roaster_screen.dart';
 import '../../features/farm/presentation/screens/farm_profile_screen.dart';
+import '../../features/farm/presentation/screens/edit_farm_screen.dart';
 import '../../features/admin/presentation/screens/admin_claims_screen.dart';
 import '../../features/admin/presentation/screens/claim_form_screen.dart';
 import '../../features/subscription/presentation/screens/paywall_screen.dart';
@@ -58,6 +60,8 @@ abstract final class AppRoutes {
   static const adminClaims = '/admin/claims';
   static const claimForm = '/claim/:entityType/:entityId';
   static const paywall = '/paywall';
+  static const editRoaster = '/roaster/:id/edit';
+  static const editFarm = '/farm/:id/edit';
 }
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -233,6 +237,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.farmProfile,
         builder: (context, state) => FarmProfileScreen(
+          farmId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.editRoaster,
+        builder: (context, state) => EditRoasterScreen(
+          roasterId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.editFarm,
+        builder: (context, state) => EditFarmScreen(
           farmId: state.pathParameters['id']!,
         ),
       ),

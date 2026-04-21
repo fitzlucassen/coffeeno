@@ -183,9 +183,8 @@ class FarmProfileScreen extends ConsumerWidget {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: OutlinedButton.icon(
-                              onPressed: () {
-                                // TODO: navigate to edit form
-                              },
+                              onPressed: () =>
+                                  context.push('/farm/$farmId/edit'),
                               icon: const Icon(Icons.edit, size: 18),
                               label: Text(l10n.editProfileInfo),
                             ),
@@ -310,10 +309,14 @@ class _InfoRow extends StatelessWidget {
           Icon(icon, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 10),
           Text(label, style: theme.textTheme.bodySmall),
-          const Spacer(),
-          Text(value,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.w500)),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(value,
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w500),
+                textAlign: TextAlign.end,
+                overflow: TextOverflow.ellipsis),
+          ),
         ],
       ),
     );

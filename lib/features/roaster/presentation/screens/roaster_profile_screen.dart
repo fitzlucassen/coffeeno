@@ -179,9 +179,8 @@ class RoasterProfileScreen extends ConsumerWidget {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: OutlinedButton.icon(
-                              onPressed: () {
-                                // TODO: navigate to edit form
-                              },
+                              onPressed: () =>
+                                  context.push('/roaster/$roasterId/edit'),
                               icon: const Icon(Icons.edit, size: 18),
                               label: Text(l10n.editProfileInfo),
                             ),

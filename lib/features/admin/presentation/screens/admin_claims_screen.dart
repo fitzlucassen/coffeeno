@@ -1,7 +1,9 @@
+import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../domain/claim.dart';
@@ -99,6 +101,46 @@ class _ClaimTile extends ConsumerWidget {
               DateFormat.yMMMd().format(claim.createdAt),
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 8),
+            FutureBuilder(
+              future:
+                  ref.watch(userRepositoryProvider).getUser(claim.userId),
+              builder: (context, snapshot) {
+                final displayName =
+                    snapshot.data?.displayName ?? claim.userId;
+                return InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => context.push('/user/${claim.userId}'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.person,
+                          size: 18,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            displayName,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.primary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
             if (claim.message != null && claim.message!.isNotEmpty) ...[
               const SizedBox(height: 8),
