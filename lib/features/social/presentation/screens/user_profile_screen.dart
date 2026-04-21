@@ -311,23 +311,28 @@ class _OwnProfileActions extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        OutlinedButton.icon(
-          onPressed: () {},
-          icon: const Icon(Icons.edit_outlined, size: 18),
-          label: Text(l10n.editProfile),
+        Flexible(
+          child: OutlinedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            label: Text(l10n.editProfile, overflow: TextOverflow.ellipsis),
+          ),
         ),
         const SizedBox(width: 12),
-        OutlinedButton.icon(
-          onPressed: () async {
-            await FirebaseAuth.instance.signOut();
-          },
-          icon: Icon(Icons.logout, size: 18, color: colorScheme.error),
-          label: Text(
-            l10n.signOut,
-            style: TextStyle(color: colorScheme.error),
-          ),
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: colorScheme.error.withValues(alpha: 0.5)),
+        Flexible(
+          child: OutlinedButton.icon(
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+            },
+            icon: Icon(Icons.logout, size: 18, color: colorScheme.error),
+            label: Text(
+              l10n.signOut,
+              style: TextStyle(color: colorScheme.error),
+              overflow: TextOverflow.ellipsis,
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: colorScheme.error.withValues(alpha: 0.5)),
+            ),
           ),
         ),
       ],
