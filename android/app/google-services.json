@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "496747365744",
+    "project_id": "coffeeno",
+    "storage_bucket": "coffeeno.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496747365744:android:ae4f81335d91e1b057bbb5",
+        "android_client_info": {
+          "package_name": "com.coffeeno.coffeeno"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "496747365744-3l0f1la5m0cv9si8i5jtep88q8j1ufn5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAr4-nxkhjBvUBBUPqOXyalxwAWUMvc1jA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "496747365744-3l0f1la5m0cv9si8i5jtep88q8j1ufn5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

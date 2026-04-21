@@ -23,21 +23,24 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // TODO: Replace these placeholder values with your Firebase project config
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR-API-KEY',
-    appId: 'YOUR-APP-ID',
-    messagingSenderId: 'YOUR-SENDER-ID',
-    projectId: 'YOUR-PROJECT-ID',
-    storageBucket: 'YOUR-STORAGE-BUCKET',
+    apiKey: 'AIzaSyAr4-nxkhjBvUBBUPqOXyalxwAWUMvc1jA',
+    appId: '1:496747365744:android:ae4f81335d91e1b057bbb5',
+    messagingSenderId: '496747365744',
+    projectId: 'coffeeno',
+    storageBucket: 'coffeeno.firebasestorage.app',
   );
 
+  // TODO: Replace these placeholder values with your Firebase project config
+
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR-API-KEY',
-    appId: 'YOUR-APP-ID',
-    messagingSenderId: 'YOUR-SENDER-ID',
-    projectId: 'YOUR-PROJECT-ID',
-    storageBucket: 'YOUR-STORAGE-BUCKET',
+    apiKey: 'AIzaSyDAAuHgyMG4dTqEBUWzZIWZzShwtTXZOMs',
+    appId: '1:496747365744:ios:bab21e85bc29970257bbb5',
+    messagingSenderId: '496747365744',
+    projectId: 'coffeeno',
+    storageBucket: 'coffeeno.firebasestorage.app',
+    iosClientId: '496747365744-2hjqvr4p9cplv0n05iffjvjktf90cqq4.apps.googleusercontent.com',
     iosBundleId: 'com.coffeeno.coffeeno',
   );
+
 }
