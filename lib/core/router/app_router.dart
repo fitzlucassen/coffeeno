@@ -63,12 +63,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoutes.signUp;
       final isProfileSetup =
           state.matchedLocation == AppRoutes.profileSetup;
+      final isShellRoute =
+          state.matchedLocation == AppRoutes.feed ||
+          state.matchedLocation == AppRoutes.library ||
+          state.matchedLocation == AppRoutes.map ||
+          state.matchedLocation == AppRoutes.profile;
 
       if (!isLoggedIn && !isAuthRoute) return AppRoutes.welcome;
       if (isLoggedIn && isAuthRoute) return AppRoutes.feed;
 
-      // Authenticated but no Firestore user doc — force profile setup.
+      // Only check for missing user doc on main tab routes, not during
+      // active flows like scanning or adding a coffee.
       if (isLoggedIn &&
+          isShellRoute &&
           !isProfileSetup &&
           currentUser.hasValue &&
           currentUser.value == null) {
@@ -129,15 +136,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // ── Detail routes (full screen, over shell) ──
+      // addCoffee must come before coffeeDetail so '/coffee/add' isn't
+      // matched by '/coffee/:id'.
+      GoRoute(
+        path: AppRoutes.addCoffee,
+        builder: (context, state) => const AddCoffeeScreen(),
+      ),
       GoRoute(
         path: AppRoutes.coffeeDetail,
         builder: (context, state) => CoffeeDetailScreen(
           coffeeId: state.pathParameters['id']!,
         ),
-      ),
-      GoRoute(
-        path: AppRoutes.addCoffee,
-        builder: (context, state) => const AddCoffeeScreen(),
       ),
       GoRoute(
         path: AppRoutes.addTasting,
