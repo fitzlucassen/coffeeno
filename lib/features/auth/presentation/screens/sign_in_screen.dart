@@ -91,8 +91,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       }
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _mapAuthError(e.code));
-    } catch (_) {
-      setState(() => _errorMessage = AppLocalizations.of(context).error);
+    } catch (e) {
+      debugPrint('[COFFEENO] Google sign-in error: $e');
+      setState(() => _errorMessage = e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -250,29 +251,45 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   void _showForgotPasswordDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final resetEmailController = TextEditingController();
+    final resetFormKey = GlobalKey<FormState>();
 
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.forgotPassword),
-        content: AppTextField(
-          controller: resetEmailController,
-          label: l10n.email,
-          keyboardType: TextInputType.emailAddress,
-          validator: Validators.email,
+        content: Form(
+          key: resetFormKey,
+          child: AppTextField(
+            controller: resetEmailController,
+            label: l10n.email,
+            keyboardType: TextInputType.emailAddress,
+            validator: Validators.email,
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () {
+              resetEmailController.dispose();
+              Navigator.of(ctx).pop();
+            },
             child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
-              final email = resetEmailController.text.trim();
-              if (email.isEmpty) return;
-              final authRepo = ref.read(authRepositoryProvider);
-              await authRepo.sendPasswordResetEmail(email);
-              if (ctx.mounted) Navigator.of(ctx).pop();
+              if (!resetFormKey.currentState!.validate()) return;
+              try {
+                final authRepo = ref.read(authRepositoryProvider);
+                await authRepo
+                    .sendPasswordResetEmail(resetEmailController.text.trim());
+                resetEmailController.dispose();
+                if (ctx.mounted) Navigator.of(ctx).pop();
+              } catch (e) {
+                if (ctx.mounted) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(content: Text(e.toString())),
+                  );
+                }
+              }
             },
             child: Text(l10n.save),
           ),

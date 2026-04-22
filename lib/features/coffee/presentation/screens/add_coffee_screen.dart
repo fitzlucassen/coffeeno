@@ -447,7 +447,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
                           File(_photoPath!),
                           fit: BoxFit.cover,
                           width: double.infinity,
-                          errorBuilder: (_, __, ___) => _PhotoPlaceholder(
+                          errorBuilder: (_, _, _) => _PhotoPlaceholder(
                             colorScheme: colorScheme,
                           ),
                         ),

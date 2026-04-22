@@ -513,4 +513,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get admin => 'Admin';
+
+  @override
+  String get scanHint => 'Positionnez l\'étiquette du sachet dans le cadre';
 }

@@ -23,12 +23,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _usernameController = TextEditingController();
   final _bioController = TextEditingController();
   bool _isLoading = false;
-  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser();
+  }
 
   void _loadCurrentUser() {
-    if (_initialized) return;
-    _initialized = true;
-
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
@@ -68,7 +70,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'displayName': displayName,
         'displayNameLower': displayName.toLowerCase(),
         'username': username,
-        'usernameLower': username,
+        'usernameLower': username.toLowerCase(),
         'bio': _bioController.text.trim().isEmpty
             ? null
             : _bioController.text.trim(),
@@ -91,8 +93,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _loadCurrentUser();
-
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(

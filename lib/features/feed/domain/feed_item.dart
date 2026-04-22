@@ -112,11 +112,11 @@ class FeedComment {
     final data = doc.data()!;
     return FeedComment(
       id: doc.id,
-      authorId: data['authorId'] as String,
-      authorName: data['authorName'] as String,
+      authorId: (data['authorId'] ?? '') as String,
+      authorName: (data['authorName'] ?? '') as String,
       authorAvatar: data['authorAvatar'] as String?,
-      text: data['text'] as String,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      text: (data['text'] ?? '') as String,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 

@@ -123,7 +123,7 @@ class _GlobalTab extends StatelessWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => Center(
+      error: (_, _) => Center(
         child: Text(l10n.error),
       ),
     );
@@ -234,7 +234,7 @@ class _OriginLeaderboard extends StatelessWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => Center(child: Text(l10n.error)),
+      error: (_, _) => Center(child: Text(l10n.error)),
     );
   }
 }

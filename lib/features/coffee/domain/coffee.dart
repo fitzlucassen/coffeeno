@@ -191,28 +191,17 @@ class Coffee {
           photoUrl == other.photoUrl &&
           avgRating == other.avgRating &&
           ratingsCount == other.ratingsCount &&
+          roasterId == other.roasterId &&
+          farmId == other.farmId &&
           createdAt == other.createdAt;
 
   @override
-  int get hashCode => Object.hash(
-        id,
-        uid,
-        roaster,
-        name,
-        originCountry,
-        originRegion,
-        farmName,
-        farmerName,
-        altitude,
-        variety,
-        processingMethod,
-        roastDate,
-        roastLevel,
-        photoUrl,
-        avgRating,
-        ratingsCount,
-        createdAt,
-      );
+  int get hashCode => Object.hashAll([
+        id, uid, roaster, name, originCountry, originRegion,
+        farmName, farmerName, altitude, variety, processingMethod,
+        roastDate, roastLevel, photoUrl, avgRating, ratingsCount,
+        roasterId, farmId, createdAt,
+      ]);
 
   @override
   String toString() => 'Coffee(id: $id, name: $name, roaster: $roaster)';

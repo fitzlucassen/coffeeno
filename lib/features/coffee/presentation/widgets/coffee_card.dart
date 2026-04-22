@@ -33,8 +33,8 @@ class CoffeeCard extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: coffee.photoUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => _Placeholder(colorScheme),
-                      errorWidget: (_, __, ___) => _Placeholder(colorScheme),
+                      placeholder: (_, _) => _Placeholder(colorScheme),
+                      errorWidget: (_, _, _) => _Placeholder(colorScheme),
                     )
                   : _Placeholder(colorScheme),
             ),

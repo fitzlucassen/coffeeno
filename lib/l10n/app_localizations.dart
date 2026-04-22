@@ -1051,6 +1051,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Admin'**
   String get admin;
+
+  /// Hint text on scan screen
+  ///
+  /// In en, this message translates to:
+  /// **'Position the coffee bag label in the frame'**
+  String get scanHint;
 }
 
 class _AppLocalizationsDelegate

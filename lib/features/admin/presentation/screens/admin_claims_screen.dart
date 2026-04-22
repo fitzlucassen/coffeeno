@@ -9,6 +9,13 @@ import 'package:intl/intl.dart';
 import '../../domain/claim.dart';
 import '../providers/admin_provider.dart';
 
+final _claimUserNameProvider =
+    FutureProvider.family<String, String>((ref, userId) async {
+  final userRepo = ref.watch(userRepositoryProvider);
+  final user = await userRepo.getUser(userId);
+  return user?.displayName ?? userId;
+});
+
 class AdminClaimsScreen extends ConsumerWidget {
   const AdminClaimsScreen({super.key});
 
@@ -103,45 +110,7 @@ class _ClaimTile extends ConsumerWidget {
                   ?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
-            FutureBuilder(
-              future:
-                  ref.watch(userRepositoryProvider).getUser(claim.userId),
-              builder: (context, snapshot) {
-                final displayName =
-                    snapshot.data?.displayName ?? claim.userId;
-                return InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: () => context.push('/user/${claim.userId}'),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.person,
-                          size: 18,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            displayName,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.primary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Icon(
-                          Icons.chevron_right,
-                          size: 18,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+            _ClaimUserRow(userId: claim.userId),
             if (claim.message != null && claim.message!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(claim.message!, style: theme.textTheme.bodyMedium),
@@ -168,14 +137,77 @@ class _ClaimTile extends ConsumerWidget {
   }
 
   Future<void> _approve(BuildContext context, WidgetRef ref) async {
-    final adminUid = FirebaseAuth.instance.currentUser?.uid ?? '';
-    final repo = ref.read(claimRepositoryProvider);
-    await repo.approveClaim(claim.id, adminUid);
+    try {
+      final adminUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final repo = ref.read(claimRepositoryProvider);
+      await repo.approveClaim(claim.id, adminUid);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
   }
 
   Future<void> _reject(BuildContext context, WidgetRef ref) async {
-    final adminUid = FirebaseAuth.instance.currentUser?.uid ?? '';
-    final repo = ref.read(claimRepositoryProvider);
-    await repo.rejectClaim(claim.id, adminUid);
+    try {
+      final adminUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final repo = ref.read(claimRepositoryProvider);
+      await repo.rejectClaim(claim.id, adminUid);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+}
+
+class _ClaimUserRow extends ConsumerWidget {
+  const _ClaimUserRow({required this.userId});
+
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final nameAsync = ref.watch(_claimUserNameProvider(userId));
+
+    final displayName = nameAsync.valueOrNull ?? userId;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => context.push('/user/$userId'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Icon(
+              Icons.person,
+              size: 18,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                displayName,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.primary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -69,7 +69,7 @@ class FollowersScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(
+        error: (_, _) => Center(
           child: Text(
             l10n.error,
             style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
@@ -130,7 +130,7 @@ class _FollowUserTile extends ConsumerWidget {
           width: 100,
         ),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }

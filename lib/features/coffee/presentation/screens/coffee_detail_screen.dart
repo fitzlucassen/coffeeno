@@ -138,9 +138,9 @@ class CoffeeDetailScreen extends ConsumerWidget {
                         ? CachedNetworkImage(
                             imageUrl: coffee.photoUrl!,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) =>
+                            placeholder: (_, _) =>
                                 _ImagePlaceholder(colorScheme),
-                            errorWidget: (_, __, ___) =>
+                            errorWidget: (_, _, _) =>
                                 _ImagePlaceholder(colorScheme),
                           )
                         : _ImagePlaceholder(colorScheme),
@@ -369,7 +369,7 @@ class CoffeeDetailScreen extends ConsumerWidget {
                 loading: () => const SliverToBoxAdapter(
                   child: Center(child: CircularProgressIndicator()),
                 ),
-                error: (_, __) => SliverToBoxAdapter(
+                error: (_, _) => SliverToBoxAdapter(
                   child: Center(child: Text(l10n.error)),
                 ),
                 data: (tastings) {

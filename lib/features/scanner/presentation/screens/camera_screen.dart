@@ -157,7 +157,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Position the coffee bag label in the frame',
+              l10n.scanHint,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),

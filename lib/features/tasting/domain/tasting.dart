@@ -193,11 +193,36 @@ class Tasting {
           id == other.id &&
           userId == other.userId &&
           coffeeId == other.coffeeId &&
+          coffeeName == other.coffeeName &&
+          roasterName == other.roasterName &&
+          brewMethod == other.brewMethod &&
+          grindSize == other.grindSize &&
+          doseGrams == other.doseGrams &&
+          waterMl == other.waterMl &&
+          ratio == other.ratio &&
+          brewTimeSec == other.brewTimeSec &&
+          waterTempC == other.waterTempC &&
+          aroma == other.aroma &&
+          flavor == other.flavor &&
+          acidity == other.acidity &&
+          body == other.body &&
+          sweetness == other.sweetness &&
+          aftertaste == other.aftertaste &&
           overallRating == other.overallRating &&
+          notes == other.notes &&
+          tastingDate == other.tastingDate &&
+          likesCount == other.likesCount &&
+          commentsCount == other.commentsCount &&
           createdAt == other.createdAt;
 
   @override
-  int get hashCode => Object.hash(id, userId, coffeeId, overallRating, createdAt);
+  int get hashCode => Object.hashAll([
+        id, userId, coffeeId, coffeeName, roasterName,
+        brewMethod, grindSize, doseGrams, waterMl, ratio,
+        brewTimeSec, waterTempC, aroma, flavor, acidity,
+        body, sweetness, aftertaste, overallRating, notes,
+        tastingDate, likesCount, commentsCount, createdAt,
+      ]);
 
   @override
   String toString() =>

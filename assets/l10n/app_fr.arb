@@ -161,5 +161,6 @@
   "aiFeatures": "Fonctionnalités IA",
   "photoUploads": "Upload de photos",
   "shareCards": "Cartes de dégustation",
-  "admin": "Admin"
+  "admin": "Admin",
+  "scanHint": "Positionnez l'étiquette du sachet dans le cadre"
 }

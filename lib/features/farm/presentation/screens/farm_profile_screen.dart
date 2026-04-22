@@ -28,7 +28,7 @@ class FarmProfileScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.farmProfile)),
       body: farmAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(child: Text(l10n.error)),
+        error: (_, _) => Center(child: Text(l10n.error)),
         data: (farm) {
           if (farm == null) return Center(child: Text(l10n.error));
 

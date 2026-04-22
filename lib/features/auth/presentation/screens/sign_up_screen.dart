@@ -54,9 +54,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      if (!mounted) return;
 
       final user = credential.user!;
       await user.updateDisplayName(_displayNameController.text.trim());
+      if (!mounted) return;
 
       final appUser = AppUser(
         uid: user.uid,
@@ -93,19 +95,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         return;
       }
 
-      if (mounted) {
-        final userRepo = ref.read(userRepositoryProvider);
-        final existingUser = await userRepo.getUser(credential.user!.uid);
-        if (existingUser == null) {
-          context.go(AppRoutes.profileSetup);
-        } else {
-          context.go(AppRoutes.feed);
-        }
+      if (!mounted) return;
+      final userRepo = ref.read(userRepositoryProvider);
+      final existingUser = await userRepo.getUser(credential.user!.uid);
+      if (!mounted) return;
+      if (existingUser == null) {
+        context.go(AppRoutes.profileSetup);
+      } else {
+        context.go(AppRoutes.feed);
       }
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _mapAuthError(e.code));
-    } catch (_) {
-      setState(() => _errorMessage = AppLocalizations.of(context).error);
+    } catch (e) {
+      debugPrint('[COFFEENO] Google sign-in error: $e');
+      setState(() => _errorMessage = e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

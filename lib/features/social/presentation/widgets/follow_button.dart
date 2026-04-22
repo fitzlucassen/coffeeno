@@ -44,8 +44,9 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
           targetId: widget.targetUserId,
         );
       }
-      // Invalidate to refresh the follow state.
-      ref.invalidate(isFollowingProvider);
+      ref.invalidate(isFollowingProvider(
+        (userId: currentUserId, targetId: widget.targetUserId),
+      ));
     } catch (_) {
       // Silently fail; state will revert on next read.
     } finally {

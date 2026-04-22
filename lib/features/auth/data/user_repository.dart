@@ -47,7 +47,7 @@ class UserRepository {
     // Firestore range query: username >= query && username < query + high Unicode char
     final snapshot = await _usersRef
         .where('username', isGreaterThanOrEqualTo: lowercaseQuery)
-        .where('username', isLessThan: '${lowercaseQuery}\uf8ff')
+        .where('username', isLessThan: '$lowercaseQuery\uf8ff')
         .limit(limit)
         .get();
 

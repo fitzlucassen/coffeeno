@@ -154,7 +154,7 @@ class _SearchResults extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => Center(
+      error: (_, _) => Center(
         child: Text(
           l10n.error,
           style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),

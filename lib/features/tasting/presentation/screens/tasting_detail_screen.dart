@@ -72,9 +72,9 @@ class TastingDetailScreen extends ConsumerWidget {
                               ? CachedNetworkImage(
                                   imageUrl: tasting.coffeePhotoUrl!,
                                   fit: BoxFit.cover,
-                                  placeholder: (_, __) =>
+                                  placeholder: (_, _) =>
                                       _CoffeeThumbnail(colorScheme),
-                                  errorWidget: (_, __, ___) =>
+                                  errorWidget: (_, _, _) =>
                                       _CoffeeThumbnail(colorScheme),
                                 )
                               : _CoffeeThumbnail(colorScheme),

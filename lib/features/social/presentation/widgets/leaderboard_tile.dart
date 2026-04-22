@@ -55,7 +55,7 @@ class LeaderboardTile extends StatelessWidget {
                       width: 48,
                       height: 48,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
+                      placeholder: (_, _) => Container(
                         width: 48,
                         height: 48,
                         color: colorScheme.secondaryContainer,
@@ -65,7 +65,7 @@ class LeaderboardTile extends StatelessWidget {
                           size: 20,
                         ),
                       ),
-                      errorWidget: (_, __, ___) => Container(
+                      errorWidget: (_, _, _) => Container(
                         width: 48,
                         height: 48,
                         color: colorScheme.secondaryContainer,

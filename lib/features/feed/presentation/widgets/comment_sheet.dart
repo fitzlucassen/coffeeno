@@ -150,7 +150,7 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
                       vertical: 8,
                     ),
                     itemCount: comments.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    separatorBuilder: (_, _) => const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final comment = comments[index];
                       return _CommentTile(comment: comment);
@@ -160,7 +160,7 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
                 loading: () => const Center(
                   child: CircularProgressIndicator(),
                 ),
-                error: (_, __) => Center(
+                error: (_, _) => Center(
                   child: Text(
                     AppLocalizations.of(context).couldNotLoadComments,
                     style: textTheme.bodyMedium?.copyWith(

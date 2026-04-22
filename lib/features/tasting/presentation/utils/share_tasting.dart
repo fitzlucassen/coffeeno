@@ -55,6 +55,8 @@ Future<void> shareTasting(BuildContext context, Tasting tasting) async {
       text: '${tasting.coffeeName} by ${tasting.roasterName}'
           ' - ${tasting.overallRating.toStringAsFixed(1)}/5',
     );
+
+    await file.delete().catchError((_) => file);
   } finally {
     entry.remove();
   }

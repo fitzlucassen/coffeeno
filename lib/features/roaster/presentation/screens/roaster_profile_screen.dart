@@ -28,7 +28,7 @@ class RoasterProfileScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.roasterProfile)),
       body: roasterAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(child: Text(l10n.error)),
+        error: (_, _) => Center(child: Text(l10n.error)),
         data: (roaster) {
           if (roaster == null) return Center(child: Text(l10n.error));
 

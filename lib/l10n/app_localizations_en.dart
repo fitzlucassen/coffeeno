@@ -508,4 +508,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin => 'Admin';
+
+  @override
+  String get scanHint => 'Position the coffee bag label in the frame';
 }

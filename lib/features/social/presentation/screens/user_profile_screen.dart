@@ -211,7 +211,7 @@ class UserProfileScreen extends ConsumerWidget {
                       physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       itemCount: tastings.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final tasting = tastings[index];
                         return _TastingTile(
@@ -228,7 +228,7 @@ class UserProfileScreen extends ConsumerWidget {
                     padding: EdgeInsets.all(24),
                     child: Center(child: CircularProgressIndicator()),
                   ),
-                  error: (error, __) => Padding(
+                  error: (error, _) => Padding(
                     padding: const EdgeInsets.all(24),
                     child: Center(
                       child: SelectableText(
@@ -245,7 +245,7 @@ class UserProfileScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, __) => Center(
+        error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: SelectableText(

@@ -374,5 +374,7 @@
   "shareCards": "Share tasting cards",
   "@shareCards": { "description": "Premium feature: share cards" },
   "admin": "Admin",
-  "@admin": { "description": "Admin label" }
+  "@admin": { "description": "Admin label" },
+  "scanHint": "Position the coffee bag label in the frame",
+  "@scanHint": { "description": "Hint text on scan screen" }
 }

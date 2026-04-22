@@ -214,7 +214,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
             // Coffee info header
             coffeeAsync.when(
               loading: () => const LinearProgressIndicator(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
               data: (coffee) {
                 if (coffee == null) return const SizedBox.shrink();
                 return Card(
