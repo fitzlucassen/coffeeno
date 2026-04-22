@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'features/subscription/data/subscription_repository.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -17,6 +18,8 @@ Future<void> main() async {
     debugPrint('Firebase init failed: $e');
     debugPrint('Running without Firebase — set up Firebase to enable all features.');
   }
+
+  await SubscriptionRepository.init();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
