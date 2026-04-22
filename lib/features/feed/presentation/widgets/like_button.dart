@@ -100,7 +100,7 @@ class _LikeButtonState extends ConsumerState<LikeButton>
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = ref.watch(currentUserProvider).valueOrNull;
+    final currentUser = ref.watch(currentUserProvider).value;
     if (currentUser == null) return const SizedBox.shrink();
 
     final userId = currentUser.uid;
@@ -110,7 +110,7 @@ class _LikeButtonState extends ConsumerState<LikeButton>
       ),
     );
 
-    final isLiked = _optimisticLiked ?? likedAsync.valueOrNull ?? false;
+    final isLiked = _optimisticLiked ?? likedAsync.value ?? false;
     final count = _optimisticCount ?? widget.likesCount;
     final colorScheme = Theme.of(context).colorScheme;
 

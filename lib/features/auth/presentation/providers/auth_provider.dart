@@ -26,7 +26,7 @@ final authStateProvider = StreamProvider<User?>((ref) {
 });
 
 final _authUidProvider = Provider<String?>((ref) {
-  final uid = ref.watch(authStateProvider).valueOrNull?.uid;
+  final uid = ref.watch(authStateProvider).value?.uid;
 
   final subRepo = SubscriptionRepository();
   if (uid != null) {

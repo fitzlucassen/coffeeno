@@ -56,7 +56,7 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = ref.watch(currentUserProvider).valueOrNull;
+    final currentUser = ref.watch(currentUserProvider).value;
     if (currentUser == null) return const SizedBox.shrink();
 
     final currentUserId = currentUser.uid;
@@ -70,7 +70,7 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
       ),
     );
 
-    final isFollowing = isFollowingAsync.valueOrNull ?? false;
+    final isFollowing = isFollowingAsync.value ?? false;
     final colorScheme = Theme.of(context).colorScheme;
 
     if (widget.compact) {

@@ -42,7 +42,7 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    final currentUser = ref.read(currentUserProvider).valueOrNull;
+    final currentUser = ref.read(currentUserProvider).value;
     if (currentUser == null) return;
 
     setState(() => _isSending = true);

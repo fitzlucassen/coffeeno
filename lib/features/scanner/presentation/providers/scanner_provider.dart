@@ -57,20 +57,16 @@ class ScanState {
   }
 }
 
-class ScanStateNotifier extends StateNotifier<ScanState> {
-  ScanStateNotifier(this._repository, this._geminiService)
-      : super(const ScanState());
+class ScanStateNotifier extends Notifier<ScanState> {
+  @override
+  ScanState build() => const ScanState();
 
-  final ScannerRepository _repository;
-  final GeminiService _geminiService;
-
-  /// Runs the full scan pipeline: OCR then AI extraction.
   Future<void> processImage(String imagePath) async {
     try {
       state = ScanState(status: ScanStatus.processingOcr, imagePath: imagePath);
 
-      // Step 1 — OCR
-      final ocrText = await _repository.processImage(imagePath);
+      final repository = ref.read(scannerRepositoryProvider);
+      final ocrText = await repository.processImage(imagePath);
 
       if (ocrText.trim().isEmpty) {
         state = const ScanState(
@@ -80,13 +76,13 @@ class ScanStateNotifier extends StateNotifier<ScanState> {
         return;
       }
 
-      // Step 2 — AI extraction
       state = state.copyWith(status: ScanStatus.extractingWithAi);
 
       final imageFile = File(imagePath);
       final imageBytes = await imageFile.readAsBytes();
 
-      final result = await _geminiService.extractCoffeeData(
+      final geminiService = ref.read(geminiServiceProvider);
+      final result = await geminiService.extractCoffeeData(
         ocrText: ocrText,
         imageBytes: imageBytes,
       );
@@ -105,15 +101,10 @@ class ScanStateNotifier extends StateNotifier<ScanState> {
     }
   }
 
-  /// Resets the scan state so the user can try again.
   void reset() {
     state = const ScanState();
   }
 }
 
 final scanStateProvider =
-    StateNotifierProvider<ScanStateNotifier, ScanState>((ref) {
-  final repository = ref.watch(scannerRepositoryProvider);
-  final geminiService = ref.watch(geminiServiceProvider);
-  return ScanStateNotifier(repository, geminiService);
-});
+    NotifierProvider<ScanStateNotifier, ScanState>(ScanStateNotifier.new);

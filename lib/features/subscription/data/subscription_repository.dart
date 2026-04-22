@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import '../domain/subscription_status.dart';
@@ -134,11 +135,14 @@ class SubscriptionRepository {
         return false;
       }
 
-      final result = await Purchases.purchasePackage(package);
-      final entitlement = result.entitlements.all[_entitlementId];
+      final result = await Purchases.purchase(PurchaseParams.package(package));
+      final entitlement = result.customerInfo.entitlements.all[_entitlementId];
       return entitlement?.isActive ?? false;
-    } on PurchasesErrorCode catch (e) {
-      if (e == PurchasesErrorCode.purchaseCancelledError) return false;
+    } on PlatformException catch (e) {
+      if (PurchasesErrorHelper.getErrorCode(e) ==
+          PurchasesErrorCode.purchaseCancelledError) {
+        return false;
+      }
       rethrow;
     }
   }

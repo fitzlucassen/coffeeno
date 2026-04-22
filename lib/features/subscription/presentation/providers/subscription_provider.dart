@@ -13,6 +13,6 @@ final subscriptionStatusProvider = StreamProvider<SubscriptionStatus>((ref) {
 });
 
 final isPremiumProvider = Provider<bool>((ref) {
-  final status = ref.watch(subscriptionStatusProvider).valueOrNull;
+  final status = ref.watch(subscriptionStatusProvider).value;
   return status?.isPremium ?? false;
 });

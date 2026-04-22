@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus, XFile;
 
 import 'package:coffeeno/features/tasting/domain/tasting.dart';
 import '../widgets/tasting_share_card.dart';
@@ -50,10 +50,12 @@ Future<void> shareTasting(BuildContext context, Tasting tasting) async {
     final file = File('${tempDir.path}/coffeeno_tasting.png');
     await file.writeAsBytes(byteData.buffer.asUint8List());
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: '${tasting.coffeeName} by ${tasting.roasterName}'
-          ' - ${tasting.overallRating.toStringAsFixed(1)}/5',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: '${tasting.coffeeName} by ${tasting.roasterName}'
+            ' - ${tasting.overallRating.toStringAsFixed(1)}/5',
+      ),
     );
 
     await file.delete().catchError((_) => file);

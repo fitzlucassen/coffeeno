@@ -168,7 +168,7 @@ class RoasterProfileScreen extends ConsumerWidget {
                       // Claim / Edit actions
                       Builder(builder: (context) {
                         final currentUser =
-                            ref.watch(currentUserProvider).valueOrNull;
+                            ref.watch(currentUserProvider).value;
                         if (currentUser == null) return const SizedBox.shrink();
 
                         final isOwner =

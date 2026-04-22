@@ -176,7 +176,7 @@ class _ClaimUserRow extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final nameAsync = ref.watch(_claimUserNameProvider(userId));
 
-    final displayName = nameAsync.valueOrNull ?? userId;
+    final displayName = nameAsync.value ?? userId;
 
     return InkWell(
       borderRadius: BorderRadius.circular(8),

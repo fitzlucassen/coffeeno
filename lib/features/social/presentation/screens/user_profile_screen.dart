@@ -94,7 +94,7 @@ class UserProfileScreen extends ConsumerWidget {
                   tooltip: l10n.settings,
                   onPressed: () {
                     final appUser =
-                        ref.read(currentUserProvider).valueOrNull;
+                        ref.read(currentUserProvider).value;
                     _showSettingsSheet(context,
                         isAdmin: appUser?.isAdmin ?? false);
                   },

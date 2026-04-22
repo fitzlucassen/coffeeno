@@ -1,25 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthRepository {
   AuthRepository({
     FirebaseAuth? firebaseAuth,
-    GoogleSignIn? googleSignIn,
-  })  : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn();
+  }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
 
   final FirebaseAuth _firebaseAuth;
-  final GoogleSignIn _googleSignIn;
 
-  /// The currently signed-in user, or `null` if not authenticated.
   User? get currentUser => _firebaseAuth.currentUser;
 
-  /// A stream that emits whenever the authentication state changes.
   Stream<User?> authStateChanges() => _firebaseAuth.authStateChanges();
 
-  /// Signs in with an email and password.
-  ///
-  /// Throws a [FirebaseAuthException] if the sign-in fails.
   Future<UserCredential> signInWithEmail({
     required String email,
     required String password,
@@ -30,9 +23,6 @@ class AuthRepository {
     );
   }
 
-  /// Creates a new account with an email and password.
-  ///
-  /// Throws a [FirebaseAuthException] if the sign-up fails.
   Future<UserCredential> signUpWithEmail({
     required String email,
     required String password,
@@ -43,33 +33,30 @@ class AuthRepository {
     );
   }
 
-  /// Signs in with Google.
-  ///
-  /// Returns `null` if the user cancelled the sign-in flow.
-  /// Throws a [FirebaseAuthException] if the sign-in fails.
   Future<UserCredential?> signInWithGoogle() async {
-    final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) return null;
-
-    final googleAuth = await googleUser.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    return _firebaseAuth.signInWithCredential(credential);
+    try {
+      final googleUser = await GoogleSignIn.instance.authenticate();
+      final googleAuth = googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+      return _firebaseAuth.signInWithCredential(credential);
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) return null;
+      rethrow;
+    }
   }
 
-  /// Sends a password reset email.
   Future<void> sendPasswordResetEmail(String email) async {
     await _firebaseAuth.sendPasswordResetEmail(email: email);
   }
 
-  /// Signs out from both Firebase and Google.
   Future<void> signOut() async {
-    await Future.wait([
-      _firebaseAuth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (e) {
+      debugPrint('Google sign-out failed (may not have been signed in): $e');
+    }
+    await _firebaseAuth.signOut();
   }
 }
