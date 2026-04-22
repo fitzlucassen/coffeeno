@@ -1,7 +1,18 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 import '../domain/subscription_status.dart';
+
+const _revenueCatApiKey = String.fromEnvironment(
+  'REVENUECAT_API_KEY',
+  defaultValue: 'YOUR_REVENUECAT_API_KEY',
+);
+
+const _entitlementId = 'Coffeeno Pro';
 
 class SubscriptionRepository {
   SubscriptionRepository({
@@ -13,7 +24,71 @@ class SubscriptionRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
+  static bool _initialized = false;
+
+  static Future<void> init() async {
+    if (_initialized) return;
+    if (_revenueCatApiKey == 'YOUR_REVENUECAT_API_KEY') {
+      debugPrint(
+        'REVENUECAT_API_KEY is not set. '
+        'Pass it at build time with --dart-define=REVENUECAT_API_KEY=<key>',
+      );
+      return;
+    }
+
+    await Purchases.configure(
+      PurchasesConfiguration(_revenueCatApiKey),
+    );
+    _initialized = true;
+  }
+
+  Future<void> loginUser(String uid) async {
+    if (!_initialized) return;
+    await Purchases.logIn(uid);
+  }
+
+  Future<void> logoutUser() async {
+    if (!_initialized) return;
+    await Purchases.logOut();
+  }
+
   Stream<SubscriptionStatus> watchStatus() {
+    if (!_initialized) {
+      return _watchStatusFromFirestore();
+    }
+
+    final controller = StreamController<SubscriptionStatus>.broadcast();
+
+    void update(CustomerInfo info) {
+      final entitlement = info.entitlements.all[_entitlementId];
+      final isActive = entitlement?.isActive ?? false;
+      final expirationDate = entitlement?.expirationDate != null
+          ? DateTime.tryParse(entitlement!.expirationDate!)
+          : null;
+
+      controller.add(SubscriptionStatus(
+        tier: isActive ? SubscriptionTier.premium : SubscriptionTier.free,
+        premiumUntil: expirationDate,
+      ));
+
+      _syncToFirestore(isActive, expirationDate);
+    }
+
+    Purchases.getCustomerInfo().then(update).catchError((e) {
+      debugPrint('RevenueCat getCustomerInfo error: $e');
+      controller.add(const SubscriptionStatus());
+    });
+
+    Purchases.addCustomerInfoUpdateListener(update);
+
+    controller.onCancel = () {
+      Purchases.removeCustomerInfoUpdateListener(update);
+    };
+
+    return controller.stream;
+  }
+
+  Stream<SubscriptionStatus> _watchStatusFromFirestore() {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return Stream.value(const SubscriptionStatus());
 
@@ -29,6 +104,51 @@ class SubscriptionRepository {
         premiumUntil: premiumUntil,
       );
     });
+  }
+
+  Future<void> _syncToFirestore(bool isPremium, DateTime? premiumUntil) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+
+    await _firestore.collection('users').doc(uid).update({
+      'premium': isPremium,
+      'premiumUntil':
+          premiumUntil != null ? Timestamp.fromDate(premiumUntil) : null,
+    });
+  }
+
+  Future<bool> purchase() async {
+    if (!_initialized) return false;
+
+    try {
+      final offerings = await Purchases.getOfferings();
+      final offering = offerings.current;
+      if (offering == null) {
+        debugPrint('No current offering found');
+        return false;
+      }
+
+      final package = offering.monthly;
+      if (package == null) {
+        debugPrint('No monthly package found in current offering');
+        return false;
+      }
+
+      final result = await Purchases.purchasePackage(package);
+      final entitlement = result.entitlements.all[_entitlementId];
+      return entitlement?.isActive ?? false;
+    } on PurchasesErrorCode catch (e) {
+      if (e == PurchasesErrorCode.purchaseCancelledError) return false;
+      rethrow;
+    }
+  }
+
+  Future<bool> restore() async {
+    if (!_initialized) return false;
+
+    final info = await Purchases.restorePurchases();
+    final entitlement = info.entitlements.all[_entitlementId];
+    return entitlement?.isActive ?? false;
   }
 
   Future<int> getUserCoffeeCount() async {

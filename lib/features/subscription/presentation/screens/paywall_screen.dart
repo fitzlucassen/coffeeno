@@ -1,12 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
-class PaywallScreen extends ConsumerWidget {
+import '../providers/subscription_provider.dart';
+
+class PaywallScreen extends ConsumerStatefulWidget {
   const PaywallScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PaywallScreen> createState() => _PaywallScreenState();
+}
+
+class _PaywallScreenState extends ConsumerState<PaywallScreen> {
+  bool _isLoading = false;
+
+  Future<void> _subscribe() async {
+    setState(() => _isLoading = true);
+    try {
+      final repo = ref.read(subscriptionRepositoryProvider);
+      final success = await repo.purchase();
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).premium)),
+        );
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _restore() async {
+    setState(() => _isLoading = true);
+    try {
+      final repo = ref.read(subscriptionRepositoryProvider);
+      final success = await repo.restore();
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.premium)),
+          );
+          context.pop();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.error)),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -54,17 +115,19 @@ class PaywallScreen extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () {
-                  // RevenueCat purchase will be wired here
-                },
-                child: Text(l10n.subscribe),
+                onPressed: _isLoading ? null : _subscribe,
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.subscribe),
               ),
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () {
-                // RevenueCat restore will be wired here
-              },
+              onPressed: _isLoading ? null : _restore,
               child: Text(l10n.restorePurchases),
             ),
             const SizedBox(height: 16),
