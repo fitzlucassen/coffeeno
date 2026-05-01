@@ -4,41 +4,81 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
-/// SCA-inspired flavor wheel categories with sub-flavors and colors.
+/// SCA Coffee Taster's Flavor Wheel — full hierarchy.
 class _FlavorCategory {
-  const _FlavorCategory(this.name, this.color, this.subFlavors);
+  const _FlavorCategory(this.name, this.color, this.subCategories);
   final String name;
   final Color color;
-  final List<String> subFlavors;
+  final List<_SubCategory> subCategories;
+
+  List<String> get allFlavors =>
+      subCategories.expand((s) => s.flavors).toList();
+}
+
+class _SubCategory {
+  const _SubCategory(this.name, this.flavors);
+  final String name;
+  final List<String> flavors;
 }
 
 const List<_FlavorCategory> _categories = [
+  // 1. Fruity (reds/pinks)
   _FlavorCategory('Fruity', Color(0xFFE53935), [
-    'Berry', 'Citrus', 'Stone Fruit', 'Tropical', 'Dried Fruit'
+    _SubCategory('Berry', ['Blackberry', 'Raspberry', 'Blueberry', 'Strawberry']),
+    _SubCategory('Dried Fruit', ['Raisin', 'Prune', 'Coconut']),
+    _SubCategory('Other Fruit', ['Pomegranate', 'Pineapple', 'Grape', 'Apple', 'Peach', 'Pear']),
+    _SubCategory('Citrus Fruit', ['Grapefruit', 'Orange', 'Lemon', 'Lime']),
   ]),
-  _FlavorCategory('Floral', Color(0xFFAB47BC), [
-    'Jasmine', 'Rose', 'Lavender', 'Hibiscus'
+
+  // 2. Sour/Fermented (olive/yellow-green)
+  _FlavorCategory('Sour/Fermented', Color(0xFF9E9D24), [
+    _SubCategory('Sour', ['Sour Aromatics', 'Acetic Acid', 'Butyric Acid', 'Citric Acid', 'Malic Acid']),
+    _SubCategory('Alcohol/Fermented', ['Winey', 'Whiskey', 'Fermented', 'Overripe']),
   ]),
+
+  // 3. Green/Vegetative (greens)
+  _FlavorCategory('Green/Vegetative', Color(0xFF2E7D32), [
+    _SubCategory('Olive Oil', ['Olive Oil']),
+    _SubCategory('Raw', ['Under-ripe', 'Peapod', 'Fresh', 'Dark Green', 'Vegetative', 'Hay-like']),
+    _SubCategory('Beany', ['Beany']),
+  ]),
+
+  // 4. Other (grays/blues)
+  _FlavorCategory('Other', Color(0xFF78909C), [
+    _SubCategory('Papery/Musty', ['Stale', 'Cardboard', 'Papery', 'Woody', 'Moldy/Damp', 'Musty/Dusty', 'Musty/Earthy', 'Animalic', 'Meaty/Brothy', 'Phenolic']),
+    _SubCategory('Chemical', ['Bitter', 'Salty', 'Medicinal', 'Petroleum', 'Skunky', 'Rubber']),
+  ]),
+
+  // 5. Roasted (browns)
+  _FlavorCategory('Roasted', Color(0xFF4E342E), [
+    _SubCategory('Pipe Tobacco', ['Pipe Tobacco', 'Tobacco']),
+    _SubCategory('Burnt', ['Acrid', 'Ashy', 'Smoky', 'Brown Roast']),
+    _SubCategory('Cereal', ['Grain', 'Malt']),
+  ]),
+
+  // 6. Spices (dark reds/browns)
+  _FlavorCategory('Spices', Color(0xFFBF360C), [
+    _SubCategory('Pungent', ['Pepper', 'Anise']),
+    _SubCategory('Brown Spice', ['Cinnamon', 'Nutmeg', 'Clove']),
+  ]),
+
+  // 7. Nutty/Cocoa (warm browns)
+  _FlavorCategory('Nutty/Cocoa', Color(0xFF795548), [
+    _SubCategory('Nutty', ['Peanuts', 'Hazelnut', 'Almond']),
+    _SubCategory('Cocoa', ['Chocolate', 'Dark Chocolate', 'Cocoa']),
+  ]),
+
+  // 8. Sweet (oranges/yellows)
   _FlavorCategory('Sweet', Color(0xFFFF8F00), [
-    'Caramel', 'Honey', 'Vanilla', 'Brown Sugar', 'Maple'
+    _SubCategory('Brown Sugar', ['Molasses', 'Maple Syrup', 'Caramelized', 'Honey']),
+    _SubCategory('Vanilla', ['Vanilla', 'Vanillin']),
+    _SubCategory('Overall Sweet', ['Overall Sweet', 'Sweet Aromatics']),
   ]),
-  _FlavorCategory('Nutty', Color(0xFF8D6E63), [
-    'Almond', 'Hazelnut', 'Walnut', 'Peanut'
-  ]),
-  _FlavorCategory('Chocolatey', Color(0xFF5D4037), [
-    'Dark Chocolate', 'Milk Chocolate', 'Cocoa', 'Cacao Nib'
-  ]),
-  _FlavorCategory('Spicy', Color(0xFFFF5722), [
-    'Cinnamon', 'Clove', 'Black Pepper', 'Cardamom'
-  ]),
-  _FlavorCategory('Roasted', Color(0xFF795548), [
-    'Tobacco', 'Smoky', 'Toasty', 'Malt'
-  ]),
-  _FlavorCategory('Vegetal', Color(0xFF43A047), [
-    'Herbal', 'Grassy', 'Earthy', 'Mushroom'
-  ]),
-  _FlavorCategory('Sour', Color(0xFFFDD835), [
-    'Lemon', 'Green Apple', 'Vinegar', 'Wine'
+
+  // 9. Floral (purples/pinks)
+  _FlavorCategory('Floral', Color(0xFFAD1457), [
+    _SubCategory('Black Tea', ['Black Tea']),
+    _SubCategory('Floral', ['Chamomile', 'Rose', 'Jasmine']),
   ]),
 ];
 
@@ -117,8 +157,8 @@ class _FlavorSelectorState extends State<FlavorSelector>
   }
 
   int _categorySelectionCount(int index) {
-    final subs = _categories[index].subFlavors;
-    return subs.where(widget.selectedFlavors.contains).length;
+    final allFlavors = _categories[index].allFlavors;
+    return allFlavors.where(widget.selectedFlavors.contains).length;
   }
 
   @override
@@ -140,12 +180,11 @@ class _FlavorSelectorState extends State<FlavorSelector>
         ),
         const SizedBox(height: 16),
 
-        // Flavor wheel visualization
+        // Flavor wheel
         SizedBox(
-          height: 280,
+          height: 300,
           child: _FlavorWheel(
             expandedIndex: _expandedIndex,
-            selectedFlavors: widget.selectedFlavors,
             onCategoryTap: _tapCategory,
             selectionCounts: List.generate(
               _categories.length,
@@ -154,7 +193,7 @@ class _FlavorSelectorState extends State<FlavorSelector>
           ),
         ),
 
-        // Sub-flavors panel (slides in when category tapped)
+        // Sub-flavors panel
         if (_expandedIndex != null)
           AnimatedBuilder(
             animation: _expandAnimation,
@@ -172,13 +211,13 @@ class _FlavorSelectorState extends State<FlavorSelector>
 
         const SizedBox(height: 12),
 
-        // Custom flavor input
+        // Custom flavor
         _CustomFlavorInput(
           controller: _customController,
           onAdd: _addCustomFlavor,
         ),
 
-        // Selected flavors summary
+        // Selected summary
         if (widget.selectedFlavors.isNotEmpty) ...[
           const SizedBox(height: 16),
           Wrap(
@@ -191,10 +230,7 @@ class _FlavorSelectorState extends State<FlavorSelector>
                   backgroundColor: categoryColor,
                   radius: 6,
                 ),
-                label: Text(
-                  flavor,
-                  style: theme.textTheme.bodySmall,
-                ),
+                label: Text(flavor, style: theme.textTheme.bodySmall),
                 deleteIcon: const Icon(Icons.close, size: 16),
                 onDeleted: () => _toggleFlavor(flavor),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -209,23 +245,21 @@ class _FlavorSelectorState extends State<FlavorSelector>
 
   Color _getColorForFlavor(String flavor) {
     for (final cat in _categories) {
-      if (cat.subFlavors.contains(flavor)) return cat.color;
+      if (cat.allFlavors.contains(flavor)) return cat.color;
     }
     return Colors.grey;
   }
 }
 
-/// A circular flavor wheel that shows categories as colored segments.
+/// Draws a circular flavor wheel with category segments.
 class _FlavorWheel extends StatelessWidget {
   const _FlavorWheel({
     required this.expandedIndex,
-    required this.selectedFlavors,
     required this.onCategoryTap,
     required this.selectionCounts,
   });
 
   final int? expandedIndex;
-  final List<String> selectedFlavors;
   final ValueChanged<int> onCategoryTap;
   final List<int> selectionCounts;
 
@@ -238,13 +272,16 @@ class _FlavorWheel extends StatelessWidget {
           child: SizedBox(
             width: size,
             height: size,
-            child: CustomPaint(
-              painter: _WheelPainter(
-                categories: _categories,
-                expandedIndex: expandedIndex,
-                selectionCounts: selectionCounts,
+            child: GestureDetector(
+              onTapUp: (details) => _handleTap(details, size),
+              child: CustomPaint(
+                painter: _WheelPainter(
+                  categories: _categories,
+                  expandedIndex: expandedIndex,
+                  selectionCounts: selectionCounts,
+                ),
+                child: _buildLabels(size),
               ),
-              child: _buildTapTargets(size),
             ),
           ),
         );
@@ -252,7 +289,28 @@ class _FlavorWheel extends StatelessWidget {
     );
   }
 
-  Widget _buildTapTargets(double size) {
+  void _handleTap(TapUpDetails details, double size) {
+    final center = Offset(size / 2, size / 2);
+    final tap = details.localPosition;
+    final dx = tap.dx - center.dx;
+    final dy = tap.dy - center.dy;
+    final distance = sqrt(dx * dx + dy * dy);
+    final outerRadius = size / 2 - 4;
+    final innerRadius = outerRadius * 0.35;
+
+    if (distance < innerRadius || distance > outerRadius) return;
+
+    var angle = atan2(dy, dx);
+    angle = (angle + pi / 2) % (2 * pi);
+
+    final sweepAngle = 2 * pi / _categories.length;
+    final index = (angle / sweepAngle).floor();
+    if (index >= 0 && index < _categories.length) {
+      onCategoryTap(index);
+    }
+  }
+
+  Widget _buildLabels(double size) {
     final center = size / 2;
     final categoryCount = _categories.length;
     final sweepAngle = 2 * pi / categoryCount;
@@ -261,7 +319,7 @@ class _FlavorWheel extends StatelessWidget {
       children: List.generate(categoryCount, (i) {
         final startAngle = -pi / 2 + i * sweepAngle;
         final midAngle = startAngle + sweepAngle / 2;
-        final labelRadius = center * 0.65;
+        final labelRadius = center * 0.67;
         final x = center + labelRadius * cos(midAngle);
         final y = center + labelRadius * sin(midAngle);
 
@@ -269,14 +327,12 @@ class _FlavorWheel extends StatelessWidget {
         final hasSelections = selectionCounts[i] > 0;
 
         return Positioned(
-          left: x - 36,
-          top: y - 18,
-          child: GestureDetector(
-            onTap: () => onCategoryTap(i),
-            behavior: HitTestBehavior.opaque,
+          left: x - 40,
+          top: y - 16,
+          child: IgnorePointer(
             child: SizedBox(
-              width: 72,
-              height: 36,
+              width: 80,
+              height: 32,
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -284,24 +340,37 @@ class _FlavorWheel extends StatelessWidget {
                     Text(
                       _categories[i].name,
                       style: TextStyle(
-                        fontSize: isExpanded ? 11 : 10,
-                        fontWeight:
-                            isExpanded || hasSelections
-                                ? FontWeight.bold
-                                : FontWeight.w500,
+                        fontSize: isExpanded ? 10 : 9,
+                        fontWeight: isExpanded || hasSelections
+                            ? FontWeight.bold
+                            : FontWeight.w600,
                         color: isExpanded
-                            ? _categories[i].color
-                            : Colors.white,
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.9),
+                        shadows: const [
+                          Shadow(blurRadius: 2, color: Colors.black54),
+                        ],
                       ),
                       textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (hasSelections)
-                      Text(
-                        '${selectionCounts[i]}',
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white.withValues(alpha: 0.9),
+                      Container(
+                        margin: const EdgeInsets.only(top: 1),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${selectionCounts[i]}',
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                            color: _categories[i].color,
+                          ),
                         ),
                       ),
                   ],
@@ -330,9 +399,10 @@ class _WheelPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final outerRadius = size.width / 2 - 4;
-    final innerRadius = outerRadius * 0.3;
+    final innerRadius = outerRadius * 0.35;
     final categoryCount = categories.length;
     final sweepAngle = 2 * pi / categoryCount;
+    final gapAngle = 0.02;
 
     for (int i = 0; i < categoryCount; i++) {
       final startAngle = -pi / 2 + i * sweepAngle;
@@ -340,58 +410,101 @@ class _WheelPainter extends CustomPainter {
       final isExpanded = expandedIndex == i;
       final hasSelection = selectionCounts[i] > 0;
 
-      // Draw outer segment
+      // Main segment
       final segmentPaint = Paint()
         ..color = isExpanded
             ? cat.color
             : hasSelection
                 ? cat.color.withValues(alpha: 0.85)
-                : cat.color.withValues(alpha: 0.55)
+                : cat.color.withValues(alpha: 0.6)
         ..style = PaintingStyle.fill;
 
       final path = Path()
         ..moveTo(
-          center.dx + innerRadius * cos(startAngle),
-          center.dy + innerRadius * sin(startAngle),
+          center.dx + innerRadius * cos(startAngle + gapAngle / 2),
+          center.dy + innerRadius * sin(startAngle + gapAngle / 2),
         )
         ..arcTo(
           Rect.fromCircle(center: center, radius: outerRadius),
-          startAngle,
-          sweepAngle - 0.02,
+          startAngle + gapAngle / 2,
+          sweepAngle - gapAngle,
           false,
         )
         ..arcTo(
           Rect.fromCircle(center: center, radius: innerRadius),
-          startAngle + sweepAngle - 0.02,
-          -(sweepAngle - 0.02),
+          startAngle + sweepAngle - gapAngle / 2,
+          -(sweepAngle - gapAngle),
           false,
         )
         ..close();
 
       canvas.drawPath(path, segmentPaint);
 
-      // Draw border for expanded segment
+      // Highlight border on expanded
       if (isExpanded) {
         final borderPaint = Paint()
           ..color = Colors.white
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.5;
+          ..strokeWidth = 3;
         canvas.drawPath(path, borderPaint);
+      }
+
+      // Draw sub-category divisions as lighter arcs in outer ring
+      final subCats = cat.subCategories;
+      if (subCats.length > 1) {
+        final subSweep = (sweepAngle - gapAngle) / subCats.length;
+        final midRadius = innerRadius + (outerRadius - innerRadius) * 0.5;
+
+        for (int j = 1; j < subCats.length; j++) {
+          final divAngle = startAngle + gapAngle / 2 + j * subSweep;
+          final divPaint = Paint()
+            ..color = Colors.white.withValues(alpha: isExpanded ? 0.6 : 0.25)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1;
+
+          canvas.drawLine(
+            Offset(
+              center.dx + midRadius * cos(divAngle),
+              center.dy + midRadius * sin(divAngle),
+            ),
+            Offset(
+              center.dx + outerRadius * cos(divAngle),
+              center.dy + outerRadius * sin(divAngle),
+            ),
+            divPaint,
+          );
+        }
       }
     }
 
-    // Draw center circle
+    // Center circle
     final centerPaint = Paint()
-      ..color = Colors.brown.shade800
+      ..color = const Color(0xFF3E2723)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, innerRadius - 2, centerPaint);
 
-    // Draw center icon (coffee bean)
-    final iconPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.8)
+    // Center ring
+    final ringPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
-    canvas.drawCircle(center, innerRadius * 0.5, iconPaint);
+    canvas.drawCircle(center, innerRadius * 0.6, ringPaint);
+
+    // "Coffee" text in center
+    final textPainter = TextPainter(
+      text: const TextSpan(
+        text: '☕',
+        style: TextStyle(fontSize: 24),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        center.dx - textPainter.width / 2,
+        center.dy - textPainter.height / 2,
+      ),
+    );
   }
 
   @override
@@ -400,7 +513,7 @@ class _WheelPainter extends CustomPainter {
       selectionCounts != oldDelegate.selectionCounts;
 }
 
-/// Panel showing sub-flavors for the selected category.
+/// Panel showing grouped sub-flavors for the tapped category.
 class _SubFlavorPanel extends StatelessWidget {
   const _SubFlavorPanel({
     required this.category,
@@ -417,10 +530,10 @@ class _SubFlavorPanel extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      margin: const EdgeInsets.only(top: 8),
+      margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: category.color.withValues(alpha: 0.08),
+        color: category.color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: category.color.withValues(alpha: 0.3),
@@ -429,11 +542,12 @@ class _SubFlavorPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Category header
           Row(
             children: [
               Container(
-                width: 12,
-                height: 12,
+                width: 14,
+                height: 14,
                 decoration: BoxDecoration(
                   color: category.color,
                   shape: BoxShape.circle,
@@ -449,44 +563,66 @@ class _SubFlavorPanel extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: category.subFlavors.map((flavor) {
-              final isSelected = selectedFlavors.contains(flavor);
-              return GestureDetector(
-                onTap: () => onToggle(flavor),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? category.color
-                        : category.color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isSelected
-                          ? category.color
-                          : category.color.withValues(alpha: 0.4),
-                      width: 1.5,
+          const SizedBox(height: 16),
+
+          // Sub-categories with their flavors
+          ...category.subCategories.map((sub) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (category.subCategories.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      sub.name,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: category.color.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                  child: Text(
-                    flavor,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isSelected ? Colors.white : category.color,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.normal,
-                    ),
-                  ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: sub.flavors.map((flavor) {
+                    final isSelected = selectedFlavors.contains(flavor);
+                    return GestureDetector(
+                      onTap: () => onToggle(flavor),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? category.color
+                              : category.color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? category.color
+                                : category.color.withValues(alpha: 0.35),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Text(
+                          flavor,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isSelected ? Colors.white : category.color,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
-          ),
+              ],
+            ),
+          )),
         ],
       ),
     );
