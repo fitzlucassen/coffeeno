@@ -14,7 +14,7 @@ const _revenueCatApiKey = String.fromEnvironment(
 );
 
 const _entitlementId = 'Coffeeno Pro';
-const _roasterProEntitlementId = 'Roaster Pro';
+const _roasterProEntitlementId = 'Coffeeno Roaster Pro';
 
 class SubscriptionRepository {
   SubscriptionRepository({
