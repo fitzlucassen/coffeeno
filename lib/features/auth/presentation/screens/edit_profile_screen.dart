@@ -22,6 +22,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _displayNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _bioController = TextEditingController();
+  final _countryController = TextEditingController();
   bool _isLoading = false;
 
   @override
@@ -34,12 +35,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
-    ref.read(userProfileProvider(uid).future).then((user) {
+    ref.read(userRepositoryProvider).getUser(uid).then((user) {
       if (user != null && mounted) {
         setState(() {
           _displayNameController.text = user.displayName;
-          _usernameController.text = user.username ?? '';
+          _usernameController.text = user.username;
           _bioController.text = user.bio ?? '';
+          _countryController.text = user.country ?? '';
         });
       }
     });
@@ -50,6 +52,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _displayNameController.dispose();
     _usernameController.dispose();
     _bioController.dispose();
+    _countryController.dispose();
     super.dispose();
   }
 
@@ -74,6 +77,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'bio': _bioController.text.trim().isEmpty
             ? null
             : _bioController.text.trim(),
+        'country': _countryController.text.trim().isEmpty
+            ? null
+            : _countryController.text.trim(),
       });
 
       ref.invalidate(userProfileProvider(uid));
@@ -128,8 +134,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   controller: _bioController,
                   label: l10n.bio,
                   prefixIcon: Icons.short_text,
-                  textInputAction: TextInputAction.done,
+                  textInputAction: TextInputAction.next,
                   maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                AppTextField(
+                  controller: _countryController,
+                  label: l10n.country,
+                  prefixIcon: Icons.public,
+                  textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _save(),
                 ),
                 const SizedBox(height: 32),

@@ -13,6 +13,7 @@ import '../../features/coffee/presentation/screens/coffee_detail_screen.dart';
 import '../../features/coffee/presentation/screens/add_coffee_screen.dart';
 import '../../features/tasting/presentation/screens/add_tasting_screen.dart';
 import '../../features/tasting/presentation/screens/tasting_detail_screen.dart';
+import '../../features/explore/presentation/screens/explore_screen.dart';
 import '../../features/feed/presentation/screens/feed_screen.dart';
 import '../../features/scanner/presentation/screens/camera_screen.dart';
 import '../../features/scanner/presentation/screens/scan_review_screen.dart';
@@ -24,6 +25,7 @@ import '../../features/map/presentation/screens/coffee_map_screen.dart';
 import '../../features/map/presentation/screens/origin_detail_screen.dart';
 import '../../features/stats/presentation/screens/stats_screen.dart';
 import '../../features/roaster/presentation/screens/roaster_profile_screen.dart';
+import '../../features/roaster/presentation/screens/roaster_dashboard_screen.dart';
 import '../../features/roaster/presentation/screens/edit_roaster_screen.dart';
 import '../../features/farm/presentation/screens/farm_profile_screen.dart';
 import '../../features/farm/presentation/screens/edit_farm_screen.dart';
@@ -38,6 +40,7 @@ abstract final class AppRoutes {
   static const signUp = '/sign-up';
   static const profileSetup = '/profile-setup';
   static const feed = '/feed';
+  static const explore = '/explore';
   static const library = '/library';
   static const map = '/map';
   static const profile = '/profile';
@@ -60,6 +63,7 @@ abstract final class AppRoutes {
   static const adminClaims = '/admin/claims';
   static const claimForm = '/claim/:entityType/:entityId';
   static const paywall = '/paywall';
+  static const roasterDashboard = '/roaster/:id/dashboard';
   static const editRoaster = '/roaster/:id/edit';
   static const editFarm = '/farm/:id/edit';
 }
@@ -83,6 +87,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoutes.profileSetup;
       final isShellRoute =
           state.matchedLocation == AppRoutes.feed ||
+          state.matchedLocation == AppRoutes.explore ||
           state.matchedLocation == AppRoutes.library ||
           state.matchedLocation == AppRoutes.map ||
           state.matchedLocation == AppRoutes.profile;
@@ -130,6 +135,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.feed,
             pageBuilder: (context, state) => const NoTransitionPage(
               child: FeedScreen(),
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.explore,
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: ExploreScreen(),
             ),
           ),
           GoRoute(
@@ -227,6 +238,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.stats,
         builder: (context, state) => const StatsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.roasterDashboard,
+        builder: (context, state) => RoasterDashboardScreen(
+          roasterId: state.pathParameters['id']!,
+        ),
       ),
       GoRoute(
         path: AppRoutes.roasterProfile,

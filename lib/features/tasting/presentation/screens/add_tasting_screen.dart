@@ -14,6 +14,7 @@ import '../../data/brew_suggestion_service.dart';
 import '../../domain/tasting.dart';
 import '../providers/tasting_provider.dart';
 import '../widgets/brew_params_form.dart';
+import '../widgets/flavor_selector.dart';
 import '../widgets/tasting_notes_input.dart';
 
 class AddTastingScreen extends ConsumerStatefulWidget {
@@ -45,6 +46,8 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
   int _sweetness = 3;
   int _aftertaste = 3;
   double _overallRating = 3.0;
+
+  List<String> _flavorNotes = [];
 
   bool _isSaving = false;
   bool _isSuggesting = false;
@@ -175,6 +178,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
         sweetness: _sweetness,
         aftertaste: _aftertaste,
         overallRating: _overallRating,
+        flavorNotes: _flavorNotes,
         notes: _notesController.text.trim().isNotEmpty
             ? _notesController.text.trim()
             : null,
@@ -364,7 +368,17 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
             const Divider(),
             const SizedBox(height: 24),
 
-            // ── SECTION 3: Notes ──
+            // ── SECTION 3: Flavor Notes ──
+            FlavorSelector(
+              selectedFlavors: _flavorNotes,
+              onChanged: (v) => setState(() => _flavorNotes = v),
+            ),
+
+            const SizedBox(height: 32),
+            const Divider(),
+            const SizedBox(height: 24),
+
+            // ── SECTION 4: Notes ──
             Text(l10n.notes, style: theme.textTheme.titleMedium),
             const SizedBox(height: 12),
             AppTextField(

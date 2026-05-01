@@ -1057,6 +1057,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Position the coffee bag label in the frame'**
   String get scanHint;
+
+  /// Price field label
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get price;
+
+  /// Lot field label
+  ///
+  /// In en, this message translates to:
+  /// **'Lot'**
+  String get lot;
+
+  /// Harvest year field label
+  ///
+  /// In en, this message translates to:
+  /// **'Harvest Year'**
+  String get harvestYear;
+
+  /// Freshness label: resting
+  ///
+  /// In en, this message translates to:
+  /// **'Resting'**
+  String get resting;
+
+  /// Freshness label: peak
+  ///
+  /// In en, this message translates to:
+  /// **'Peak freshness'**
+  String get peakFreshness;
+
+  /// Freshness label: use soon
+  ///
+  /// In en, this message translates to:
+  /// **'Use soon'**
+  String get useSoon;
+
+  /// Freshness label: past peak
+  ///
+  /// In en, this message translates to:
+  /// **'Past peak'**
+  String get pastPeak;
+
+  /// Days since roast
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days post-roast'**
+  String daysPostRoast(int days);
+
+  /// Community rating section title
+  ///
+  /// In en, this message translates to:
+  /// **'Community rating'**
+  String get communityRating;
+
+  /// Community rating with count
+  ///
+  /// In en, this message translates to:
+  /// **'{rating} ({count} users)'**
+  String communityRatingValue(String rating, int count);
+
+  /// Scan a bag option in add coffee sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a bag'**
+  String get scanABag;
+
+  /// Add manually option in add coffee sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Add manually'**
+  String get addManually;
+
+  /// Add coffee bottom sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Add a coffee'**
+  String get addCoffeeTitle;
+
+  /// Flavor selector hint text
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to select flavors'**
+  String get selectFlavors;
+
+  /// Explore tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Explore'**
+  String get exploreTab;
+
+  /// Trending coffees section title
+  ///
+  /// In en, this message translates to:
+  /// **'Trending'**
+  String get exploreTrending;
+
+  /// Recently added coffees section title
+  ///
+  /// In en, this message translates to:
+  /// **'Recently Added'**
+  String get exploreRecentlyAdded;
+
+  /// Top rated coffees section title
+  ///
+  /// In en, this message translates to:
+  /// **'Top Rated'**
+  String get exploreTopRated;
+
+  /// New roasters section title
+  ///
+  /// In en, this message translates to:
+  /// **'New Roasters'**
+  String get exploreNewRoasters;
+
+  /// Roaster dashboard screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Roaster Dashboard'**
+  String get roasterDashboard;
+
+  /// Roaster Pro paywall title
+  ///
+  /// In en, this message translates to:
+  /// **'Roaster Pro Required'**
+  String get roasterProRequired;
+
+  /// Roaster Pro paywall description
+  ///
+  /// In en, this message translates to:
+  /// **'Access detailed analytics about your coffees'**
+  String get roasterProDesc;
+
+  /// Roaster Pro price display
+  ///
+  /// In en, this message translates to:
+  /// **'€9.99/month'**
+  String get roasterProPrice;
+
+  /// Recent tastings (30 days) stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get recentTastings30d;
+
+  /// Top coffees by rating section title
+  ///
+  /// In en, this message translates to:
+  /// **'Top Coffees'**
+  String get topCoffeesByRating;
+
+  /// Popular coffees from user's country section title
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Near You'**
+  String get exploreNearYou;
+
+  /// Country field label
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get country;
 }
 
 class _AppLocalizationsDelegate

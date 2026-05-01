@@ -14,6 +14,7 @@ const _revenueCatApiKey = String.fromEnvironment(
 );
 
 const _entitlementId = 'Coffeeno Pro';
+const _roasterProEntitlementId = 'Roaster Pro';
 
 class SubscriptionRepository {
   SubscriptionRepository({
@@ -153,6 +154,104 @@ class SubscriptionRepository {
     final info = await Purchases.restorePurchases();
     final entitlement = info.entitlements.all[_entitlementId];
     return entitlement?.isActive ?? false;
+  }
+
+  Stream<SubscriptionStatus> watchRoasterProStatus() {
+    if (!_initialized) {
+      return _watchRoasterProStatusFromFirestore();
+    }
+
+    final controller = StreamController<SubscriptionStatus>.broadcast();
+
+    void update(CustomerInfo info) {
+      final entitlement = info.entitlements.all[_roasterProEntitlementId];
+      final isActive = entitlement?.isActive ?? false;
+      final expirationDate = entitlement?.expirationDate != null
+          ? DateTime.tryParse(entitlement!.expirationDate!)
+          : null;
+
+      controller.add(SubscriptionStatus(
+        roasterPro: isActive,
+        roasterProUntil: expirationDate,
+      ));
+
+      _syncRoasterProToFirestore(isActive, expirationDate);
+    }
+
+    Purchases.getCustomerInfo().then(update).catchError((e) {
+      debugPrint('RevenueCat getCustomerInfo error (Roaster Pro): $e');
+      controller.add(const SubscriptionStatus());
+    });
+
+    Purchases.addCustomerInfoUpdateListener(update);
+
+    controller.onCancel = () {
+      Purchases.removeCustomerInfoUpdateListener(update);
+    };
+
+    return controller.stream;
+  }
+
+  Stream<SubscriptionStatus> _watchRoasterProStatusFromFirestore() {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return Stream.value(const SubscriptionStatus());
+
+    return _firestore.collection('users').doc(uid).snapshots().map((doc) {
+      final data = doc.data();
+      if (data == null) return const SubscriptionStatus();
+
+      final roasterPro = data['roasterPro'] as bool? ?? false;
+      final roasterProUntil =
+          (data['roasterProUntil'] as Timestamp?)?.toDate();
+
+      return SubscriptionStatus(
+        roasterPro: roasterPro,
+        roasterProUntil: roasterProUntil,
+      );
+    });
+  }
+
+  Future<void> _syncRoasterProToFirestore(
+      bool isRoasterPro, DateTime? roasterProUntil) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+
+    await _firestore.collection('users').doc(uid).update({
+      'roasterPro': isRoasterPro,
+      'roasterProUntil': roasterProUntil != null
+          ? Timestamp.fromDate(roasterProUntil)
+          : null,
+    });
+  }
+
+  Future<bool> purchaseRoasterPro() async {
+    if (!_initialized) return false;
+
+    try {
+      final offerings = await Purchases.getOfferings();
+      final offering = offerings.all['roaster_pro'];
+      if (offering == null) {
+        debugPrint('No roaster_pro offering found');
+        return false;
+      }
+
+      final package = offering.monthly;
+      if (package == null) {
+        debugPrint('No monthly package found in roaster_pro offering');
+        return false;
+      }
+
+      final result = await Purchases.purchase(PurchaseParams.package(package));
+      final entitlement =
+          result.customerInfo.entitlements.all[_roasterProEntitlementId];
+      return entitlement?.isActive ?? false;
+    } on PlatformException catch (e) {
+      if (PurchasesErrorHelper.getErrorCode(e) ==
+          PurchasesErrorCode.purchaseCancelledError) {
+        return false;
+      }
+      rethrow;
+    }
   }
 
   Future<int> getUserCoffeeCount() async {

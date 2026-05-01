@@ -61,5 +61,5 @@ abstract final class AppConstants {
   static const leaderboardSize = 50;
 
   static const freeTierMaxCoffees = 10;
-  static const freeTierMaxTastingsPerMonth = 3;
+  static const freeTierMaxTastingsPerMonth = 7;
 }

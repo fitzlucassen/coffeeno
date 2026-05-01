@@ -191,6 +191,30 @@ class TastingDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
+                // Flavor notes
+                if (tasting.flavorNotes.isNotEmpty) ...[
+                  Text(l10n.flavorNotes, style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: tasting.flavorNotes.map((flavor) {
+                      return Chip(
+                        label: Text(
+                          flavor,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSecondaryContainer,
+                          ),
+                        ),
+                        backgroundColor: colorScheme.secondaryContainer,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
                 // Notes
                 if (tasting.notes != null &&
                     tasting.notes!.isNotEmpty) ...[

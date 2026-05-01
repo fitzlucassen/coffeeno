@@ -34,3 +34,12 @@ final coffeesByOriginProvider =
   final repository = ref.watch(coffeeRepositoryProvider);
   return repository.getCoffeesByOrigin(country);
 });
+
+/// Fetches the community average rating for a coffee identified by
+/// its roaster and name (normalized matching across all users).
+final communityRatingProvider = FutureProvider.family<
+    ({double average, int count})?,
+    ({String roaster, String name})>((ref, params) {
+  final repository = ref.watch(coffeeRepositoryProvider);
+  return repository.getCommunityAverageRating(params.roaster, params.name);
+});

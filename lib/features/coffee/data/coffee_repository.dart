@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../domain/coffee.dart';
+import '../domain/coffee.dart' show Coffee, normalizeText;
 
 class CoffeeRepository {
   CoffeeRepository({FirebaseFirestore? firestore})
@@ -133,5 +133,34 @@ class CoffeeRepository {
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList());
+  }
+
+  /// Returns the community average rating and user count for coffees
+  /// matching the given [roaster] and [name] (normalized).
+  ///
+  /// Returns `null` if no matching coffees have ratings.
+  Future<({double average, int count})?> getCommunityAverageRating(
+    String roaster,
+    String name,
+  ) async {
+    final normalizedRoaster = normalizeText(roaster);
+    final normalizedName = normalizeText(name);
+
+    final snapshot = await _collection
+        .where('roasterNormalized', isEqualTo: normalizedRoaster)
+        .where('nameNormalized', isEqualTo: normalizedName)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+
+    final ratings = snapshot.docs
+        .map((doc) => (doc.data()['avgRating'] as num?)?.toDouble() ?? 0.0)
+        .where((r) => r > 0)
+        .toList();
+
+    if (ratings.isEmpty) return null;
+
+    final average = ratings.reduce((a, b) => a + b) / ratings.length;
+    return (average: average, count: ratings.length);
   }
 }

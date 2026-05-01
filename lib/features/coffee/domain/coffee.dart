@@ -1,5 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Normalizes text for case- and diacritic-insensitive matching.
+String normalizeText(String text) {
+  return text
+      .trim()
+      .toLowerCase()
+      .replaceAll(RegExp(r'[àáâãäå]'), 'a')
+      .replaceAll(RegExp(r'[èéêë]'), 'e')
+      .replaceAll(RegExp(r'[ìíîï]'), 'i')
+      .replaceAll(RegExp(r'[òóôõö]'), 'o')
+      .replaceAll(RegExp(r'[ùúûü]'), 'u')
+      .replaceAll(RegExp(r'[ñ]'), 'n')
+      .replaceAll(RegExp(r'[ç]'), 'c');
+}
+
 class Coffee {
   const Coffee({
     required this.id,
@@ -25,6 +39,10 @@ class Coffee {
     this.farmDescription,
     this.roasterId,
     this.farmId,
+    this.price,
+    this.lot,
+    this.harvestYear,
+    this.freshnessNotified = false,
     required this.createdAt,
   });
 
@@ -51,7 +69,32 @@ class Coffee {
   final String? farmDescription;
   final String? roasterId;
   final String? farmId;
+  final double? price;
+  final String? lot;
+  final int? harvestYear;
+  final bool freshnessNotified;
   final DateTime createdAt;
+
+  int? get daysSinceRoast {
+    if (roastDate == null) return null;
+    return DateTime.now().difference(roastDate!).inDays;
+  }
+
+  String? get freshnessLabel {
+    final days = daysSinceRoast;
+    if (days == null) return null;
+    if (days < 5) return 'Resting';
+    if (days <= 14) return 'Peak freshness';
+    if (days <= 28) return 'Use soon';
+    return 'Past peak';
+  }
+
+  int get peakEndDays {
+    final level = roastLevel?.toLowerCase() ?? '';
+    if (level.contains('light')) return 21;
+    if (level.contains('dark')) return 14;
+    return 18;
+  }
 
   factory Coffee.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
@@ -82,6 +125,10 @@ class Coffee {
       farmDescription: data['farmDescription'] as String?,
       roasterId: data['roasterId'] as String?,
       farmId: data['farmId'] as String?,
+      price: (data['price'] as num?)?.toDouble(),
+      lot: data['lot'] as String?,
+      harvestYear: data['harvestYear'] as int?,
+      freshnessNotified: data['freshnessNotified'] as bool? ?? false,
       createdAt:
           (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -91,7 +138,9 @@ class Coffee {
     return {
       'uid': uid,
       'roaster': roaster,
+      'roasterNormalized': normalizeText(roaster),
       'name': name,
+      'nameNormalized': normalizeText(name),
       'originCountry': originCountry,
       'originRegion': originRegion,
       'farmName': farmName,
@@ -112,6 +161,10 @@ class Coffee {
       'farmDescription': farmDescription,
       'roasterId': roasterId,
       'farmId': farmId,
+      'price': price,
+      'lot': lot,
+      'harvestYear': harvestYear,
+      'freshnessNotified': freshnessNotified,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -140,6 +193,10 @@ class Coffee {
     String? farmDescription,
     String? roasterId,
     String? farmId,
+    double? price,
+    String? lot,
+    int? harvestYear,
+    bool? freshnessNotified,
     DateTime? createdAt,
   }) {
     return Coffee(
@@ -166,6 +223,10 @@ class Coffee {
       farmDescription: farmDescription ?? this.farmDescription,
       roasterId: roasterId ?? this.roasterId,
       farmId: farmId ?? this.farmId,
+      price: price ?? this.price,
+      lot: lot ?? this.lot,
+      harvestYear: harvestYear ?? this.harvestYear,
+      freshnessNotified: freshnessNotified ?? this.freshnessNotified,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -193,6 +254,9 @@ class Coffee {
           ratingsCount == other.ratingsCount &&
           roasterId == other.roasterId &&
           farmId == other.farmId &&
+          price == other.price &&
+          lot == other.lot &&
+          harvestYear == other.harvestYear &&
           createdAt == other.createdAt;
 
   @override
@@ -200,7 +264,7 @@ class Coffee {
         id, uid, roaster, name, originCountry, originRegion,
         farmName, farmerName, altitude, variety, processingMethod,
         roastDate, roastLevel, photoUrl, avgRating, ratingsCount,
-        roasterId, farmId, createdAt,
+        roasterId, farmId, price, lot, harvestYear, createdAt,
       ]);
 
   @override

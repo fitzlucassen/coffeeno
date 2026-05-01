@@ -376,5 +376,76 @@
   "admin": "Admin",
   "@admin": { "description": "Admin label" },
   "scanHint": "Position the coffee bag label in the frame",
-  "@scanHint": { "description": "Hint text on scan screen" }
+  "@scanHint": { "description": "Hint text on scan screen" },
+
+  "price": "Price",
+  "@price": { "description": "Price field label" },
+  "lot": "Lot",
+  "@lot": { "description": "Lot field label" },
+  "harvestYear": "Harvest Year",
+  "@harvestYear": { "description": "Harvest year field label" },
+  "resting": "Resting",
+  "@resting": { "description": "Freshness label: resting" },
+  "peakFreshness": "Peak freshness",
+  "@peakFreshness": { "description": "Freshness label: peak" },
+  "useSoon": "Use soon",
+  "@useSoon": { "description": "Freshness label: use soon" },
+  "pastPeak": "Past peak",
+  "@pastPeak": { "description": "Freshness label: past peak" },
+  "daysPostRoast": "{days} days post-roast",
+  "@daysPostRoast": {
+    "description": "Days since roast",
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "communityRating": "Community rating",
+  "@communityRating": { "description": "Community rating section title" },
+  "communityRatingValue": "{rating} ({count} users)",
+  "@communityRatingValue": {
+    "description": "Community rating with count",
+    "placeholders": {
+      "rating": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "scanABag": "Scan a bag",
+  "@scanABag": { "description": "Scan a bag option in add coffee sheet" },
+  "addManually": "Add manually",
+  "@addManually": { "description": "Add manually option in add coffee sheet" },
+  "addCoffeeTitle": "Add a coffee",
+  "@addCoffeeTitle": { "description": "Add coffee bottom sheet title" },
+
+  "selectFlavors": "Tap to select flavors",
+  "@selectFlavors": { "description": "Flavor selector hint text" },
+
+  "exploreTab": "Explore",
+  "@exploreTab": { "description": "Explore tab label" },
+  "exploreTrending": "Trending",
+  "@exploreTrending": { "description": "Trending coffees section title" },
+  "exploreRecentlyAdded": "Recently Added",
+  "@exploreRecentlyAdded": { "description": "Recently added coffees section title" },
+  "exploreTopRated": "Top Rated",
+  "@exploreTopRated": { "description": "Top rated coffees section title" },
+  "exploreNewRoasters": "New Roasters",
+  "@exploreNewRoasters": { "description": "New roasters section title" },
+
+  "roasterDashboard": "Roaster Dashboard",
+  "@roasterDashboard": { "description": "Roaster dashboard screen title" },
+  "roasterProRequired": "Roaster Pro Required",
+  "@roasterProRequired": { "description": "Roaster Pro paywall title" },
+  "roasterProDesc": "Access detailed analytics about your coffees",
+  "@roasterProDesc": { "description": "Roaster Pro paywall description" },
+  "roasterProPrice": "€9.99/month",
+  "@roasterProPrice": { "description": "Roaster Pro price display" },
+  "recentTastings30d": "Last 30 days",
+  "@recentTastings30d": { "description": "Recent tastings (30 days) stat label" },
+  "topCoffeesByRating": "Top Coffees",
+  "@topCoffeesByRating": { "description": "Top coffees by rating section title" },
+
+  "exploreNearYou": "Popular Near You",
+  "@exploreNearYou": { "description": "Popular coffees from user's country section title" },
+  "country": "Country",
+  "@country": { "description": "Country field label" }
 }

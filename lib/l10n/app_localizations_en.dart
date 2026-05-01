@@ -511,4 +511,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scanHint => 'Position the coffee bag label in the frame';
+
+  @override
+  String get price => 'Price';
+
+  @override
+  String get lot => 'Lot';
+
+  @override
+  String get harvestYear => 'Harvest Year';
+
+  @override
+  String get resting => 'Resting';
+
+  @override
+  String get peakFreshness => 'Peak freshness';
+
+  @override
+  String get useSoon => 'Use soon';
+
+  @override
+  String get pastPeak => 'Past peak';
+
+  @override
+  String daysPostRoast(int days) {
+    return '$days days post-roast';
+  }
+
+  @override
+  String get communityRating => 'Community rating';
+
+  @override
+  String communityRatingValue(String rating, int count) {
+    return '$rating ($count users)';
+  }
+
+  @override
+  String get scanABag => 'Scan a bag';
+
+  @override
+  String get addManually => 'Add manually';
+
+  @override
+  String get addCoffeeTitle => 'Add a coffee';
+
+  @override
+  String get selectFlavors => 'Tap to select flavors';
+
+  @override
+  String get exploreTab => 'Explore';
+
+  @override
+  String get exploreTrending => 'Trending';
+
+  @override
+  String get exploreRecentlyAdded => 'Recently Added';
+
+  @override
+  String get exploreTopRated => 'Top Rated';
+
+  @override
+  String get exploreNewRoasters => 'New Roasters';
+
+  @override
+  String get roasterDashboard => 'Roaster Dashboard';
+
+  @override
+  String get roasterProRequired => 'Roaster Pro Required';
+
+  @override
+  String get roasterProDesc => 'Access detailed analytics about your coffees';
+
+  @override
+  String get roasterProPrice => '€9.99/month';
+
+  @override
+  String get recentTastings30d => 'Last 30 days';
+
+  @override
+  String get topCoffeesByRating => 'Top Coffees';
+
+  @override
+  String get exploreNearYou => 'Popular Near You';
+
+  @override
+  String get country => 'Country';
 }

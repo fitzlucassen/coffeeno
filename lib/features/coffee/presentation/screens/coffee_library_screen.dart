@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:coffeeno/core/constants/app_constants.dart';
 import 'package:coffeeno/core/router/app_router.dart';
 import '../providers/coffee_provider.dart';
+import '../providers/freshness_notification_provider.dart';
 import '../widgets/coffee_card.dart';
 import '../widgets/coffee_filter_bar.dart';
 import '../../domain/coffee.dart';
@@ -26,6 +27,7 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
   RoastLevel? _selectedRoastLevel;
   ProcessingMethod? _selectedProcessingMethod;
   CoffeeSortOption _sortOption = CoffeeSortOption.dateAdded;
+  bool _freshnessSynced = false;
 
   @override
   void dispose() {
@@ -107,6 +109,19 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
           );
         },
         data: (coffees) {
+          // Schedule freshness notifications for any coffee that needs one.
+          if (!_freshnessSynced) {
+            _freshnessSynced = true;
+            final notificationService =
+                ref.read(freshnessNotificationProvider);
+            notificationService.init().then((_) {
+              notificationService.rescheduleAll(coffees).catchError((e) {
+                debugPrint(
+                    '[COFFEENO] Freshness reschedule failed: $e');
+              });
+            });
+          }
+
           // Collect available countries for filter
           final countries = coffees
               .map((c) => c.originCountry)

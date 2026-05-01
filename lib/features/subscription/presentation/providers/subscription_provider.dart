@@ -16,3 +16,13 @@ final isPremiumProvider = Provider<bool>((ref) {
   final status = ref.watch(subscriptionStatusProvider).value;
   return status?.isPremium ?? false;
 });
+
+final isRoasterProProvider = Provider<bool>((ref) {
+  final status = ref.watch(roasterProStatusProvider).value;
+  return status?.isRoasterPro ?? false;
+});
+
+final roasterProStatusProvider = StreamProvider<SubscriptionStatus>((ref) {
+  final repo = ref.watch(subscriptionRepositoryProvider);
+  return repo.watchRoasterProStatus();
+});

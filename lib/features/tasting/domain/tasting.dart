@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class Tasting {
   const Tasting({
@@ -24,6 +25,7 @@ class Tasting {
     required this.sweetness,
     required this.aftertaste,
     required this.overallRating,
+    this.flavorNotes = const [],
     this.notes,
     required this.tastingDate,
     this.likesCount = 0,
@@ -53,6 +55,7 @@ class Tasting {
   final int sweetness;
   final int aftertaste;
   final double overallRating;
+  final List<String> flavorNotes;
   final String? notes;
   final DateTime tastingDate;
   final int likesCount;
@@ -84,6 +87,10 @@ class Tasting {
       sweetness: data['sweetness'] as int? ?? 3,
       aftertaste: data['aftertaste'] as int? ?? 3,
       overallRating: (data['overallRating'] as num?)?.toDouble() ?? 0.0,
+      flavorNotes: (data['flavorNotes'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       notes: data['notes'] as String?,
       tastingDate:
           (data['tastingDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -117,6 +124,7 @@ class Tasting {
       'sweetness': sweetness,
       'aftertaste': aftertaste,
       'overallRating': overallRating,
+      'flavorNotes': flavorNotes,
       'notes': notes,
       'tastingDate': Timestamp.fromDate(tastingDate),
       'likesCount': likesCount,
@@ -148,6 +156,7 @@ class Tasting {
     int? sweetness,
     int? aftertaste,
     double? overallRating,
+    List<String>? flavorNotes,
     String? notes,
     DateTime? tastingDate,
     int? likesCount,
@@ -177,6 +186,7 @@ class Tasting {
       sweetness: sweetness ?? this.sweetness,
       aftertaste: aftertaste ?? this.aftertaste,
       overallRating: overallRating ?? this.overallRating,
+      flavorNotes: flavorNotes ?? this.flavorNotes,
       notes: notes ?? this.notes,
       tastingDate: tastingDate ?? this.tastingDate,
       likesCount: likesCount ?? this.likesCount,
@@ -209,6 +219,7 @@ class Tasting {
           sweetness == other.sweetness &&
           aftertaste == other.aftertaste &&
           overallRating == other.overallRating &&
+          listEquals(flavorNotes, other.flavorNotes) &&
           notes == other.notes &&
           tastingDate == other.tastingDate &&
           likesCount == other.likesCount &&
@@ -220,7 +231,7 @@ class Tasting {
         id, userId, coffeeId, coffeeName, roasterName,
         brewMethod, grindSize, doseGrams, waterMl, ratio,
         brewTimeSec, waterTempC, aroma, flavor, acidity,
-        body, sweetness, aftertaste, overallRating, notes,
+        body, sweetness, aftertaste, overallRating, ...flavorNotes, notes,
         tastingDate, likesCount, commentsCount, createdAt,
       ]);
 

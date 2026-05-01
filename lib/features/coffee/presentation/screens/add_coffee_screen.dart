@@ -27,6 +27,7 @@ import '../../data/coffee_enrichment_service.dart';
 import '../../data/coffee_repository.dart';
 import '../../domain/coffee.dart';
 import '../providers/coffee_provider.dart';
+import '../providers/freshness_notification_provider.dart';
 
 class AddCoffeeScreen extends ConsumerStatefulWidget {
   const AddCoffeeScreen({super.key});
@@ -46,6 +47,9 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
   final _altitudeController = TextEditingController();
   final _varietyController = TextEditingController();
   final _flavorNoteController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _lotController = TextEditingController();
+  final _harvestYearController = TextEditingController();
 
   ProcessingMethod? _processingMethod;
   RoastLevel? _roastLevel;
@@ -106,6 +110,9 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
     _altitudeController.dispose();
     _varietyController.dispose();
     _flavorNoteController.dispose();
+    _priceController.dispose();
+    _lotController.dispose();
+    _harvestYearController.dispose();
     super.dispose();
   }
 
@@ -385,10 +392,28 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
         roastDate: _roastDate,
         roastLevel: _roastLevel?.label,
         flavorNotes: _flavorNotes,
+        price: _priceController.text.trim().isNotEmpty
+            ? double.tryParse(_priceController.text.trim())
+            : null,
+        lot: _lotController.text.trim().isNotEmpty
+            ? _lotController.text.trim()
+            : null,
+        harvestYear: _harvestYearController.text.trim().isNotEmpty
+            ? int.tryParse(_harvestYearController.text.trim())
+            : null,
         createdAt: DateTime.now(),
       );
 
       final coffeeId = await repository.addCoffee(coffee);
+
+      // Schedule a freshness reminder notification for this coffee.
+      final savedCoffee = coffee.copyWith(id: coffeeId);
+      final notificationService = ref.read(freshnessNotificationProvider);
+      notificationService.init().then((_) {
+        notificationService.scheduleForCoffee(savedCoffee).catchError((e) {
+          debugPrint('[COFFEENO] Freshness notification scheduling failed: $e');
+        });
+      });
 
       if (isPremium) {
         final enrichmentService = ref.read(coffeeEnrichmentProvider);
@@ -575,6 +600,39 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
                 onPressed: _pickRoastDate,
               ),
               onTap: _pickRoastDate,
+            ),
+            const SizedBox(height: 16),
+
+            // Price
+            AppTextField(
+              controller: _priceController,
+              label: l10n.price,
+              prefixIcon: Icons.euro_rounded,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              textInputAction: TextInputAction.next,
+              suffixIcon: const Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: Text('€'),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Lot
+            AppTextField(
+              controller: _lotController,
+              label: l10n.lot,
+              prefixIcon: Icons.tag_rounded,
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 16),
+
+            // Harvest Year
+            AppTextField(
+              controller: _harvestYearController,
+              label: l10n.harvestYear,
+              prefixIcon: Icons.grass_rounded,
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 16),
 

@@ -516,4 +516,89 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get scanHint => 'Positionnez l\'étiquette du sachet dans le cadre';
+
+  @override
+  String get price => 'Prix';
+
+  @override
+  String get lot => 'Lot';
+
+  @override
+  String get harvestYear => 'Année de récolte';
+
+  @override
+  String get resting => 'Repos';
+
+  @override
+  String get peakFreshness => 'Fraîcheur optimale';
+
+  @override
+  String get useSoon => 'À consommer bientôt';
+
+  @override
+  String get pastPeak => 'Passé';
+
+  @override
+  String daysPostRoast(int days) {
+    return '$days jours après torréfaction';
+  }
+
+  @override
+  String get communityRating => 'Note communautaire';
+
+  @override
+  String communityRatingValue(String rating, int count) {
+    return '$rating ($count utilisateurs)';
+  }
+
+  @override
+  String get scanABag => 'Scanner un sachet';
+
+  @override
+  String get addManually => 'Ajouter manuellement';
+
+  @override
+  String get addCoffeeTitle => 'Ajouter un café';
+
+  @override
+  String get selectFlavors => 'Appuyez pour sélectionner';
+
+  @override
+  String get exploreTab => 'Explorer';
+
+  @override
+  String get exploreTrending => 'Tendances';
+
+  @override
+  String get exploreRecentlyAdded => 'Ajoutés récemment';
+
+  @override
+  String get exploreTopRated => 'Mieux notés';
+
+  @override
+  String get exploreNewRoasters => 'Nouveaux torréfacteurs';
+
+  @override
+  String get roasterDashboard => 'Tableau de bord';
+
+  @override
+  String get roasterProRequired => 'Roaster Pro requis';
+
+  @override
+  String get roasterProDesc => 'Accédez aux analyses détaillées de vos cafés';
+
+  @override
+  String get roasterProPrice => '9,99 €/mois';
+
+  @override
+  String get recentTastings30d => '30 derniers jours';
+
+  @override
+  String get topCoffeesByRating => 'Meilleurs cafés';
+
+  @override
+  String get exploreNearYou => 'Populaire près de vous';
+
+  @override
+  String get country => 'Pays';
 }

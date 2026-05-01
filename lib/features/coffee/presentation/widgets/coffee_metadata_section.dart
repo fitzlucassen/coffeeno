@@ -69,6 +69,24 @@ class CoffeeMetadataSection extends StatelessWidget {
           label: l10n.roastDate,
           value: DateFormat.yMMMd().format(coffee.roastDate!),
         ),
+      if (coffee.price != null)
+        _MetadataEntry(
+          icon: Icons.euro_rounded,
+          label: l10n.price,
+          value: '${coffee.price!.toStringAsFixed(2)} €',
+        ),
+      if (coffee.lot != null)
+        _MetadataEntry(
+          icon: Icons.tag_rounded,
+          label: l10n.lot,
+          value: coffee.lot!,
+        ),
+      if (coffee.harvestYear != null)
+        _MetadataEntry(
+          icon: Icons.grass_rounded,
+          label: l10n.harvestYear,
+          value: coffee.harvestYear.toString(),
+        ),
     ];
 
     if (entries.isEmpty) return const SizedBox.shrink();

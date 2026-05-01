@@ -19,6 +19,7 @@ import 'package:coffeeno/core/widgets/coffee_score_badge.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
 import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../providers/coffee_provider.dart';
+import '../providers/freshness_notification_provider.dart';
 import '../widgets/coffee_metadata_section.dart';
 import '../../../tasting/presentation/providers/tasting_provider.dart';
 
@@ -48,6 +49,11 @@ class CoffeeDetailScreen extends ConsumerWidget {
       ),
     );
     if (confirmed != true) return;
+
+    // Cancel any pending freshness notification before deleting.
+    final notificationService = ref.read(freshnessNotificationProvider);
+    await notificationService.init();
+    await notificationService.cancelForCoffee(coffeeId);
 
     final repository = ref.read(coffeeRepositoryProvider);
     await repository.deleteCoffee(coffeeId);
@@ -200,6 +206,12 @@ class CoffeeDetailScreen extends ConsumerWidget {
                       // Metadata section
                       CoffeeMetadataSection(coffee: coffee),
                       const SizedBox(height: 20),
+
+                      // Community rating
+                      _CommunityRatingSection(
+                        roaster: coffee.roaster,
+                        name: coffee.name,
+                      ),
 
                       // Flavor notes
                       if (coffee.flavorNotes.isNotEmpty) ...[
@@ -452,6 +464,67 @@ class CoffeeDetailScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class _CommunityRatingSection extends ConsumerWidget {
+  const _CommunityRatingSection({
+    required this.roaster,
+    required this.name,
+  });
+
+  final String roaster;
+  final String name;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final ratingAsync = ref.watch(
+      communityRatingProvider((roaster: roaster, name: name)),
+    );
+
+    return ratingAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (result) {
+        if (result == null) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.communityRating,
+              style: theme.textTheme.titleSmall,
+            ),
+            const SizedBox(height: 8),
+            AppCard(
+              child: Row(
+                children: [
+                  Icon(Icons.people_rounded,
+                      size: 20, color: colorScheme.primary),
+                  const SizedBox(width: 12),
+                  StarRating(rating: result.average, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.communityRatingValue(
+                      result.average.toStringAsFixed(1),
+                      result.count,
+                    ),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        );
+      },
     );
   }
 }

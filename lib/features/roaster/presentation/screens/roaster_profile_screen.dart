@@ -178,11 +178,25 @@ class RoasterProfileScreen extends ConsumerWidget {
                         if (isOwner || isAdmin) {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
-                            child: OutlinedButton.icon(
-                              onPressed: () =>
-                                  context.push('/roaster/$roasterId/edit'),
-                              icon: const Icon(Icons.edit, size: 18),
-                              label: Text(l10n.editProfileInfo),
+                            child: Wrap(
+                              spacing: 12,
+                              runSpacing: 8,
+                              children: [
+                                OutlinedButton.icon(
+                                  onPressed: () =>
+                                      context.push('/roaster/$roasterId/edit'),
+                                  icon: const Icon(Icons.edit, size: 18),
+                                  label: Text(l10n.editProfileInfo),
+                                ),
+                                if (isOwner)
+                                  FilledButton.icon(
+                                    onPressed: () => context.push(
+                                        '/roaster/$roasterId/dashboard'),
+                                    icon: const Icon(
+                                        Icons.analytics_rounded, size: 18),
+                                    label: Text(l10n.roasterDashboard),
+                                  ),
+                              ],
                             ),
                           );
                         }

@@ -8,6 +8,7 @@ class AppUser {
     required this.username,
     this.avatarUrl,
     this.bio,
+    this.country,
     this.followersCount = 0,
     this.followingCount = 0,
     this.tastingsCount = 0,
@@ -23,6 +24,7 @@ class AppUser {
   final String username;
   final String? avatarUrl;
   final String? bio;
+  final String? country;
   final int followersCount;
   final int followingCount;
   final int tastingsCount;
@@ -46,6 +48,7 @@ class AppUser {
       username: data['username'] as String? ?? '',
       avatarUrl: data['avatarUrl'] as String?,
       bio: data['bio'] as String?,
+      country: data['country'] as String?,
       followersCount: data['followersCount'] as int? ?? 0,
       followingCount: data['followingCount'] as int? ?? 0,
       tastingsCount: data['tastingsCount'] as int? ?? 0,
@@ -65,6 +68,7 @@ class AppUser {
       'usernameLower': username.toLowerCase(),
       'avatarUrl': avatarUrl,
       'bio': bio,
+      'country': country,
       'followersCount': followersCount,
       'followingCount': followingCount,
       'tastingsCount': tastingsCount,
@@ -83,6 +87,7 @@ class AppUser {
     String? username,
     String? avatarUrl,
     String? bio,
+    String? country,
     int? followersCount,
     int? followingCount,
     int? tastingsCount,
@@ -98,6 +103,7 @@ class AppUser {
       username: username ?? this.username,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       bio: bio ?? this.bio,
+      country: country ?? this.country,
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
       tastingsCount: tastingsCount ?? this.tastingsCount,
@@ -119,6 +125,7 @@ class AppUser {
           username == other.username &&
           avatarUrl == other.avatarUrl &&
           bio == other.bio &&
+          country == other.country &&
           followersCount == other.followersCount &&
           followingCount == other.followingCount &&
           tastingsCount == other.tastingsCount &&
@@ -135,6 +142,7 @@ class AppUser {
         username,
         avatarUrl,
         bio,
+        country,
         followersCount,
         followingCount,
         tastingsCount,

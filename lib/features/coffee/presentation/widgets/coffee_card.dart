@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:coffeeno/core/widgets/app_card.dart';
 import 'package:coffeeno/core/widgets/coffee_score_badge.dart';
+import 'package:coffeeno/l10n/app_localizations.dart';
 import '../../domain/coffee.dart';
 
 class CoffeeCard extends StatelessWidget {
@@ -78,6 +79,10 @@ class CoffeeCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (coffee.freshnessLabel != null) ...[
+                    const SizedBox(height: 6),
+                    _FreshnessBadge(coffee: coffee),
+                  ],
                   if (coffee.flavorNotes.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Flexible(
@@ -107,6 +112,56 @@ class CoffeeCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FreshnessBadge extends StatelessWidget {
+  const _FreshnessBadge({required this.coffee});
+  final Coffee coffee;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final label = coffee.freshnessLabel;
+    if (label == null) return const SizedBox.shrink();
+
+    final Color bgColor;
+    final Color fgColor;
+    final String localizedLabel;
+
+    switch (label) {
+      case 'Resting':
+        bgColor = Colors.grey.shade200;
+        fgColor = Colors.grey.shade700;
+        localizedLabel = l10n.resting;
+      case 'Peak freshness':
+        bgColor = Colors.green.shade100;
+        fgColor = Colors.green.shade800;
+        localizedLabel = l10n.peakFreshness;
+      case 'Use soon':
+        bgColor = Colors.amber.shade100;
+        fgColor = Colors.amber.shade900;
+        localizedLabel = l10n.useSoon;
+      default: // Past peak
+        bgColor = Colors.red.shade100;
+        fgColor = Colors.red.shade800;
+        localizedLabel = l10n.pastPeak;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        localizedLabel,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: fgColor,
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }

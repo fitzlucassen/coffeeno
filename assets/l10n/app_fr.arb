@@ -162,5 +162,38 @@
   "photoUploads": "Upload de photos",
   "shareCards": "Cartes de dégustation",
   "admin": "Admin",
-  "scanHint": "Positionnez l'étiquette du sachet dans le cadre"
+  "scanHint": "Positionnez l'étiquette du sachet dans le cadre",
+
+  "price": "Prix",
+  "lot": "Lot",
+  "harvestYear": "Année de récolte",
+  "resting": "Repos",
+  "peakFreshness": "Fraîcheur optimale",
+  "useSoon": "À consommer bientôt",
+  "pastPeak": "Passé",
+  "daysPostRoast": "{days} jours après torréfaction",
+
+  "communityRating": "Note communautaire",
+  "communityRatingValue": "{rating} ({count} utilisateurs)",
+  "scanABag": "Scanner un sachet",
+  "addManually": "Ajouter manuellement",
+  "addCoffeeTitle": "Ajouter un café",
+
+  "selectFlavors": "Appuyez pour sélectionner",
+
+  "exploreTab": "Explorer",
+  "exploreTrending": "Tendances",
+  "exploreRecentlyAdded": "Ajoutés récemment",
+  "exploreTopRated": "Mieux notés",
+  "exploreNewRoasters": "Nouveaux torréfacteurs",
+
+  "roasterDashboard": "Tableau de bord",
+  "roasterProRequired": "Roaster Pro requis",
+  "roasterProDesc": "Accédez aux analyses détaillées de vos cafés",
+  "roasterProPrice": "9,99 €/mois",
+  "recentTastings30d": "30 derniers jours",
+  "topCoffeesByRating": "Meilleurs cafés",
+
+  "exploreNearYou": "Populaire près de vous",
+  "country": "Pays"
 }
