@@ -190,7 +190,7 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.65,
+                          childAspectRatio: 0.58,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
                         ),

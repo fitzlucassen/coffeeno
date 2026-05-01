@@ -82,6 +82,14 @@
       ]
     },
     {
+      "collectionGroup": "tastings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "tastingDate", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "claims",
       "queryScope": "COLLECTION",
       "fields": [

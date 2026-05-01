@@ -45,6 +45,7 @@ class CoffeeCard extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     children: [
@@ -82,8 +83,7 @@ class CoffeeCard extends StatelessWidget {
                   if (coffee.freshnessLabel != null) ...[
                     const SizedBox(height: 6),
                     _FreshnessBadge(coffee: coffee),
-                  ],
-                  if (coffee.flavorNotes.isNotEmpty) ...[
+                  ] else if (coffee.flavorNotes.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Flexible(
                       child: Wrap(
