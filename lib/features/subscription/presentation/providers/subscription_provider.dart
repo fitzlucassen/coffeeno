@@ -40,11 +40,7 @@ final isPremiumProvider = Provider<bool>((ref) {
 
 final isRoasterProProvider = Provider<bool>((ref) {
   final asyncStatus = ref.watch(roasterProStatusProvider);
-  return asyncStatus.when(
-    data: (status) => status.isRoasterPro,
-    loading: () => false,
-    error: (_, __) => false,
-  );
+  return asyncStatus.value?.isRoasterPro ?? false;
 });
 
 final roasterProStatusProvider = StreamProvider<SubscriptionStatus>((ref) {

@@ -74,6 +74,14 @@
       ]
     },
     {
+      "collectionGroup": "tastings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coffeeId", "order": "ASCENDING" },
+        { "fieldPath": "tastingDate", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "coffees",
       "queryScope": "COLLECTION",
       "fields": [

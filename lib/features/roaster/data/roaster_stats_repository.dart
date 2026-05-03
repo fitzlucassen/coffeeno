@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../coffee/domain/coffee.dart';
@@ -16,7 +18,9 @@ class RoasterStatsRepository {
     final coffeesSnapshot = await _firestore
         .collection('coffees')
         .where('roasterId', isEqualTo: roasterId)
-        .get();
+        .get()
+        .timeout(const Duration(seconds: 10),
+            onTimeout: () => throw TimeoutException('coffees query timed out'));
 
     final coffees =
         coffeesSnapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList();
