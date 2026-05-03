@@ -30,153 +30,141 @@ class RoasterDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.roasterDashboard),
       ),
-      body: roasterAsync.when(
+      body: statsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => Center(child: Text(l10n.error)),
-        data: (roaster) {
-          if (roaster == null) return Center(child: Text(l10n.error));
+        data: (stats) {
+          final roasterName = roasterAsync.value?.name;
 
-          return statsAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => Center(child: Text(l10n.error)),
-            data: (stats) {
-              return RefreshIndicator(
-                onRefresh: () async {
-                  ref.invalidate(roasterStatsProvider(roasterId));
-                },
-                child: ListView(
-                  padding: const EdgeInsets.all(24),
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(roasterStatsProvider(roasterId));
+            },
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                if (roasterName != null) ...[
+                  Text(roasterName, style: theme.textTheme.headlineSmall),
+                  const SizedBox(height: 24),
+                ],
+                Row(
                   children: [
-                    // Roaster name header
-                    Text(
-                      roaster.name,
-                      style: theme.textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Stats grid
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.coffee_rounded,
-                            label: l10n.totalCoffees,
-                            value: stats.totalCoffees.toString(),
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.rate_review_rounded,
-                            label: l10n.totalTastings,
-                            value: stats.totalTastings.toString(),
-                            color: colorScheme.tertiary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.star_rounded,
-                            label: l10n.avgScore,
-                            value: stats.ratingsCount > 0
-                                ? stats.avgRating.toStringAsFixed(1)
-                                : '-',
-                            color: colorScheme.secondary,
-                            subtitle: stats.ratingsCount > 0
-                                ? l10n.ratingsCount(stats.ratingsCount)
-                                : null,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.trending_up_rounded,
-                            label: l10n.recentTastings30d,
-                            value: stats.recentTastings.toString(),
-                            color: colorScheme.error,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Top coffees section
-                    if (stats.topCoffees.isNotEmpty) ...[
-                      Text(
-                        l10n.topCoffeesByRating,
-                        style: theme.textTheme.titleMedium,
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.coffee_rounded,
+                        label: l10n.totalCoffees,
+                        value: stats.totalCoffees.toString(),
+                        color: colorScheme.primary,
                       ),
-                      const SizedBox(height: 12),
-                      ...stats.topCoffees.map((coffee) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: AppCard(
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor:
-                                        colorScheme.primaryContainer,
-                                    child: Icon(
-                                      Icons.coffee_rounded,
-                                      size: 20,
-                                      color: colorScheme.onPrimaryContainer,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          coffee.name,
-                                          style: theme.textTheme.bodyLarge
-                                              ?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        Text(
-                                          l10n.tastingsCount(
-                                              coffee.tastingsCount),
-                                          style: theme.textTheme.bodySmall
-                                              ?.copyWith(
-                                            color:
-                                                colorScheme.onSurfaceVariant,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.star_rounded,
-                                          size: 18,
-                                          color: colorScheme.secondary),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        coffee.avgRating.toStringAsFixed(1),
-                                        style: theme.textTheme.titleSmall
-                                            ?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.rate_review_rounded,
+                        label: l10n.totalTastings,
+                        value: stats.totalTastings.toString(),
+                        color: colorScheme.tertiary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.star_rounded,
+                        label: l10n.avgScore,
+                        value: stats.ratingsCount > 0
+                            ? stats.avgRating.toStringAsFixed(1)
+                            : '-',
+                        color: colorScheme.secondary,
+                        subtitle: stats.ratingsCount > 0
+                            ? l10n.ratingsCount(stats.ratingsCount)
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.trending_up_rounded,
+                        label: l10n.recentTastings30d,
+                        value: stats.recentTastings.toString(),
+                        color: colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                if (stats.topCoffees.isNotEmpty) ...[
+                  Text(
+                    l10n.topCoffeesByRating,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  ...stats.topCoffees.map((coffee) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: AppCard(
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundColor:
+                                    colorScheme.primaryContainer,
+                                child: Icon(
+                                  Icons.coffee_rounded,
+                                  size: 20,
+                                  color: colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      coffee.name,
+                                      style: theme.textTheme.bodyLarge
+                                          ?.copyWith(
+                                        fontWeight: FontWeight.w600,
                                       ),
-                                    ],
+                                    ),
+                                    Text(
+                                      l10n.tastingsCount(
+                                          coffee.tastingsCount),
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                        color:
+                                            colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.star_rounded,
+                                      size: 18,
+                                      color: colorScheme.secondary),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    coffee.avgRating.toStringAsFixed(1),
+                                    style: theme.textTheme.titleSmall
+                                        ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          )),
-                    ],
-                  ],
-                ),
-              );
-            },
+                            ],
+                          ),
+                        ),
+                      )),
+                ],
+              ],
+            ),
           );
         },
       ),

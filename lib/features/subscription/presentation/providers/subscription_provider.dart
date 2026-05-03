@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/subscription_repository.dart';
@@ -9,7 +12,21 @@ final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
 
 final subscriptionStatusProvider = StreamProvider<SubscriptionStatus>((ref) {
   final repo = ref.watch(subscriptionRepositoryProvider);
-  return repo.watchStatus();
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+
+  if (uid == null) {
+    return Stream.value(const SubscriptionStatus());
+  }
+
+  final controller = StreamController<SubscriptionStatus>();
+
+  repo.loginUser(uid).then((_) {
+    final stream = repo.watchStatus();
+    controller.addStream(stream);
+  });
+
+  ref.onDispose(controller.close);
+  return controller.stream;
 });
 
 final isPremiumProvider = Provider<bool>((ref) {
@@ -32,5 +49,19 @@ final isRoasterProProvider = Provider<bool>((ref) {
 
 final roasterProStatusProvider = StreamProvider<SubscriptionStatus>((ref) {
   final repo = ref.watch(subscriptionRepositoryProvider);
-  return repo.watchRoasterProStatus();
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+
+  if (uid == null) {
+    return Stream.value(const SubscriptionStatus());
+  }
+
+  final controller = StreamController<SubscriptionStatus>();
+
+  repo.loginUser(uid).then((_) {
+    final stream = repo.watchRoasterProStatus();
+    controller.addStream(stream);
+  });
+
+  ref.onDispose(controller.close);
+  return controller.stream;
 });
