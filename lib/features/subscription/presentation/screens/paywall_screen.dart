@@ -21,6 +21,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       final repo = ref.read(subscriptionRepositoryProvider);
       final success = await repo.purchase();
       if (success && mounted) {
+        ref.invalidate(subscriptionStatusProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).premium)),
         );

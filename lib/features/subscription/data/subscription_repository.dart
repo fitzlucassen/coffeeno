@@ -61,12 +61,19 @@ class SubscriptionRepository {
 
     final controller = StreamController<SubscriptionStatus>.broadcast();
 
-    void update(CustomerInfo info) {
+    void listener(CustomerInfo info) {
       final entitlement = info.entitlements.all[_entitlementId];
       final isActive = entitlement?.isActive ?? false;
       final expirationDate = entitlement?.expirationDate != null
           ? DateTime.tryParse(entitlement!.expirationDate!)
           : null;
+
+      debugPrint(
+        '[SUB] RevenueCat status: active=$isActive, '
+        'entitlementId=$_entitlementId, '
+        'expiration=$expirationDate, '
+        'allEntitlements=${info.entitlements.all.keys.toList()}',
+      );
 
       controller.add(SubscriptionStatus(
         tier: isActive ? SubscriptionTier.premium : SubscriptionTier.free,
@@ -76,15 +83,15 @@ class SubscriptionRepository {
       _syncToFirestore(isActive, expirationDate);
     }
 
-    Purchases.getCustomerInfo().then(update).catchError((e) {
+    Purchases.getCustomerInfo().then(listener).catchError((e) {
       debugPrint('RevenueCat getCustomerInfo error: $e');
       controller.add(const SubscriptionStatus());
     });
 
-    Purchases.addCustomerInfoUpdateListener(update);
+    Purchases.addCustomerInfoUpdateListener(listener);
 
     controller.onCancel = () {
-      Purchases.removeCustomerInfoUpdateListener(update);
+      Purchases.removeCustomerInfoUpdateListener(listener);
     };
 
     return controller.stream;
@@ -138,7 +145,21 @@ class SubscriptionRepository {
 
       final result = await Purchases.purchase(PurchaseParams.package(package));
       final entitlement = result.customerInfo.entitlements.all[_entitlementId];
-      return entitlement?.isActive ?? false;
+
+      debugPrint(
+        '[SUB] purchase result: '
+        'entitlement=$entitlement, '
+        'isActive=${entitlement?.isActive}, '
+        'allKeys=${result.customerInfo.entitlements.all.keys.toList()}',
+      );
+
+      // If purchase didn't throw, it succeeded. The entitlement might not
+      // be immediately populated in the result — verify with a fresh fetch.
+      if (entitlement?.isActive ?? false) return true;
+
+      final info = await Purchases.getCustomerInfo();
+      final freshEntitlement = info.entitlements.all[_entitlementId];
+      return freshEntitlement?.isActive ?? false;
     } on PlatformException catch (e) {
       if (PurchasesErrorHelper.getErrorCode(e) ==
           PurchasesErrorCode.purchaseCancelledError) {
