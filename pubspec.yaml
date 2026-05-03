@@ -66,6 +66,8 @@ dev_dependencies:
   riverpod_generator: ^4.0.3
   build_runner: ^2.4.0
   mockito: ^5.4.0
+  fake_cloud_firestore: ^4.0.0
+  firebase_auth_mocks: ^0.15.0
 
 flutter:
   uses-material-design: true

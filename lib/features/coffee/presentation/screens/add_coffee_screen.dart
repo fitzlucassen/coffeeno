@@ -333,8 +333,10 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
     final isPremium = ref.read(isPremiumProvider);
 
     if (!isPremium) {
-      final subRepo = ref.read(subscriptionRepositoryProvider);
-      final coffeeCount = await subRepo.getUserCoffeeCount();
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      final coffeeCount =
+          await ref.read(coffeeRepositoryProvider).countForUser(uid);
       if (coffeeCount >= AppConstants.freeTierMaxCoffees && mounted) {
         final l10n = AppLocalizations.of(context);
         showUpgradePrompt(

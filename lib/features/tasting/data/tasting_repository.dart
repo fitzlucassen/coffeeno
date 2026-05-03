@@ -92,6 +92,25 @@ class TastingRepository {
             snapshot.docs.map((doc) => Tasting.fromFirestore(doc)).toList());
   }
 
+  /// Counts the number of tastings a user created **this calendar month**
+  /// (server-side count query). Used for free-tier gating.
+  Future<int> countForUserInMonth(String userId, {DateTime? now}) async {
+    final reference = now ?? DateTime.now();
+    final startOfMonth = DateTime(reference.year, reference.month, 1);
+    final startOfNextMonth =
+        DateTime(reference.year, reference.month + 1, 1);
+
+    final snapshot = await _tastings
+        .where('userId', isEqualTo: userId)
+        .where('tastingDate',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
+        .where('tastingDate',
+            isLessThan: Timestamp.fromDate(startOfNextMonth))
+        .count()
+        .get();
+    return snapshot.count ?? 0;
+  }
+
   /// Streams a user's tastings, ordered by creation date descending.
   Stream<List<Tasting>> getUserTastings(String userId) {
     return _tastings

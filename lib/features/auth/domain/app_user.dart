@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'user_role.dart';
+
 class AppUser {
   const AppUser({
     required this.uid,
@@ -12,9 +14,11 @@ class AppUser {
     this.followersCount = 0,
     this.followingCount = 0,
     this.tastingsCount = 0,
-    this.role = 'user',
+    this.roles = const {UserRole.user},
     this.premium = false,
     this.premiumUntil,
+    this.roasterPro = false,
+    this.roasterProUntil,
     required this.createdAt,
   });
 
@@ -28,16 +32,29 @@ class AppUser {
   final int followersCount;
   final int followingCount;
   final int tastingsCount;
-  final String role; // 'user', 'roaster', 'farmer', 'admin'
+  final Set<UserRole> roles;
   final bool premium;
   final DateTime? premiumUntil;
+  final bool roasterPro;
+  final DateTime? roasterProUntil;
   final DateTime createdAt;
 
-  bool get isAdmin => role == 'admin';
-  bool get isRoaster => role == 'roaster';
-  bool get isFarmer => role == 'farmer';
-  bool get isPremiumActive =>
+  bool get isAdmin => roles.contains(UserRole.admin);
+  bool get isRoaster => roles.contains(UserRole.roaster);
+  bool get isFarmer => roles.contains(UserRole.farmer);
+
+  bool get _roasterProActive =>
+      roasterPro &&
+      (roasterProUntil == null || roasterProUntil!.isAfter(DateTime.now()));
+
+  bool get _premiumTierActive =>
       premium && (premiumUntil == null || premiumUntil!.isAfter(DateTime.now()));
+
+  /// Roaster Pro is a superset of Pro: holding either entitlement grants
+  /// premium features.
+  bool get isPremiumActive => _premiumTierActive || _roasterProActive;
+
+  bool get isRoasterProActive => _roasterProActive;
 
   factory AppUser.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
@@ -52,9 +69,14 @@ class AppUser {
       followersCount: data['followersCount'] as int? ?? 0,
       followingCount: data['followingCount'] as int? ?? 0,
       tastingsCount: data['tastingsCount'] as int? ?? 0,
-      role: data['role'] as String? ?? 'user',
+      roles: parseRoles(
+        rolesField: data['roles'],
+        legacyRoleField: data['role'],
+      ),
       premium: data['premium'] as bool? ?? false,
       premiumUntil: (data['premiumUntil'] as Timestamp?)?.toDate(),
+      roasterPro: data['roasterPro'] as bool? ?? false,
+      roasterProUntil: (data['roasterProUntil'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -72,10 +94,14 @@ class AppUser {
       'followersCount': followersCount,
       'followingCount': followingCount,
       'tastingsCount': tastingsCount,
-      'role': role,
+      'roles': rolesToWire(roles),
       'premium': premium,
       'premiumUntil':
           premiumUntil != null ? Timestamp.fromDate(premiumUntil!) : null,
+      'roasterPro': roasterPro,
+      'roasterProUntil': roasterProUntil != null
+          ? Timestamp.fromDate(roasterProUntil!)
+          : null,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -91,9 +117,11 @@ class AppUser {
     int? followersCount,
     int? followingCount,
     int? tastingsCount,
-    String? role,
+    Set<UserRole>? roles,
     bool? premium,
     DateTime? premiumUntil,
+    bool? roasterPro,
+    DateTime? roasterProUntil,
     DateTime? createdAt,
   }) {
     return AppUser(
@@ -107,9 +135,11 @@ class AppUser {
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
       tastingsCount: tastingsCount ?? this.tastingsCount,
-      role: role ?? this.role,
+      roles: roles ?? this.roles,
       premium: premium ?? this.premium,
       premiumUntil: premiumUntil ?? this.premiumUntil,
+      roasterPro: roasterPro ?? this.roasterPro,
+      roasterProUntil: roasterProUntil ?? this.roasterProUntil,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -129,9 +159,11 @@ class AppUser {
           followersCount == other.followersCount &&
           followingCount == other.followingCount &&
           tastingsCount == other.tastingsCount &&
-          role == other.role &&
+          _setEquals(roles, other.roles) &&
           premium == other.premium &&
           premiumUntil == other.premiumUntil &&
+          roasterPro == other.roasterPro &&
+          roasterProUntil == other.roasterProUntil &&
           createdAt == other.createdAt;
 
   @override
@@ -146,12 +178,20 @@ class AppUser {
         followersCount,
         followingCount,
         tastingsCount,
-        role,
+        Object.hashAllUnordered(roles),
         premium,
         premiumUntil,
+        roasterPro,
+        roasterProUntil,
         createdAt,
       );
 
   @override
   String toString() => 'AppUser(uid: $uid, email: $email, username: $username)';
+}
+
+bool _setEquals<T>(Set<T> a, Set<T> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  return a.every(b.contains);
 }

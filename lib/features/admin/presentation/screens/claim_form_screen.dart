@@ -39,12 +39,18 @@ class _ClaimFormScreenState extends ConsumerState<ClaimFormScreen> {
 
     setState(() => _submitting = true);
 
+    final entityType = ClaimEntityType.fromWire(widget.entityType);
+    if (entityType == null) {
+      if (mounted) setState(() => _submitting = false);
+      return;
+    }
+
     try {
       final repo = ref.read(claimRepositoryProvider);
       final claim = Claim(
         id: '',
         userId: uid,
-        entityType: widget.entityType,
+        entityType: entityType,
         entityId: widget.entityId,
         entityName: widget.entityName,
         message: _messageController.text.trim().isEmpty

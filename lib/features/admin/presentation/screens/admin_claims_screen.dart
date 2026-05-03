@@ -73,8 +73,9 @@ class _ClaimTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final typeLabel =
-        claim.entityType == 'roaster' ? l10n.roaster : l10n.farmName;
+    final typeLabel = claim.entityType == ClaimEntityType.roaster
+        ? l10n.roaster
+        : l10n.farmName;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -86,7 +87,7 @@ class _ClaimTile extends ConsumerWidget {
             Row(
               children: [
                 Icon(
-                  claim.entityType == 'roaster'
+                  claim.entityType == ClaimEntityType.roaster
                       ? Icons.store_rounded
                       : Icons.agriculture_rounded,
                   size: 20,

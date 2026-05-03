@@ -14,7 +14,14 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        (
+          // New schema: roles is a list.
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles is list &&
+            'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles)
+          ||
+          // Legacy schema fallback: single role string.
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        );
     }
 
     // ── Users ──

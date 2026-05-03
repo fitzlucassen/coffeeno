@@ -18,7 +18,7 @@ class ClaimRepository {
 
   Stream<List<Claim>> getPendingClaims() {
     return _claims
-        .where('status', isEqualTo: 'pending')
+        .where('status', isEqualTo: ClaimStatus.pending.wireName)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) =>
@@ -34,6 +34,12 @@ class ClaimRepository {
             snapshot.docs.map((doc) => Claim.fromFirestore(doc)).toList());
   }
 
+  /// Approves a pending claim. Writes all changes atomically:
+  ///   1) marks the claim `approved` and records the reviewing admin.
+  ///   2) marks the roaster/farm as claimed by the user.
+  ///   3) **adds** the corresponding role to the user's `roles` array —
+  ///      existing roles are preserved, so a user who claims a roaster and
+  ///      then a farm ends up with both.
   Future<void> approveClaim(String claimId, String adminUid) async {
     final claimDoc = await _claims.doc(claimId).get();
     if (!claimDoc.exists) return;
@@ -42,21 +48,22 @@ class ClaimRepository {
     final batch = _firestore.batch();
 
     batch.update(_claims.doc(claimId), {
-      'status': 'approved',
+      'status': ClaimStatus.approved.wireName,
       'reviewedBy': adminUid,
       'reviewedAt': FieldValue.serverTimestamp(),
     });
 
-    final entityCollection = claim.entityType == 'roaster' ? 'roasters' : 'farms';
-    batch.update(_firestore.collection(entityCollection).doc(claim.entityId), {
-      'claimedBy': claim.userId,
-      'claimStatus': 'approved',
-      'source': 'claimed',
-    });
+    batch.update(
+      _firestore.collection(claim.entityType.collection).doc(claim.entityId),
+      {
+        'claimedBy': claim.userId,
+        'claimStatus': ClaimStatus.approved.wireName,
+        'source': 'claimed',
+      },
+    );
 
-    final role = claim.entityType == 'roaster' ? 'roaster' : 'farmer';
     batch.update(_firestore.collection('users').doc(claim.userId), {
-      'role': role,
+      'roles': FieldValue.arrayUnion([claim.entityType.grantedRole.wireName]),
     });
 
     await batch.commit();
@@ -64,7 +71,7 @@ class ClaimRepository {
 
   Future<void> rejectClaim(String claimId, String adminUid) async {
     await _claims.doc(claimId).update({
-      'status': 'rejected',
+      'status': ClaimStatus.rejected.wireName,
       'reviewedBy': adminUid,
       'reviewedAt': FieldValue.serverTimestamp(),
     });

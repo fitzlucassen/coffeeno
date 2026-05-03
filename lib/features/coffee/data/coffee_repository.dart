@@ -125,6 +125,14 @@ class CoffeeRepository {
             snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList());
   }
 
+  /// Returns the total number of coffees owned by [userId]. Used for
+  /// free-tier gating (e.g. max coffees per account).
+  Future<int> countForUser(String userId) async {
+    final snapshot =
+        await _collection.where('uid', isEqualTo: userId).count().get();
+    return snapshot.count ?? 0;
+  }
+
   Stream<List<Coffee>> getCoffeesByOrigin(String country, {int limit = 30}) {
     return _collection
         .where('originCountry', isEqualTo: country)

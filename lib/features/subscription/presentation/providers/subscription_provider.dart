@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/subscription_repository.dart';
@@ -10,54 +9,46 @@ final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
   return SubscriptionRepository();
 });
 
-final subscriptionStatusProvider = StreamProvider<SubscriptionStatus>((ref) {
+/// Unified subscription stream — single source of truth. Emits a
+/// [SubscriptionStatus] combining Pro and Roaster Pro entitlements.
+final subscriptionStatusProvider =
+    StreamProvider<SubscriptionStatus>((ref) async* {
   final repo = ref.watch(subscriptionRepositoryProvider);
   final uid = FirebaseAuth.instance.currentUser?.uid;
 
   if (uid == null) {
-    return Stream.value(const SubscriptionStatus());
+    yield const SubscriptionStatus();
+    return;
   }
 
-  final controller = StreamController<SubscriptionStatus>();
+  try {
+    await repo.loginUser(uid);
+  } catch (e) {
+    debugPrint('RevenueCat loginUser failed: $e');
+  }
 
-  repo.loginUser(uid).then((_) {
-    final stream = repo.watchStatus();
-    controller.addStream(stream);
-  });
-
-  ref.onDispose(controller.close);
-  return controller.stream;
+  yield* repo.watchStatus();
 });
 
+/// True when the user has access to Pro features. Because Roaster Pro implies
+/// Pro, this returns true for holders of either entitlement.
+///
+/// Conservative on loading/error: returns `false` so free-tier users never
+/// see premium UI flicker on cold start.
 final isPremiumProvider = Provider<bool>((ref) {
   final asyncStatus = ref.watch(subscriptionStatusProvider);
-  return asyncStatus.when(
+  return asyncStatus.maybeWhen(
     data: (status) => status.isPremium,
-    loading: () => true,
-    error: (_, __) => false,
+    orElse: () => false,
   );
 });
 
+/// True when the user has the Roaster Pro entitlement specifically.
+/// A user who only has standard Pro returns `false` here.
 final isRoasterProProvider = Provider<bool>((ref) {
-  final asyncStatus = ref.watch(roasterProStatusProvider);
-  return asyncStatus.value?.isRoasterPro ?? false;
-});
-
-final roasterProStatusProvider = StreamProvider<SubscriptionStatus>((ref) {
-  final repo = ref.watch(subscriptionRepositoryProvider);
-  final uid = FirebaseAuth.instance.currentUser?.uid;
-
-  if (uid == null) {
-    return Stream.value(const SubscriptionStatus());
-  }
-
-  final controller = StreamController<SubscriptionStatus>();
-
-  repo.loginUser(uid).then((_) {
-    final stream = repo.watchRoasterProStatus();
-    controller.addStream(stream);
-  });
-
-  ref.onDispose(controller.close);
-  return controller.stream;
+  final asyncStatus = ref.watch(subscriptionStatusProvider);
+  return asyncStatus.maybeWhen(
+    data: (status) => status.isRoasterPro,
+    orElse: () => false,
+  );
 });

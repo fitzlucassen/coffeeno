@@ -132,8 +132,10 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
     final isPremium = ref.read(isPremiumProvider);
 
     if (!isPremium) {
-      final subRepo = ref.read(subscriptionRepositoryProvider);
-      final tastingCount = await subRepo.getUserTastingsThisMonth();
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      final tastingCount =
+          await ref.read(tastingRepositoryProvider).countForUserInMonth(uid);
       if (tastingCount >= AppConstants.freeTierMaxTastingsPerMonth && mounted) {
         final l10n = AppLocalizations.of(context);
         showUpgradePrompt(context,
