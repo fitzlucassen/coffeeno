@@ -3,16 +3,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:coffeeno/core/widgets/app_card.dart';
 import 'package:coffeeno/features/subscription/presentation/providers/subscription_provider.dart';
+import '../../domain/roaster_stats.dart';
 import '../providers/roaster_provider.dart';
 import '../providers/roaster_stats_provider.dart';
 
-class RoasterDashboardScreen extends ConsumerWidget {
+class RoasterDashboardScreen extends ConsumerStatefulWidget {
   const RoasterDashboardScreen({super.key, required this.roasterId});
 
   final String roasterId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RoasterDashboardScreen> createState() =>
+      _RoasterDashboardScreenState();
+}
+
+class _RoasterDashboardScreenState
+    extends ConsumerState<RoasterDashboardScreen> {
+  late Future<RoasterStats> _statsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  void _loadStats() {
+    _statsFuture = ref
+        .read(roasterStatsRepositoryProvider)
+        .getStatsForRoaster(widget.roasterId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -20,25 +42,30 @@ class RoasterDashboardScreen extends ConsumerWidget {
     final isRoasterPro = ref.watch(isRoasterProProvider);
 
     if (!isRoasterPro) {
-      return _RoasterProPaywall(roasterId: roasterId);
+      return _RoasterProPaywall(roasterId: widget.roasterId);
     }
 
-    final roasterAsync = ref.watch(roasterDetailProvider(roasterId));
-    final statsAsync = ref.watch(roasterStatsProvider(roasterId));
+    final roasterAsync = ref.watch(roasterDetailProvider(widget.roasterId));
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.roasterDashboard),
       ),
-      body: statsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => Center(child: Text(l10n.error)),
-        data: (stats) {
+      body: FutureBuilder<RoasterStats>(
+        future: _statsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('${l10n.error}: ${snapshot.error}'));
+          }
+          final stats = snapshot.data ?? RoasterStats.empty;
           final roasterName = roasterAsync.value?.name;
 
           return RefreshIndicator(
             onRefresh: () async {
-              ref.invalidate(roasterStatsProvider(roasterId));
+              setState(() => _loadStats());
             },
             child: ListView(
               padding: const EdgeInsets.all(24),
