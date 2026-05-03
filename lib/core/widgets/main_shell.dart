@@ -124,6 +124,7 @@ class MainShell extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: null,
         onPressed: () => _showAddCoffeeSheet(context, ref),
         tooltip: l10n.addCoffeeTitle,
         child: const Icon(Icons.add_rounded),

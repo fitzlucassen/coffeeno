@@ -90,6 +90,14 @@
       ]
     },
     {
+      "collectionGroup": "coffees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "avgRating", "order": "DESCENDING" },
+        { "fieldPath": "ratingsCount", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "claims",
       "queryScope": "COLLECTION",
       "fields": [
