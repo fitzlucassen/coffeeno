@@ -291,6 +291,22 @@ class CoffeeDetailScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
+                      ] else if (coffee.roaster.isNotEmpty) ...[
+                        Text(l10n.aboutRoaster,
+                            style: theme.textTheme.titleSmall),
+                        const SizedBox(height: 8),
+                        AppCard(
+                          child: Row(
+                            children: [
+                              Icon(Icons.store_rounded,
+                                  size: 20, color: colorScheme.primary),
+                              const SizedBox(width: 12),
+                              Text(coffee.roaster,
+                                  style: theme.textTheme.bodyMedium),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                       ],
 
                       // Farm info

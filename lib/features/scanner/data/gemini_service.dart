@@ -29,7 +29,10 @@ You are a coffee bag data extractor. Given OCR text from a coffee bag, extract s
   "flavor_notes": ["string"] or [],
   "additional_info": "string or null"
 }
-Do not include any text outside the JSON object.''';
+Rules:
+- origin_country MUST always be in English (e.g. "Ethiopia" not "Éthiopie", "Brazil" not "Brésil").
+- flavor_notes should be in English.
+- Do not include any text outside the JSON object.''';
 
   /// Extracts structured coffee bag data from [ocrText].
   ///

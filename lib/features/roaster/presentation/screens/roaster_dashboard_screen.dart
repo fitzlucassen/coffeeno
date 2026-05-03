@@ -257,10 +257,7 @@ class _RoasterProPaywallState extends ConsumerState<_RoasterProPaywall> {
       final repo = ref.read(subscriptionRepositoryProvider);
       final success = await repo.purchaseRoasterPro();
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(AppLocalizations.of(context).roasterDashboard)),
-        );
+        ref.invalidate(roasterProStatusProvider);
       }
     } catch (e) {
       if (mounted) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/domain/app_user.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/welcome_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
@@ -97,7 +98,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (isLoggedIn &&
           isShellRoute &&
           !isProfileSetup &&
-          currentUser.hasValue &&
+          currentUser is AsyncData<AppUser?> &&
           currentUser.value == null) {
         return AppRoutes.profileSetup;
       }

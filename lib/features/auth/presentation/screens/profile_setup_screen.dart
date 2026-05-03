@@ -30,17 +30,23 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   @override
   void initState() {
     super.initState();
-    _prefillFromAuth();
+    _prefillFromExisting();
   }
 
-  /// Pre-fills the form with data from the Firebase Auth user.
-  void _prefillFromAuth() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      _displayNameController.text = user.displayName ?? '';
-      // Derive a default username from the email prefix.
-      final emailPrefix = user.email?.split('@').first ?? '';
-      _usernameController.text = emailPrefix.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+  void _prefillFromExisting() {
+    final existingUser = ref.read(currentUserProvider).value;
+    if (existingUser != null) {
+      _displayNameController.text = existingUser.displayName;
+      _usernameController.text = existingUser.username;
+      _bioController.text = existingUser.bio ?? '';
+    } else {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _displayNameController.text = user.displayName ?? '';
+        final emailPrefix = user.email?.split('@').first ?? '';
+        _usernameController.text =
+            emailPrefix.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+      }
     }
   }
 
