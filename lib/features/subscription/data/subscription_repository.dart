@@ -51,7 +51,11 @@ class SubscriptionRepository {
 
   Future<void> logoutUser() async {
     if (!_initialized) return;
-    await Purchases.logOut();
+    try {
+      await Purchases.logOut();
+    } on PlatformException catch (_) {
+      // RevenueCat throws if the user is already anonymous
+    }
   }
 
   Stream<SubscriptionStatus> watchStatus() {

@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/auth_repository.dart';
 import '../../data/user_repository.dart';
 import '../../domain/app_user.dart';
-import '../../../subscription/data/subscription_repository.dart';
+import '../../../subscription/presentation/providers/subscription_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
@@ -28,7 +28,7 @@ final authStateProvider = StreamProvider<User?>((ref) {
 final _authUidProvider = Provider<String?>((ref) {
   final uid = ref.watch(authStateProvider).value?.uid;
 
-  final subRepo = SubscriptionRepository();
+  final subRepo = ref.read(subscriptionRepositoryProvider);
   if (uid != null) {
     subRepo.loginUser(uid);
   } else {

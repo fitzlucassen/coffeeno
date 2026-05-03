@@ -72,13 +72,12 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final currentUser = ref.watch(currentUserProvider);
-
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.feed,
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
+      final currentUser = ref.read(currentUserProvider);
       final isLoggedIn = authState.value != null;
       final isAuthRoute = state.matchedLocation == AppRoutes.welcome ||
           state.matchedLocation == AppRoutes.signIn ||
@@ -95,8 +94,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!isLoggedIn && !isAuthRoute) return AppRoutes.welcome;
       if (isLoggedIn && isAuthRoute) return AppRoutes.feed;
 
-      // Only check for missing user doc on main tab routes, not during
-      // active flows like scanning or adding a coffee.
       if (isLoggedIn &&
           isShellRoute &&
           !isProfileSetup &&
@@ -287,4 +284,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  ref.listen(authStateProvider, (_, __) => router.refresh());
+  ref.listen(currentUserProvider, (_, __) => router.refresh());
+
+  return router;
 });
