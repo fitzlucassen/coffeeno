@@ -13,8 +13,12 @@ final subscriptionStatusProvider = StreamProvider<SubscriptionStatus>((ref) {
 });
 
 final isPremiumProvider = Provider<bool>((ref) {
-  final status = ref.watch(subscriptionStatusProvider).value;
-  return status?.isPremium ?? false;
+  final asyncStatus = ref.watch(subscriptionStatusProvider);
+  final status = asyncStatus.value;
+  final result = status?.isPremium ?? false;
+  print('[SUB] isPremiumProvider: asyncStatus=${asyncStatus.runtimeType}, '
+      'hasValue=${asyncStatus.hasValue}, tier=${status?.tier}, result=$result');
+  return result;
 });
 
 final isRoasterProProvider = Provider<bool>((ref) {
