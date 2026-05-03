@@ -92,6 +92,7 @@ class MainShell extends ConsumerWidget {
     return Scaffold(
       body: child,
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex(context),
         onTap: (i) => _onTabTapped(context, i),
         items: [
