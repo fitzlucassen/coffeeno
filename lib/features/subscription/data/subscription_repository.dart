@@ -254,7 +254,7 @@ class SubscriptionRepository {
 
     try {
       final offerings = await Purchases.getOfferings();
-      final offering = offerings.all['roaster_pro'];
+      final offering = offerings.all['roaster'];
       if (offering == null) {
         debugPrint('No roaster_pro offering found');
         return false;
