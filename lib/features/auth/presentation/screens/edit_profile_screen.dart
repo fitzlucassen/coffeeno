@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../domain/app_user.dart';
 import '../providers/auth_provider.dart';
 import '../../../social/presentation/providers/social_provider.dart';
 
@@ -24,27 +25,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _bioController = TextEditingController();
   final _countryController = TextEditingController();
   bool _isLoading = false;
+  bool _prefilled = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadCurrentUser();
-  }
-
-  void _loadCurrentUser() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
-    ref.read(userRepositoryProvider).getUser(uid).then((user) {
-      if (user != null && mounted) {
-        setState(() {
-          _displayNameController.text = user.displayName;
-          _usernameController.text = user.username;
-          _bioController.text = user.bio ?? '';
-          _countryController.text = user.country ?? '';
-        });
-      }
-    });
+  void _prefill(AppUser user) {
+    _displayNameController.text = user.displayName;
+    _usernameController.text = user.username;
+    _bioController.text = user.bio ?? '';
+    _countryController.text = user.country ?? '';
+    _prefilled = true;
   }
 
   @override
@@ -100,6 +88,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    // Prefill controllers from the already-hydrated currentUserProvider the
+    // first time a user doc becomes available. Subsequent rebuilds leave
+    // whatever the user has typed untouched.
+    final currentUser = ref.watch(currentUserProvider).value;
+    if (!_prefilled && currentUser != null) {
+      _prefill(currentUser);
+    }
 
     return Scaffold(
       appBar: AppBar(
