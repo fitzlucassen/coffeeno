@@ -147,16 +147,24 @@ class SubscriptionRepository {
       final data = doc.data();
       if (data == null) return const SubscriptionStatus();
 
-      final premium = data['premium'] as bool? ?? false;
+      final now = DateTime.now();
+      final premiumFlag = data['premium'] as bool? ?? false;
       final premiumUntil = (data['premiumUntil'] as Timestamp?)?.toDate();
-      final roasterPro = data['roasterPro'] as bool? ?? false;
+      final roasterProFlag = data['roasterPro'] as bool? ?? false;
       final roasterProUntil =
           (data['roasterProUntil'] as Timestamp?)?.toDate();
 
+      final premiumActive = premiumFlag &&
+          (premiumUntil == null || premiumUntil.isAfter(now));
+      final roasterProActive = roasterProFlag &&
+          (roasterProUntil == null || roasterProUntil.isAfter(now));
+
       return SubscriptionStatus(
-        tier: premium ? SubscriptionTier.premium : SubscriptionTier.free,
+        tier: premiumActive
+            ? SubscriptionTier.premium
+            : SubscriptionTier.free,
         premiumUntil: premiumUntil,
-        roasterPro: roasterPro,
+        roasterPro: roasterProActive,
         roasterProUntil: roasterProUntil,
       );
     });

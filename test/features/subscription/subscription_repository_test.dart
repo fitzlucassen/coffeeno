@@ -76,6 +76,28 @@ void main() {
     expect(status.isRoasterPro, isTrue);
   });
 
+  test('expired premium: Firestore flag true but premiumUntil in the past '
+      'must NOT grant premium access', () async {
+    await seedUser(firestore, uid: 'alice', overrides: {
+      'premium': true,
+      'premiumUntil': Timestamp.fromDate(DateTime(2020, 1, 1)),
+    });
+    final status = await repo.watchStatus().first;
+
+    expect(status.isPremium, isFalse);
+  });
+
+  test('expired roaster pro does not grant premium either', () async {
+    await seedUser(firestore, uid: 'alice', overrides: {
+      'roasterPro': true,
+      'roasterProUntil': Timestamp.fromDate(DateTime(2020, 1, 1)),
+    });
+    final status = await repo.watchStatus().first;
+
+    expect(status.isPremium, isFalse);
+    expect(status.isRoasterPro, isFalse);
+  });
+
   test('returns free when RevenueCat uninitialized and no user doc exists',
       () async {
     // No seed call — doc is absent.
