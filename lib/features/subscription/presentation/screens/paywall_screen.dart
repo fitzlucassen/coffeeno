@@ -93,6 +93,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    // Keep the subscription stream alive for the lifetime of this screen.
+    // Without this, `ref.read(isPremiumProvider)` inside `_subscribe`'s poll
+    // loop reads the initial `false` and never sees the RevenueCat update
+    // because Riverpod disposes a StreamProvider that has no listeners.
+    ref.listen(subscriptionStatusProvider, (_, _) {});
+
     final features = [
       (Icons.coffee_rounded, l10n.unlimitedCoffees),
       (Icons.rate_review_rounded, l10n.unlimitedTastings),
