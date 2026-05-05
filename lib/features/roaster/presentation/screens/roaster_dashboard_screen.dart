@@ -270,9 +270,13 @@ class _RoasterProPaywallState extends ConsumerState<_RoasterProPaywall> {
     setState(() => _isLoading = true);
     try {
       final repo = ref.read(subscriptionRepositoryProvider);
-      final success = await repo.purchaseRoasterPro();
-      if (success && mounted) {
-        ref.invalidate(subscriptionStatusProvider);
+      // Same pattern as the Pro paywall — don't trust the boolean return,
+      // poll the provider until the listener flips it.
+      await repo.purchaseRoasterPro();
+
+      for (var i = 0; i < 30; i++) {
+        if (ref.read(isRoasterProProvider)) break;
+        await Future<void>.delayed(const Duration(milliseconds: 100));
       }
     } catch (e) {
       if (mounted) {

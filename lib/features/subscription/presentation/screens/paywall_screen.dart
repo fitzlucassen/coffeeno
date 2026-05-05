@@ -19,12 +19,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     setState(() => _isLoading = true);
     try {
       final repo = ref.read(subscriptionRepositoryProvider);
-      final success = await repo.purchase();
-      if (success && mounted) {
-        // Force the unified subscription stream to re-resolve so downstream
-        // isPremiumProvider listeners see the new entitlement immediately
-        // instead of racing with RevenueCat's async update listener.
-        ref.invalidate(subscriptionStatusProvider);
+      // Don't trust purchase()'s boolean return value — it can report false
+      // even on a successful purchase because RevenueCat's entitlement flag
+      // flips active asynchronously via the customer-info update listener.
+      // Instead, kick off the purchase and then wait for the provider to
+      // reflect the new state.
+      debugPrint('[PAYWALL] starting purchase()');
+      await repo.purchase();
+      debugPrint('[PAYWALL] purchase() returned, polling isPremium...');
+
+      for (var i = 0; i < 30; i++) {
+        if (ref.read(isPremiumProvider)) break;
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+      debugPrint('[PAYWALL] poll done, isPremium=${ref.read(isPremiumProvider)}');
+
+      if (!mounted) return;
+      if (ref.read(isPremiumProvider)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).premium)),
         );
@@ -45,11 +56,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     setState(() => _isLoading = true);
     try {
       final repo = ref.read(subscriptionRepositoryProvider);
-      final success = await repo.restore();
+      await repo.restore();
+
+      for (var i = 0; i < 30; i++) {
+        if (ref.read(isPremiumProvider)) break;
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+
       if (mounted) {
         final l10n = AppLocalizations.of(context);
-        if (success) {
-          ref.invalidate(subscriptionStatusProvider);
+        if (ref.read(isPremiumProvider)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.premium)),
           );
