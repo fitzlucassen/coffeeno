@@ -68,6 +68,29 @@ dev_dependencies:
   mockito: ^5.4.0
   fake_cloud_firestore: ^4.0.0
   firebase_auth_mocks: ^0.15.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/coffeeno_icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  # Android adaptive icon (for modern Android launchers that show a circular /
+  # rounded-square mask). Background is your espresso-dark brand color; the
+  # same icon is used as the masked foreground.
+  adaptive_icon_background: "#2A1810"
+  adaptive_icon_foreground: "assets/icon/coffeeno_icon.png"
+  # Web and Windows variants — harmless to generate, keeps assets consistent.
+  web:
+    generate: true
+    image_path: "assets/icon/coffeeno_icon.png"
+    background_color: "#2A1810"
+    theme_color: "#2A1810"
+  windows:
+    generate: true
+    image_path: "assets/icon/coffeeno_icon.png"
+    icon_size: 48
 
 flutter:
   uses-material-design: true
