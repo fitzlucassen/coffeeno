@@ -21,6 +21,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       final repo = ref.read(subscriptionRepositoryProvider);
       final success = await repo.purchase();
       if (success && mounted) {
+        // Force the unified subscription stream to re-resolve so downstream
+        // isPremiumProvider listeners see the new entitlement immediately
+        // instead of racing with RevenueCat's async update listener.
+        ref.invalidate(subscriptionStatusProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).premium)),
         );
@@ -45,6 +49,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
         if (success) {
+          ref.invalidate(subscriptionStatusProvider);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.premium)),
           );

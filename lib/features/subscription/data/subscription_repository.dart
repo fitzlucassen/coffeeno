@@ -174,16 +174,23 @@ class SubscriptionRepository {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
 
-    await _firestore.collection('users').doc(uid).update({
-      'premium': status.tier == SubscriptionTier.premium,
-      'premiumUntil': status.premiumUntil != null
-          ? Timestamp.fromDate(status.premiumUntil!)
-          : null,
-      'roasterPro': status.roasterPro,
-      'roasterProUntil': status.roasterProUntil != null
-          ? Timestamp.fromDate(status.roasterProUntil!)
-          : null,
-    });
+    // `set` + merge rather than `update` so the call works on docs that
+    // don't yet have the premium/roasterPro fields — avoids a silent
+    // "not-found" when migrating existing users.
+    try {
+      await _firestore.collection('users').doc(uid).set({
+        'premium': status.tier == SubscriptionTier.premium,
+        'premiumUntil': status.premiumUntil != null
+            ? Timestamp.fromDate(status.premiumUntil!)
+            : null,
+        'roasterPro': status.roasterPro,
+        'roasterProUntil': status.roasterProUntil != null
+            ? Timestamp.fromDate(status.roasterProUntil!)
+            : null,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('[SUB] _syncToFirestore failed: $e');
+    }
   }
 
   Future<bool> purchase() async {
