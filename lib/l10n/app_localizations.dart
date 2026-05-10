@@ -422,10 +422,10 @@ abstract class AppLocalizations {
   /// **'Tastings'**
   String get tastings;
 
-  /// Empty tastings message
+  /// Empty state for the tastings list
   ///
   /// In en, this message translates to:
-  /// **'No tastings yet'**
+  /// **'No tastings yet.'**
   String get noTastingsYet;
 
   /// Empty tastings subtitle
@@ -1219,6 +1219,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Country'**
   String get country;
+
+  /// Roaster dashboard Stats tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get dashboardTabStats;
+
+  /// Roaster dashboard Tastings tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Tastings'**
+  String get dashboardTabTastings;
+
+  /// Roaster dashboard Posts tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get dashboardTabPosts;
+
+  /// Timeseries period selector — 30 days
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get period30d;
+
+  /// Timeseries period selector — 3 months
+  ///
+  /// In en, this message translates to:
+  /// **'3 months'**
+  String get period3m;
+
+  /// Timeseries period selector — 12 months
+  ///
+  /// In en, this message translates to:
+  /// **'12 months'**
+  String get period12m;
+
+  /// Legend label for the tastings line in the chart
+  ///
+  /// In en, this message translates to:
+  /// **'Tastings'**
+  String get chartTastingsLabel;
+
+  /// Legend label for the average rating line in the chart
+  ///
+  /// In en, this message translates to:
+  /// **'Avg rating'**
+  String get chartRatingLabel;
+
+  /// CSV export button label
+  ///
+  /// In en, this message translates to:
+  /// **'Export to CSV'**
+  String get exportCsv;
+
+  /// Subject when sharing the CSV export
+  ///
+  /// In en, this message translates to:
+  /// **'Coffeeno roaster data export'**
+  String get exportCsvShareText;
+
+  /// Placeholder when a tasting has no free-text notes
+  ///
+  /// In en, this message translates to:
+  /// **'(no written notes)'**
+  String get tastingNotesEmpty;
+
+  /// Roaster posts tab header
+  ///
+  /// In en, this message translates to:
+  /// **'Messages to your customers'**
+  String get roasterPostsTitle;
+
+  /// Button to compose a new roaster post
+  ///
+  /// In en, this message translates to:
+  /// **'New post'**
+  String get newPost;
+
+  /// Empty state for the roaster posts list
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t published any post yet.'**
+  String get noPostsYet;
+
+  /// Countdown shown on a roaster post card
+  ///
+  /// In en, this message translates to:
+  /// **'Expires in {days} days'**
+  String postExpiresIn(int days);
+
+  /// Shown when a post has passed its expiry date
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get postExpired;
+
+  /// Compose roaster post screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Write a message'**
+  String get composePostTitle;
+
+  /// Compose roaster post — title field label
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get postTitleLabel;
+
+  /// Compose roaster post — body field label
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get postBodyLabel;
+
+  /// Compose roaster post — coffee picker label
+  ///
+  /// In en, this message translates to:
+  /// **'Link to one of your coffees (optional)'**
+  String get postLinkCoffeeLabel;
+
+  /// Compose roaster post — CTA label field
+  ///
+  /// In en, this message translates to:
+  /// **'Call-to-action label (optional)'**
+  String get postCtaLabelField;
+
+  /// Compose roaster post — CTA URL field
+  ///
+  /// In en, this message translates to:
+  /// **'Call-to-action URL (optional)'**
+  String get postCtaUrlField;
+
+  /// Coffee picker option for 'no link'
+  ///
+  /// In en, this message translates to:
+  /// **'No linked coffee'**
+  String get postNoLinkedCoffee;
+
+  /// Publish roaster post button
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get publishPost;
+
+  /// Snackbar after publishing a roaster post
+  ///
+  /// In en, this message translates to:
+  /// **'Post published'**
+  String get postPublished;
+
+  /// Dialog title when deleting a roaster post
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this post?'**
+  String get deletePostConfirm;
+
+  /// Roaster post card header in the consumer feed
+  ///
+  /// In en, this message translates to:
+  /// **'Message from {roaster}'**
+  String feedPostedBy(String roaster);
+
+  /// Subheader on a roaster post that links to a specific coffee
+  ///
+  /// In en, this message translates to:
+  /// **'About {coffee}'**
+  String feedAboutCoffee(String coffee);
+
+  /// Confirm dialog when deleting a comment
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this comment?'**
+  String get deleteCommentConfirm;
+
+  /// Block user action label
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get blockUser;
+
+  /// Unblock user action label
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get unblockUser;
+
+  /// Confirm dialog when blocking a user
+  ///
+  /// In en, this message translates to:
+  /// **'Block this user? You will no longer see their content and they will no longer see yours.'**
+  String get blockUserConfirm;
+
+  /// Confirm dialog when unblocking a user
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock this user?'**
+  String get unblockUserConfirm;
+
+  /// Blocked users settings entry / screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked users'**
+  String get blockedUsers;
+
+  /// Empty state for the blocked users list
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t blocked anyone.'**
+  String get noBlockedUsers;
 }
 
 class _AppLocalizationsDelegate

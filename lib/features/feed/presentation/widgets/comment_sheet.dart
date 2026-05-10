@@ -6,7 +6,9 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
 import 'package:coffeeno/features/feed/domain/feed_item.dart';
 import 'package:coffeeno/features/feed/presentation/providers/feed_provider.dart';
+import 'package:coffeeno/features/social/presentation/providers/block_provider.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
+import 'package:coffeeno/features/tasting/presentation/providers/tasting_provider.dart';
 
 /// Shows a bottom sheet with the comment list and an input field
 /// to add a new comment.
@@ -36,6 +38,39 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _deleteComment(FeedComment comment, AppLocalizations l10n) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(l10n.deleteCommentConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await ref.read(feedRepositoryProvider).deleteComment(
+            tastingId: widget.tastingId,
+            commentId: comment.id,
+          );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
   }
 
   Future<void> _addComment() async {
@@ -73,7 +108,12 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
     final commentsAsync = ref.watch(tastingCommentsProvider(widget.tastingId));
+    final currentUid = ref.watch(currentUserProvider).value?.uid;
+    final tastingOwnerUid =
+        ref.watch(tastingDetailProvider(widget.tastingId)).value?.userId;
+    final blocked = ref.watch(blockedUidsProvider);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
@@ -115,7 +155,10 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
             // Comment list.
             Expanded(
               child: commentsAsync.when(
-                data: (comments) {
+                data: (rawComments) {
+                  final comments = rawComments
+                      .where((c) => !blocked.contains(c.authorId))
+                      .toList();
                   if (comments.isEmpty) {
                     return Center(
                       child: Column(
@@ -153,7 +196,14 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
                     separatorBuilder: (_, _) => const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final comment = comments[index];
-                      return _CommentTile(comment: comment);
+                      final canDelete = currentUid != null &&
+                          (comment.authorId == currentUid ||
+                              tastingOwnerUid == currentUid);
+                      return _CommentTile(
+                        comment: comment,
+                        canDelete: canDelete,
+                        onDelete: () => _deleteComment(comment, l10n),
+                      );
                     },
                   );
                 },
@@ -232,13 +282,20 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
 }
 
 class _CommentTile extends StatelessWidget {
-  const _CommentTile({required this.comment});
+  const _CommentTile({
+    required this.comment,
+    required this.canDelete,
+    required this.onDelete,
+  });
 
   final FeedComment comment;
+  final bool canDelete;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,6 +320,14 @@ class _CommentTile extends StatelessWidget {
                     timeago.format(comment.createdAt),
                     style: textTheme.labelSmall,
                   ),
+                  const Spacer(),
+                  if (canDelete)
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 18),
+                      tooltip: l10n.delete,
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onDelete,
+                    ),
                 ],
               ),
               const SizedBox(height: 4),

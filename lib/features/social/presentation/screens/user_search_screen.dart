@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
+import 'package:coffeeno/features/social/presentation/providers/block_provider.dart';
 import 'package:coffeeno/features/social/presentation/providers/social_provider.dart';
 import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
@@ -95,9 +96,12 @@ class _SearchResults extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final resultsAsync = ref.watch(userSearchResultsProvider(query));
+    final blocked = ref.watch(blockedUidsProvider);
 
     return resultsAsync.when(
-      data: (results) {
+      data: (rawResults) {
+        final results =
+            rawResults.where((u) => !blocked.contains(u.uid)).toList();
         if (results.isEmpty) {
           return Center(
             child: Column(

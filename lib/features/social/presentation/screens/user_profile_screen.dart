@@ -6,6 +6,7 @@ import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
 import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
+import 'package:coffeeno/features/social/presentation/providers/block_provider.dart';
 import 'package:coffeeno/features/social/presentation/providers/social_provider.dart';
 import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
@@ -41,6 +42,14 @@ void _showSettingsSheet(BuildContext context, {bool isAdmin = false}) {
               },
             ),
           ListTile(
+            leading: const Icon(Icons.block),
+            title: Text(l10n.blockedUsers),
+            onTap: () {
+              Navigator.of(ctx).pop();
+              context.push(AppRoutes.blockedUsers);
+            },
+          ),
+          ListTile(
             leading: Icon(Icons.logout, color: colorScheme.error),
             title: Text(l10n.signOut,
                 style: TextStyle(color: colorScheme.error)),
@@ -54,6 +63,43 @@ void _showSettingsSheet(BuildContext context, {bool isAdmin = false}) {
       ),
     ),
   );
+}
+
+Future<void> _toggleBlock({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String actor,
+  required String target,
+  required bool currentlyBlocked,
+}) async {
+  final l10n = AppLocalizations.of(context);
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      content: Text(currentlyBlocked
+          ? l10n.unblockUserConfirm
+          : l10n.blockUserConfirm),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(
+              currentlyBlocked ? l10n.unblockUser : l10n.blockUser),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+
+  final repo = ref.read(blockRepositoryProvider);
+  if (currentlyBlocked) {
+    await repo.unblock(actor: actor, target: target);
+  } else {
+    await repo.block(actor: actor, target: target);
+  }
 }
 
 class UserProfileScreen extends ConsumerWidget {
@@ -84,6 +130,9 @@ class UserProfileScreen extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider(profileUserId));
     final tastingsAsync = ref.watch(userTastingsProvider(profileUserId));
 
+    final blocked = ref.watch(blockedUidsProvider);
+    final isBlocked = blocked.contains(profileUserId);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isOwnProfile ? l10n.profileTab : ''),
@@ -100,7 +149,29 @@ class UserProfileScreen extends ConsumerWidget {
                   },
                 ),
               ]
-            : null,
+            : [
+                if (firebaseUser != null)
+                  PopupMenuButton<String>(
+                    onSelected: (value) async {
+                      if (value == 'block' || value == 'unblock') {
+                        await _toggleBlock(
+                          context: context,
+                          ref: ref,
+                          actor: firebaseUser.uid,
+                          target: profileUserId,
+                          currentlyBlocked: isBlocked,
+                        );
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: isBlocked ? 'unblock' : 'block',
+                        child: Text(
+                            isBlocked ? l10n.unblockUser : l10n.blockUser),
+                      ),
+                    ],
+                  ),
+              ],
       ),
       body: profileAsync.when(
         data: (profile) {

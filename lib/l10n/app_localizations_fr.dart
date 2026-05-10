@@ -173,7 +173,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tastings => 'Dégustations';
 
   @override
-  String get noTastingsYet => 'Aucune dégustation';
+  String get noTastingsYet => 'Aucune dégustation pour l\'instant.';
 
   @override
   String get noTastingsYetSubtitle =>
@@ -601,4 +601,116 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get country => 'Pays';
+
+  @override
+  String get dashboardTabStats => 'Stats';
+
+  @override
+  String get dashboardTabTastings => 'Dégustations';
+
+  @override
+  String get dashboardTabPosts => 'Publications';
+
+  @override
+  String get period30d => '30 jours';
+
+  @override
+  String get period3m => '3 mois';
+
+  @override
+  String get period12m => '12 mois';
+
+  @override
+  String get chartTastingsLabel => 'Dégustations';
+
+  @override
+  String get chartRatingLabel => 'Note moyenne';
+
+  @override
+  String get exportCsv => 'Exporter en CSV';
+
+  @override
+  String get exportCsvShareText => 'Export des données Coffeeno';
+
+  @override
+  String get tastingNotesEmpty => '(aucun commentaire écrit)';
+
+  @override
+  String get roasterPostsTitle => 'Messages à vos clients';
+
+  @override
+  String get newPost => 'Nouvelle publication';
+
+  @override
+  String get noPostsYet => 'Vous n\'avez encore publié aucun message.';
+
+  @override
+  String postExpiresIn(int days) {
+    return 'Expire dans $days jours';
+  }
+
+  @override
+  String get postExpired => 'Expiré';
+
+  @override
+  String get composePostTitle => 'Écrire un message';
+
+  @override
+  String get postTitleLabel => 'Titre';
+
+  @override
+  String get postBodyLabel => 'Message';
+
+  @override
+  String get postLinkCoffeeLabel => 'Lier à un de vos cafés (optionnel)';
+
+  @override
+  String get postCtaLabelField => 'Libellé du bouton (optionnel)';
+
+  @override
+  String get postCtaUrlField => 'Lien du bouton (optionnel)';
+
+  @override
+  String get postNoLinkedCoffee => 'Aucun café lié';
+
+  @override
+  String get publishPost => 'Publier';
+
+  @override
+  String get postPublished => 'Message publié';
+
+  @override
+  String get deletePostConfirm => 'Supprimer cette publication ?';
+
+  @override
+  String feedPostedBy(String roaster) {
+    return 'Message de $roaster';
+  }
+
+  @override
+  String feedAboutCoffee(String coffee) {
+    return 'À propos de $coffee';
+  }
+
+  @override
+  String get deleteCommentConfirm => 'Supprimer ce commentaire ?';
+
+  @override
+  String get blockUser => 'Bloquer';
+
+  @override
+  String get unblockUser => 'Débloquer';
+
+  @override
+  String get blockUserConfirm =>
+      'Bloquer cet utilisateur ? Vous ne verrez plus son contenu et il ne verra plus le vôtre.';
+
+  @override
+  String get unblockUserConfirm => 'Débloquer cet utilisateur ?';
+
+  @override
+  String get blockedUsers => 'Utilisateurs bloqués';
+
+  @override
+  String get noBlockedUsers => 'Vous n\'avez bloqué personne.';
 }

@@ -59,6 +59,9 @@ dependencies:
   purchases_flutter: ^10.0.1
   purchases_ui_flutter: ^10.0.1
 
+  # Charts (roaster dashboard timeseries)
+  fl_chart: ^0.68.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

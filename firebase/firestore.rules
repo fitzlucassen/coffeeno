@@ -44,6 +44,20 @@ service cloud.firestore {
         allow create: if isOwner(uid);
         allow delete: if isOwner(uid);
       }
+
+      // Blocks the user has initiated. Only the owner reads/writes.
+      match /blocked/{targetId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // Mirror record written by someone else who blocked this user. The
+      // target (uid) may read to learn who blocked them (used for filtering);
+      // only the blocker (targetId in this path) may write the mirror.
+      match /blocked_by/{blockerId} {
+        allow read: if isOwner(uid);
+        allow create, delete: if isAuthenticated()
+          && request.auth.uid == blockerId;
+      }
     }
 
     // ── Coffees ──
@@ -72,8 +86,15 @@ service cloud.firestore {
       match /comments/{commentId} {
         allow read: if isAuthenticated();
         allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+        // Delete permissions:
+        //   - the comment's author (their own comment), OR
+        //   - the owner of the tasting the comment is attached to
+        //     (so users can moderate their own posts), OR
+        //   - an admin.
         allow delete: if isAuthenticated() && (
-          resource.data.authorId == request.auth.uid || isAdmin()
+          resource.data.authorId == request.auth.uid
+          || get(/databases/$(database)/documents/tastings/$(tastingId)).data.userId == request.auth.uid
+          || isAdmin()
         );
       }
     }
@@ -115,6 +136,23 @@ service cloud.firestore {
     match /leaderboard/{docId} {
       allow read: if isAuthenticated();
       allow write: if false; // Only Cloud Functions
+    }
+
+    // ── Roaster posts ──
+    // Any authenticated user can read posts (they appear in the consumer
+    // feed for users who've engaged with the roaster's coffees). Only the
+    // original author can create, update, or delete a post. Admins can also
+    // remove posts if moderation is ever needed.
+    match /roaster_posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.authorUid == request.auth.uid;
+      allow update: if isAuthenticated()
+        && resource.data.authorUid == request.auth.uid
+        && request.resource.data.authorUid == resource.data.authorUid
+        && request.resource.data.roasterId == resource.data.roasterId;
+      allow delete: if isAuthenticated()
+        && (resource.data.authorUid == request.auth.uid || isAdmin());
     }
   }
 }

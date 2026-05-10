@@ -18,6 +18,7 @@ import '../../features/explore/presentation/screens/explore_screen.dart';
 import '../../features/feed/presentation/screens/feed_screen.dart';
 import '../../features/scanner/presentation/screens/camera_screen.dart';
 import '../../features/scanner/presentation/screens/scan_review_screen.dart';
+import '../../features/social/presentation/screens/blocked_users_screen.dart';
 import '../../features/social/presentation/screens/user_profile_screen.dart';
 import '../../features/social/presentation/screens/followers_screen.dart';
 import '../../features/social/presentation/screens/leaderboard_screen.dart';
@@ -27,6 +28,7 @@ import '../../features/map/presentation/screens/origin_detail_screen.dart';
 import '../../features/stats/presentation/screens/stats_screen.dart';
 import '../../features/roaster/presentation/screens/roaster_profile_screen.dart';
 import '../../features/roaster/presentation/screens/roaster_dashboard_screen.dart';
+import '../../features/roaster/presentation/screens/compose_roaster_post_screen.dart';
 import '../../features/roaster/presentation/screens/edit_roaster_screen.dart';
 import '../../features/farm/presentation/screens/farm_profile_screen.dart';
 import '../../features/farm/presentation/screens/edit_farm_screen.dart';
@@ -65,8 +67,10 @@ abstract final class AppRoutes {
   static const claimForm = '/claim/:entityType/:entityId';
   static const paywall = '/paywall';
   static const roasterDashboard = '/roaster/:id/dashboard';
+  static const composeRoasterPost = '/roaster/:id/dashboard/compose-post';
   static const editRoaster = '/roaster/:id/edit';
   static const editFarm = '/farm/:id/edit';
+  static const blockedUsers = '/settings/blocked';
 }
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -256,6 +260,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: AppRoutes.composeRoasterPost,
+        builder: (context, state) => ComposeRoasterPostScreen(
+          roasterId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
         path: AppRoutes.editRoaster,
         builder: (context, state) => EditRoasterScreen(
           roasterId: state.pathParameters['id']!,
@@ -270,6 +280,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.paywall,
         builder: (context, state) => const PaywallScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.blockedUsers,
+        builder: (context, state) => const BlockedUsersScreen(),
       ),
       GoRoute(
         path: AppRoutes.adminClaims,

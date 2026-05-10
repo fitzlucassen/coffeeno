@@ -53,6 +53,13 @@ android {
         }
     }
 
+    // Bundle native debug symbols with the AAB so Play Console can symbolicate
+    // crashes and ANRs. Without this, release builds emit a "failed to strip
+    // debug symbols" warning.
+    ndk {
+        debugSymbolLevel = "SYMBOL_TABLE"
+    }
+
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")

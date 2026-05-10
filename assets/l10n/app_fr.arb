@@ -195,5 +195,49 @@
   "topCoffeesByRating": "Meilleurs cafés",
 
   "exploreNearYou": "Populaire près de vous",
-  "country": "Pays"
+  "country": "Pays",
+
+  "dashboardTabStats": "Stats",
+  "dashboardTabTastings": "Dégustations",
+  "dashboardTabPosts": "Publications",
+
+  "period30d": "30 jours",
+  "period3m": "3 mois",
+  "period12m": "12 mois",
+  "chartTastingsLabel": "Dégustations",
+  "chartRatingLabel": "Note moyenne",
+
+  "exportCsv": "Exporter en CSV",
+  "exportCsvShareText": "Export des données Coffeeno",
+
+  "noTastingsYet": "Aucune dégustation pour l'instant.",
+  "tastingNotesEmpty": "(aucun commentaire écrit)",
+
+  "roasterPostsTitle": "Messages à vos clients",
+  "newPost": "Nouvelle publication",
+  "noPostsYet": "Vous n'avez encore publié aucun message.",
+  "postExpiresIn": "Expire dans {days} jours",
+  "postExpired": "Expiré",
+
+  "composePostTitle": "Écrire un message",
+  "postTitleLabel": "Titre",
+  "postBodyLabel": "Message",
+  "postLinkCoffeeLabel": "Lier à un de vos cafés (optionnel)",
+  "postCtaLabelField": "Libellé du bouton (optionnel)",
+  "postCtaUrlField": "Lien du bouton (optionnel)",
+  "postNoLinkedCoffee": "Aucun café lié",
+  "publishPost": "Publier",
+  "postPublished": "Message publié",
+  "deletePostConfirm": "Supprimer cette publication ?",
+
+  "feedPostedBy": "Message de {roaster}",
+  "feedAboutCoffee": "À propos de {coffee}",
+
+  "deleteCommentConfirm": "Supprimer ce commentaire ?",
+  "blockUser": "Bloquer",
+  "unblockUser": "Débloquer",
+  "blockUserConfirm": "Bloquer cet utilisateur ? Vous ne verrez plus son contenu et il ne verra plus le vôtre.",
+  "unblockUserConfirm": "Débloquer cet utilisateur ?",
+  "blockedUsers": "Utilisateurs bloqués",
+  "noBlockedUsers": "Vous n'avez bloqué personne."
 }

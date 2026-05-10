@@ -1,3 +1,34 @@
+/// A single bucket in the roaster dashboard timeseries chart.
+class TimeseriesPoint {
+  const TimeseriesPoint({
+    required this.date,
+    required this.tastingsCount,
+    required this.avgRating,
+  });
+
+  /// The bucket's start date. For daily granularity this is the day itself;
+  /// for weekly/monthly granularity it's the first day of the week/month.
+  final DateTime date;
+
+  /// How many tastings fell in this bucket.
+  final int tastingsCount;
+
+  /// Average `overallRating` of the tastings in this bucket, or 0 when empty.
+  final double avgRating;
+}
+
+enum StatsPeriod {
+  last30Days,
+  last3Months,
+  last12Months;
+
+  int get durationInDays => switch (this) {
+        StatsPeriod.last30Days => 30,
+        StatsPeriod.last3Months => 90,
+        StatsPeriod.last12Months => 365,
+      };
+}
+
 /// Aggregated statistics for a roaster's coffees.
 class TopCoffeeEntry {
   const TopCoffeeEntry({

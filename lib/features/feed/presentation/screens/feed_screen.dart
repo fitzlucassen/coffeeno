@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
 import 'package:coffeeno/core/router/app_router.dart';
+import 'package:coffeeno/features/feed/domain/feed_entry.dart';
 import 'package:coffeeno/features/feed/presentation/providers/feed_provider.dart';
+import 'package:coffeeno/features/feed/presentation/widgets/feed_roaster_post_card.dart';
 import 'package:coffeeno/features/feed/presentation/widgets/feed_tasting_card.dart';
 
 /// The social feed screen showing recent tastings from all users.
@@ -14,7 +16,7 @@ class FeedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final feedAsync = ref.watch(feedProvider);
+    final feedAsync = ref.watch(mergedFeedProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -50,7 +52,13 @@ class FeedScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 8, bottom: 100),
               itemCount: items.length,
               itemBuilder: (context, index) {
-                return FeedTastingCard(item: items[index]);
+                final entry = items[index];
+                return switch (entry) {
+                  TastingFeedEntry(:final tasting) =>
+                    FeedTastingCard(item: tasting),
+                  RoasterPostFeedEntry(:final post) =>
+                    FeedRoasterPostCard(post: post),
+                };
               },
             ),
           );

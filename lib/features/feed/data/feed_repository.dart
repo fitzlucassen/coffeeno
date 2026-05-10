@@ -90,6 +90,22 @@ class FeedRepository {
     await batch.commit();
   }
 
+  /// Deletes a comment and decrements the parent tasting's commentsCount.
+  ///
+  /// Firestore rules enforce who is allowed to call this — either the
+  /// comment's author, the tasting's owner, or an admin.
+  Future<void> deleteComment({
+    required String tastingId,
+    required String commentId,
+  }) async {
+    final batch = _firestore.batch()
+      ..delete(_tastings.doc(tastingId).collection('comments').doc(commentId))
+      ..update(_tastings.doc(tastingId), {
+        'commentsCount': FieldValue.increment(-1),
+      });
+    await batch.commit();
+  }
+
   /// Streams comments for a tasting, ordered oldest-first.
   Stream<List<FeedComment>> getComments(String tastingId) {
     return _tastings

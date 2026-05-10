@@ -173,7 +173,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tastings => 'Tastings';
 
   @override
-  String get noTastingsYet => 'No tastings yet';
+  String get noTastingsYet => 'No tastings yet.';
 
   @override
   String get noTastingsYetSubtitle => 'Add a tasting to rate this coffee';
@@ -596,4 +596,116 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get country => 'Country';
+
+  @override
+  String get dashboardTabStats => 'Stats';
+
+  @override
+  String get dashboardTabTastings => 'Tastings';
+
+  @override
+  String get dashboardTabPosts => 'Posts';
+
+  @override
+  String get period30d => '30 days';
+
+  @override
+  String get period3m => '3 months';
+
+  @override
+  String get period12m => '12 months';
+
+  @override
+  String get chartTastingsLabel => 'Tastings';
+
+  @override
+  String get chartRatingLabel => 'Avg rating';
+
+  @override
+  String get exportCsv => 'Export to CSV';
+
+  @override
+  String get exportCsvShareText => 'Coffeeno roaster data export';
+
+  @override
+  String get tastingNotesEmpty => '(no written notes)';
+
+  @override
+  String get roasterPostsTitle => 'Messages to your customers';
+
+  @override
+  String get newPost => 'New post';
+
+  @override
+  String get noPostsYet => 'You haven\'t published any post yet.';
+
+  @override
+  String postExpiresIn(int days) {
+    return 'Expires in $days days';
+  }
+
+  @override
+  String get postExpired => 'Expired';
+
+  @override
+  String get composePostTitle => 'Write a message';
+
+  @override
+  String get postTitleLabel => 'Title';
+
+  @override
+  String get postBodyLabel => 'Message';
+
+  @override
+  String get postLinkCoffeeLabel => 'Link to one of your coffees (optional)';
+
+  @override
+  String get postCtaLabelField => 'Call-to-action label (optional)';
+
+  @override
+  String get postCtaUrlField => 'Call-to-action URL (optional)';
+
+  @override
+  String get postNoLinkedCoffee => 'No linked coffee';
+
+  @override
+  String get publishPost => 'Publish';
+
+  @override
+  String get postPublished => 'Post published';
+
+  @override
+  String get deletePostConfirm => 'Delete this post?';
+
+  @override
+  String feedPostedBy(String roaster) {
+    return 'Message from $roaster';
+  }
+
+  @override
+  String feedAboutCoffee(String coffee) {
+    return 'About $coffee';
+  }
+
+  @override
+  String get deleteCommentConfirm => 'Delete this comment?';
+
+  @override
+  String get blockUser => 'Block';
+
+  @override
+  String get unblockUser => 'Unblock';
+
+  @override
+  String get blockUserConfirm =>
+      'Block this user? You will no longer see their content and they will no longer see yours.';
+
+  @override
+  String get unblockUserConfirm => 'Unblock this user?';
+
+  @override
+  String get blockedUsers => 'Blocked users';
+
+  @override
+  String get noBlockedUsers => 'You haven\'t blocked anyone.';
 }
