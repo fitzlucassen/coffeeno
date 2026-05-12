@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
@@ -29,10 +30,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     defaultConfig {
         applicationId = "com.coffeeno.coffeeno"
         minSdk = flutter.minSdkVersion
@@ -53,13 +50,6 @@ android {
         }
     }
 
-    // Bundle native debug symbols with the AAB so Play Console can symbolicate
-    // crashes and ANRs. Without this, release builds emit a "failed to strip
-    // debug symbols" warning.
-    ndk {
-        debugSymbolLevel = "SYMBOL_TABLE"
-    }
-
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -69,7 +59,18 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            // Bundle native debug symbols with the AAB so Play Console can
+            // symbolicate crashes and ANRs.
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 

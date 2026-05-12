@@ -1,6 +1,19 @@
 {
   "@@locale": "fr",
   "appTitle": "Coffeeno",
+
+  "onboardingSkip": "Passer",
+  "onboardingNext": "Suivant",
+  "onboardingGetStarted": "C'est parti",
+  "onboardingScanTitle": "Scannez n'importe quel paquet",
+  "onboardingScanBody": "Pointez l'appareil photo vers un paquet — on lit l'étiquette et on remplit l'origine, la torréfaction et les notes aromatiques pour vous.",
+  "onboardingTasteTitle": "Tenez un carnet de dégustation",
+  "onboardingTasteBody": "Notez chaque café et suivez l'évolution de votre palais au fil du temps.",
+  "onboardingDiscoverTitle": "Découvrez ce que boivent les autres",
+  "onboardingDiscoverBody": "Suivez des passionnés, likez et commentez leurs dégustations, et grimpez dans le classement.",
+  "onboardingMapTitle": "Explorez les origines du café",
+  "onboardingMapBody": "Retrouvez chaque café que vous avez goûté sur la carte du monde et plongez dans chaque origine.",
+
   "feedTab": "Fil",
   "libraryTab": "Bibliothèque",
   "mapTab": "Carte",

@@ -12,6 +12,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Coffeeno';
 
   @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingGetStarted => 'Get started';
+
+  @override
+  String get onboardingScanTitle => 'Scan any coffee bag';
+
+  @override
+  String get onboardingScanBody =>
+      'Point your camera at a bag — we read the label and fill in origin, roast, and flavor notes for you.';
+
+  @override
+  String get onboardingTasteTitle => 'Keep a tasting journal';
+
+  @override
+  String get onboardingTasteBody =>
+      'Rate every brew and track how your palate evolves over time.';
+
+  @override
+  String get onboardingDiscoverTitle => 'Discover what others brew';
+
+  @override
+  String get onboardingDiscoverBody =>
+      'Follow coffee lovers, like and comment on their tastings, and climb the leaderboard.';
+
+  @override
+  String get onboardingMapTitle => 'Explore coffee origins';
+
+  @override
+  String get onboardingMapBody =>
+      'See every coffee you\'ve tasted plotted on a world map and dive into each origin.';
+
+  @override
   String get feedTab => 'Feed';
 
   @override

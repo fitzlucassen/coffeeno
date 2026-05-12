@@ -19,6 +19,7 @@ class AppUser {
     this.premiumUntil,
     this.roasterPro = false,
     this.roasterProUntil,
+    this.hasSeenOnboarding = false,
     required this.createdAt,
   });
 
@@ -37,6 +38,7 @@ class AppUser {
   final DateTime? premiumUntil;
   final bool roasterPro;
   final DateTime? roasterProUntil;
+  final bool hasSeenOnboarding;
   final DateTime createdAt;
 
   bool get isAdmin => roles.contains(UserRole.admin);
@@ -77,6 +79,7 @@ class AppUser {
       premiumUntil: (data['premiumUntil'] as Timestamp?)?.toDate(),
       roasterPro: data['roasterPro'] as bool? ?? false,
       roasterProUntil: (data['roasterProUntil'] as Timestamp?)?.toDate(),
+      hasSeenOnboarding: data['hasSeenOnboarding'] as bool? ?? false,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -102,6 +105,7 @@ class AppUser {
       'roasterProUntil': roasterProUntil != null
           ? Timestamp.fromDate(roasterProUntil!)
           : null,
+      'hasSeenOnboarding': hasSeenOnboarding,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -122,6 +126,7 @@ class AppUser {
     DateTime? premiumUntil,
     bool? roasterPro,
     DateTime? roasterProUntil,
+    bool? hasSeenOnboarding,
     DateTime? createdAt,
   }) {
     return AppUser(
@@ -140,6 +145,7 @@ class AppUser {
       premiumUntil: premiumUntil ?? this.premiumUntil,
       roasterPro: roasterPro ?? this.roasterPro,
       roasterProUntil: roasterProUntil ?? this.roasterProUntil,
+      hasSeenOnboarding: hasSeenOnboarding ?? this.hasSeenOnboarding,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -164,6 +170,7 @@ class AppUser {
           premiumUntil == other.premiumUntil &&
           roasterPro == other.roasterPro &&
           roasterProUntil == other.roasterProUntil &&
+          hasSeenOnboarding == other.hasSeenOnboarding &&
           createdAt == other.createdAt;
 
   @override
@@ -183,6 +190,7 @@ class AppUser {
         premiumUntil,
         roasterPro,
         roasterProUntil,
+        hasSeenOnboarding,
         createdAt,
       );
 

@@ -12,6 +12,43 @@ class AppLocalizationsFr extends AppLocalizations {
   String get appTitle => 'Coffeeno';
 
   @override
+  String get onboardingSkip => 'Passer';
+
+  @override
+  String get onboardingNext => 'Suivant';
+
+  @override
+  String get onboardingGetStarted => 'C\'est parti';
+
+  @override
+  String get onboardingScanTitle => 'Scannez n\'importe quel paquet';
+
+  @override
+  String get onboardingScanBody =>
+      'Pointez l\'appareil photo vers un paquet — on lit l\'étiquette et on remplit l\'origine, la torréfaction et les notes aromatiques pour vous.';
+
+  @override
+  String get onboardingTasteTitle => 'Tenez un carnet de dégustation';
+
+  @override
+  String get onboardingTasteBody =>
+      'Notez chaque café et suivez l\'évolution de votre palais au fil du temps.';
+
+  @override
+  String get onboardingDiscoverTitle => 'Découvrez ce que boivent les autres';
+
+  @override
+  String get onboardingDiscoverBody =>
+      'Suivez des passionnés, likez et commentez leurs dégustations, et grimpez dans le classement.';
+
+  @override
+  String get onboardingMapTitle => 'Explorez les origines du café';
+
+  @override
+  String get onboardingMapBody =>
+      'Retrouvez chaque café que vous avez goûté sur la carte du monde et plongez dans chaque origine.';
+
+  @override
   String get feedTab => 'Fil';
 
   @override

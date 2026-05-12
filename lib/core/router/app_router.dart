@@ -9,6 +9,7 @@ import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/edit_profile_screen.dart';
 import '../../features/auth/presentation/screens/profile_setup_screen.dart';
+import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/coffee/presentation/screens/coffee_library_screen.dart';
 import '../../features/coffee/presentation/screens/coffee_detail_screen.dart';
 import '../../features/coffee/presentation/screens/add_coffee_screen.dart';
@@ -42,6 +43,7 @@ abstract final class AppRoutes {
   static const signIn = '/sign-in';
   static const signUp = '/sign-up';
   static const profileSetup = '/profile-setup';
+  static const onboarding = '/onboarding';
   static const feed = '/feed';
   static const explore = '/explore';
   static const library = '/library';
@@ -89,6 +91,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoutes.signUp;
       final isProfileSetup =
           state.matchedLocation == AppRoutes.profileSetup;
+      final isOnboarding = state.matchedLocation == AppRoutes.onboarding;
       final isShellRoute =
           state.matchedLocation == AppRoutes.feed ||
           state.matchedLocation == AppRoutes.explore ||
@@ -105,6 +108,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           currentUser is AsyncData<AppUser?> &&
           currentUser.value == null) {
         return AppRoutes.profileSetup;
+      }
+
+      // Once the profile exists, show the onboarding carousel to first-time
+      // users before letting them into the main shell.
+      if (isLoggedIn &&
+          isShellRoute &&
+          !isOnboarding &&
+          currentUser is AsyncData<AppUser?> &&
+          currentUser.value != null &&
+          !currentUser.value!.hasSeenOnboarding) {
+        return AppRoutes.onboarding;
       }
 
       return null;
@@ -126,6 +140,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.profileSetup,
         builder: (context, state) => const ProfileSetupScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
       ),
 
       // ── Main shell with bottom nav ──

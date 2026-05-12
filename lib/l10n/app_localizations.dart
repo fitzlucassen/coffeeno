@@ -104,6 +104,72 @@ abstract class AppLocalizations {
   /// **'Coffeeno'**
   String get appTitle;
 
+  /// Onboarding skip button
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// Onboarding next button
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// Onboarding final CTA
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onboardingGetStarted;
+
+  /// Onboarding scan page title
+  ///
+  /// In en, this message translates to:
+  /// **'Scan any coffee bag'**
+  String get onboardingScanTitle;
+
+  /// Onboarding scan page body
+  ///
+  /// In en, this message translates to:
+  /// **'Point your camera at a bag — we read the label and fill in origin, roast, and flavor notes for you.'**
+  String get onboardingScanBody;
+
+  /// Onboarding taste page title
+  ///
+  /// In en, this message translates to:
+  /// **'Keep a tasting journal'**
+  String get onboardingTasteTitle;
+
+  /// Onboarding taste page body
+  ///
+  /// In en, this message translates to:
+  /// **'Rate every brew and track how your palate evolves over time.'**
+  String get onboardingTasteBody;
+
+  /// Onboarding discover page title
+  ///
+  /// In en, this message translates to:
+  /// **'Discover what others brew'**
+  String get onboardingDiscoverTitle;
+
+  /// Onboarding discover page body
+  ///
+  /// In en, this message translates to:
+  /// **'Follow coffee lovers, like and comment on their tastings, and climb the leaderboard.'**
+  String get onboardingDiscoverBody;
+
+  /// Onboarding map page title
+  ///
+  /// In en, this message translates to:
+  /// **'Explore coffee origins'**
+  String get onboardingMapTitle;
+
+  /// Onboarding map page body
+  ///
+  /// In en, this message translates to:
+  /// **'See every coffee you\'ve tasted plotted on a world map and dive into each origin.'**
+  String get onboardingMapBody;
+
   /// Feed tab label
   ///
   /// In en, this message translates to:
