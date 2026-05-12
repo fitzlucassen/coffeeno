@@ -306,6 +306,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String freeScansLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count free scans left this month',
+      one: '1 free scan left this month',
+      zero: 'No free scans left this month',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get emptyFeed => 'Follow coffee lovers to see their tastings here';
 
   @override

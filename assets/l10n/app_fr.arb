@@ -98,6 +98,7 @@
   "extractingInfo": "Extraction des informations...",
   "ratingsCount": "{count} notes",
   "tastingsCount": "{count} dégustations",
+  "freeScansLeft": "{count, plural, =0{Plus de scans gratuits ce mois-ci} =1{1 scan gratuit restant ce mois-ci} other{{count} scans gratuits restants ce mois-ci}}",
   "emptyFeed": "Suivez des amateurs de café pour voir leurs dégustations ici",
   "findPeople": "Trouver des personnes",
   "noCommentsYet": "Aucun commentaire",

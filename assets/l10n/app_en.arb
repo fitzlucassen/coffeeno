@@ -219,6 +219,13 @@
       "count": { "type": "int" }
     }
   },
+  "freeScansLeft": "{count, plural, =0{No free scans left this month} =1{1 free scan left this month} other{{count} free scans left this month}}",
+  "@freeScansLeft": {
+    "description": "Shown to free-tier users indicating how many bag scans they have left in the current calendar month",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "emptyFeed": "Follow coffee lovers to see their tastings here",
   "@emptyFeed": { "description": "Empty feed message" },

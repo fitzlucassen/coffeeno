@@ -668,6 +668,12 @@ abstract class AppLocalizations {
   /// **'{count} tastings'**
   String tastingsCount(int count);
 
+  /// Shown to free-tier users indicating how many bag scans they have left in the current calendar month
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No free scans left this month} =1{1 free scan left this month} other{{count} free scans left this month}}'**
+  String freeScansLeft(int count);
+
   /// Empty feed message
   ///
   /// In en, this message translates to:

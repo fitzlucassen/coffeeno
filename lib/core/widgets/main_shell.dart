@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
+import '../../features/scanner/presentation/providers/scan_quota_provider.dart';
 import '../../features/subscription/presentation/providers/subscription_provider.dart';
 import '../router/app_router.dart';
 
@@ -41,6 +42,12 @@ class MainShell extends ConsumerWidget {
     HapticFeedback.selectionClick();
     final l10n = AppLocalizations.of(context);
     final isPremium = ref.read(isPremiumProvider);
+    // Show the remaining-scans hint only to free users. Pass the current
+    // snapshot rather than re-reading inside the sheet builder since the
+    // modal closes on tap.
+    final remaining = isPremium
+        ? null
+        : ref.read(remainingFreeScansProvider).value;
 
     showModalBottomSheet<void>(
       context: context,
@@ -61,9 +68,19 @@ class MainShell extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.camera_alt_rounded),
                 title: Text(l10n.scanABag),
-                onTap: () {
+                subtitle: remaining == null
+                    ? null
+                    : Text(l10n.freeScansLeft(remaining)),
+                onTap: () async {
                   Navigator.of(ctx).pop();
                   if (isPremium) {
+                    context.push(AppRoutes.scan);
+                    return;
+                  }
+                  final latest = await ref
+                      .read(remainingFreeScansProvider.future);
+                  if (!context.mounted) return;
+                  if (latest > 0) {
                     context.push(AppRoutes.scan);
                   } else {
                     context.push(AppRoutes.paywall);
@@ -88,6 +105,9 @@ class MainShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    // Warm up the scan quota so the "N free scans left" hint is ready to
+    // show when the user opens the add-coffee sheet.
+    ref.watch(remainingFreeScansProvider);
 
     return Scaffold(
       body: child,

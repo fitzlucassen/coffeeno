@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../../../subscription/presentation/widgets/premium_gate.dart';
+import '../providers/scan_quota_provider.dart';
 import '../providers/scanner_provider.dart';
 
 /// Screen that lets the user capture a photo of a coffee bag and runs the
@@ -51,26 +53,47 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
     final colors = theme.colorScheme;
     final scanState = ref.watch(scanStateProvider);
 
-    // Listen for state changes and navigate on success.
+    final isPremium = ref.watch(isPremiumProvider);
+
+    // Listen for state changes and navigate on success. For free-tier users
+    // this is also where we burn one scan from the monthly quota — we only
+    // count scans the pipeline actually completed, so a camera cancel or OCR
+    // failure doesn't cost the user a credit.
     ref.listen<ScanState>(scanStateProvider, (prev, next) {
       if (next.status == ScanStatus.done && next.result != null) {
+        if (!isPremium) {
+          final uid = FirebaseAuth.instance.currentUser?.uid;
+          if (uid != null) {
+            ref
+                .read(scanQuotaRepositoryProvider)
+                .recordScan(uid)
+                .then((_) => ref.invalidate(remainingFreeScansProvider));
+          }
+        }
         context.push(AppRoutes.scanReview, extra: next.result);
       }
     });
 
-    final isPremium = ref.watch(isPremiumProvider);
-
+    // Free users are allowed in as long as they have quota left. Watching
+    // the future here keeps the gate reactive to quota resets.
     if (!isPremium) {
-      return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => context.pop(),
-          ),
-          title: Text(l10n.scanCoffee),
-        ),
-        body: const PremiumGate(child: SizedBox.shrink()),
+      final remainingAsync = ref.watch(remainingFreeScansProvider);
+      final outOfQuota = remainingAsync.maybeWhen(
+        data: (remaining) => remaining <= 0,
+        orElse: () => false,
       );
+      if (outOfQuota) {
+        return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => context.pop(),
+            ),
+            title: Text(l10n.scanCoffee),
+          ),
+          body: const PremiumGate(child: SizedBox.shrink()),
+        );
+      }
     }
 
     // Auto-launch camera once when the screen first builds.
@@ -163,6 +186,12 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                   ),
               textAlign: TextAlign.center,
             ),
+            if (!ref.watch(isPremiumProvider)) ...[
+              const SizedBox(height: 16),
+              _QuotaBadge(
+                remainingAsync: ref.watch(remainingFreeScansProvider),
+              ),
+            ],
             const SizedBox(height: 40),
             AppButton(
               label: l10n.scanCoffee,
@@ -259,6 +288,53 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _QuotaBadge extends StatelessWidget {
+  const _QuotaBadge({required this.remainingAsync});
+
+  final AsyncValue<int> remainingAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining = remainingAsync.maybeWhen(
+      data: (v) => v,
+      orElse: () => null,
+    );
+    if (remaining == null) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isOut = remaining <= 0;
+    final fg = isOut ? colors.error : colors.primary;
+    final bg = (isOut ? colors.error : colors.primary).withValues(alpha: 0.12);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isOut ? Icons.lock_outline_rounded : Icons.bolt_rounded,
+            size: 16,
+            color: fg,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            AppLocalizations.of(context).freeScansLeft(remaining),
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: fg,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
