@@ -46,7 +46,7 @@ class FeedScreen extends ConsumerWidget {
           }
 
           return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(feedProvider),
+            onRefresh: () async => ref.invalidate(mergedFeedProvider),
             color: colorScheme.primary,
             child: ListView.builder(
               padding: const EdgeInsets.only(top: 8, bottom: 100),
@@ -82,7 +82,7 @@ class FeedScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
-                  onPressed: () => ref.invalidate(feedProvider),
+                  onPressed: () => ref.invalidate(mergedFeedProvider),
                   icon: const Icon(Icons.refresh),
                   label: Text(l10n.retry),
                 ),

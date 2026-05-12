@@ -55,11 +55,20 @@ final _targetedRoasterPostsProvider =
 /// Unified consumer feed: recent tastings interleaved with active
 /// "Message du torréfacteur" posts from roasters the user has engaged with
 /// in the last 90 days, sorted by createdAt DESC.
+///
+/// Roaster posts are best-effort — if that query fails (missing index,
+/// permissions, offline), we still yield the tastings so the user never
+/// stares at an infinite spinner because of a secondary data source.
 final mergedFeedProvider = StreamProvider<List<FeedEntry>>((ref) async* {
   final tastingsStream = ref.watch(feedRepositoryProvider).getFeed();
 
   await for (final tastings in tastingsStream) {
-    final posts = await ref.read(_targetedRoasterPostsProvider.future);
+    List<RoasterPost> posts;
+    try {
+      posts = await ref.read(_targetedRoasterPostsProvider.future);
+    } catch (_) {
+      posts = const <RoasterPost>[];
+    }
     // Re-read on every emission so updates to blocks take effect immediately.
     final blocked = ref.read(blockedUidsProvider);
 
