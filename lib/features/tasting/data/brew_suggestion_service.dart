@@ -52,7 +52,7 @@ You are a specialty coffee brewing expert. Given information about a coffee (nam
   "water_ml": number,
   "water_temp_c": integer,
   "brew_time_sec": integer,
-  "tips": "string with one or two short sentences of brewing tips specific to this coffee, or null"
+  "tips": "string with two or three short sentences of brewing tips specific to this coffee, or null"
 }
 Choose the brew method and parameters that best highlight the coffee's characteristics. For example, light-roast washed Ethiopian coffees shine with pour-over methods, while dark-roast Brazilian naturals may suit French Press or espresso. Do not include any text outside the JSON object.''';
 
