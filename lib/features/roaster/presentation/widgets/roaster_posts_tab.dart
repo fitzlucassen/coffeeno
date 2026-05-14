@@ -62,11 +62,12 @@ class RoasterPostsTab extends ConsumerWidget {
         Positioned(
           right: 16,
           bottom: 16,
-          child: FloatingActionButton.extended(
-            icon: const Icon(Icons.edit_rounded),
-            label: Text(l10n.newPost),
+          child: FloatingActionButton(
+            heroTag: 'roasterPostsFab',
+            tooltip: l10n.newPost,
             onPressed: () =>
                 context.push('/roaster/$roasterId/dashboard/compose-post'),
+            child: const Icon(Icons.add_rounded),
           ),
         ),
       ],

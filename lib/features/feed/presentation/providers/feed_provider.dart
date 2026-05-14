@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../roaster/domain/roaster_post.dart';
@@ -30,16 +31,27 @@ final _recentlyEngagedRoastersProvider =
   if (uid == null) return const <String>{};
 
   final cutoff = DateTime.now().subtract(const Duration(days: 90));
-  final snapshot = await FirebaseFirestore.instance
-      .collection('coffees')
-      .where('uid', isEqualTo: uid)
-      .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(cutoff))
-      .get();
+  try {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('coffees')
+        .where('uid', isEqualTo: uid)
+        .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(cutoff))
+        .get();
 
-  return {
-    for (final doc in snapshot.docs)
-      if (doc.data()['roasterId'] is String) doc.data()['roasterId'] as String,
-  };
+    final ids = {
+      for (final doc in snapshot.docs)
+        if (doc.data()['roasterId'] is String)
+          doc.data()['roasterId'] as String,
+    };
+    debugPrint(
+      '[FEED] recentlyEngagedRoasters uid=$uid coffees=${snapshot.docs.length} '
+      'roasterIds=${ids.length} ids=$ids',
+    );
+    return ids;
+  } catch (e, st) {
+    debugPrint('[FEED] recentlyEngagedRoasters FAILED: $e\n$st');
+    rethrow;
+  }
 });
 
 /// Active roaster posts relevant to the current user. Empty for signed-out
@@ -47,9 +59,21 @@ final _recentlyEngagedRoastersProvider =
 final _targetedRoasterPostsProvider =
     FutureProvider<List<RoasterPost>>((ref) async {
   final roasterIds = await ref.watch(_recentlyEngagedRoastersProvider.future);
-  if (roasterIds.isEmpty) return const <RoasterPost>[];
+  if (roasterIds.isEmpty) {
+    debugPrint('[FEED] targetedRoasterPosts: no engaged roasters, returning []');
+    return const <RoasterPost>[];
+  }
   final repo = ref.watch(roasterPostRepositoryProvider);
-  return repo.getActivePostsForRoasters(roasterIds.toList());
+  try {
+    final posts = await repo.getActivePostsForRoasters(roasterIds.toList());
+    debugPrint(
+      '[FEED] targetedRoasterPosts roasterIds=$roasterIds posts=${posts.length}',
+    );
+    return posts;
+  } catch (e, st) {
+    debugPrint('[FEED] targetedRoasterPosts FAILED: $e\n$st');
+    rethrow;
+  }
 });
 
 /// Unified consumer feed: recent tastings interleaved with active
@@ -66,7 +90,8 @@ final mergedFeedProvider = StreamProvider<List<FeedEntry>>((ref) async* {
     List<RoasterPost> posts;
     try {
       posts = await ref.read(_targetedRoasterPostsProvider.future);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[FEED] mergedFeed: falling back to empty roaster posts — $e');
       posts = const <RoasterPost>[];
     }
     // Re-read on every emission so updates to blocks take effect immediately.

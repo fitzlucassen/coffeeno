@@ -37,6 +37,14 @@ class BrewParamsForm extends StatelessWidget {
   final void Function(int minutes, int seconds) onBrewTimeChanged;
   final ValueChanged<int?> onWaterTempChanged;
 
+  // The seconds dropdown only has 5-second steps (0, 5, 10, ...); snap any
+  // external value (e.g. from an AI suggestion) to the nearest one so the
+  // dropdown always has a matching item.
+  int _snapToFive(int seconds) {
+    final clamped = seconds.clamp(0, 55);
+    return ((clamped / 5).round()) * 5;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -51,8 +59,11 @@ class BrewParamsForm extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Brew method
+        // Brew method — keyed on the value so the FormField rebuilds when
+        // the parent sets it externally (e.g. from an AI suggestion).
+        // Without this, initialValue is one-shot and the dropdown asserts.
         DropdownButtonFormField<BrewMethod>(
+          key: ValueKey('brewMethod-${selectedBrewMethod?.name}'),
           initialValue: selectedBrewMethod,
           decoration: InputDecoration(
             labelText: l10n.brewMethod,
@@ -66,8 +77,9 @@ class BrewParamsForm extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Grind size
+        // Grind size — same keyed pattern as brew method above.
         DropdownButtonFormField<GrindSize>(
+          key: ValueKey('grindSize-${selectedGrindSize?.name}'),
           initialValue: selectedGrindSize,
           decoration: InputDecoration(
             labelText: l10n.grindSize,
@@ -144,6 +156,7 @@ class BrewParamsForm extends StatelessWidget {
             SizedBox(
               width: 80,
               child: DropdownButtonFormField<int>(
+                key: ValueKey('brewMinutes-$brewTimeMinutes'),
                 initialValue: brewTimeMinutes,
                 decoration: const InputDecoration(
                   labelText: 'Min',
@@ -162,11 +175,16 @@ class BrewParamsForm extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(':', style: theme.textTheme.titleLarge),
             ),
-            // Seconds
+            // Seconds. The suggestion service may return an arbitrary number
+            // of seconds (e.g. 28), but this dropdown only accepts multiples
+            // of 5. Snap to the nearest 5-sec step so `initialValue` always
+            // matches one of the items — otherwise Flutter's dropdown
+            // assertion fires.
             SizedBox(
               width: 80,
               child: DropdownButtonFormField<int>(
-                initialValue: brewTimeSeconds,
+                key: ValueKey('brewSeconds-${_snapToFive(brewTimeSeconds)}'),
+                initialValue: _snapToFive(brewTimeSeconds),
                 decoration: const InputDecoration(
                   labelText: 'Sec',
                   contentPadding:
