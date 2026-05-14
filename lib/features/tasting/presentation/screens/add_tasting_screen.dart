@@ -52,6 +52,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
   bool _isSaving = false;
   bool _isSuggesting = false;
   String? _suggestionTips;
+  BrewMethod? _preferredSuggestionMethod;
 
   @override
   void dispose() {
@@ -91,6 +92,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
         variety: coffee.variety,
         processingMethod: coffee.processingMethod,
         roastLevel: coffee.roastLevel,
+        preferredMethodLabel: _preferredSuggestionMethod?.label,
       );
 
       if (!mounted) return;
@@ -264,7 +266,29 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
             const SizedBox(height: 16),
 
             // ── AI Brew Suggestion (premium only) ──
-            if (ref.watch(isPremiumProvider))
+            if (ref.watch(isPremiumProvider)) ...[
+              SizedBox(
+                height: 36,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    _MethodChip(
+                      label: l10n.suggestionMethodAuto,
+                      selected: _preferredSuggestionMethod == null,
+                      onTap: () => setState(
+                          () => _preferredSuggestionMethod = null),
+                    ),
+                    for (final m in BrewMethod.values)
+                      _MethodChip(
+                        label: m.label,
+                        selected: _preferredSuggestionMethod == m,
+                        onTap: () => setState(
+                            () => _preferredSuggestionMethod = m),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: _isSuggesting ? null : _fetchSuggestion,
                 icon: _isSuggesting
@@ -279,6 +303,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
                     : const Icon(Icons.auto_awesome),
                 label: Text(l10n.getSuggestion),
               ),
+            ],
 
             if (_suggestionTips != null) ...[
               const SizedBox(height: 12),
@@ -404,6 +429,30 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
             const SizedBox(height: 24),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MethodChip extends StatelessWidget {
+  const _MethodChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onTap(),
       ),
     );
   }

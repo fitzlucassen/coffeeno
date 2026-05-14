@@ -18,9 +18,34 @@ class CoffeeMapScreen extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final scope = ref.watch(mapScopeProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.coffeeOrigins),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: SegmentedButton<MapScope>(
+              segments: [
+                ButtonSegment(
+                  value: MapScope.mine,
+                  label: Text(l10n.mapScopeMine),
+                  icon: const Icon(Icons.person_outline),
+                ),
+                ButtonSegment(
+                  value: MapScope.global,
+                  label: Text(l10n.mapScopeGlobal),
+                  icon: const Icon(Icons.public_outlined),
+                ),
+              ],
+              selected: {scope},
+              onSelectionChanged: (s) =>
+                  ref.read(mapScopeProvider.notifier).set(s.first),
+            ),
+          ),
+        ),
       ),
       body: originsAsync.when(
         data: (origins) {

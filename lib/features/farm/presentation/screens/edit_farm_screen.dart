@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:coffeeno/core/widgets/app_text_field.dart';
+import 'package:coffeeno/core/widgets/profile_photo_picker.dart';
 import 'package:coffeeno/features/farm/domain/farm.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 import '../providers/farm_provider.dart';
 
@@ -27,6 +33,9 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
   final _altitudeController = TextEditingController();
   bool _prefilled = false;
   bool _saving = false;
+  String? _photoUrl;
+  String? _pendingPhotoPath;
+  bool _uploadingPhoto = false;
 
   @override
   void dispose() {
@@ -50,6 +59,36 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
     _regionController.text = farm.region ?? '';
     _farmerNameController.text = farm.farmerName ?? '';
     _altitudeController.text = farm.altitude ?? '';
+    _photoUrl = farm.photoUrl;
+  }
+
+  Future<void> _pickPhoto() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (image == null) return;
+    setState(() => _pendingPhotoPath = image.path);
+  }
+
+  Future<String?> _uploadPendingPhoto() async {
+    if (_pendingPhotoPath == null) return _photoUrl;
+    setState(() => _uploadingPhoto = true);
+    try {
+      final fileName = '${const Uuid().v4()}.jpg';
+      final ref = FirebaseStorage.instance
+          .ref('farms/${widget.farmId}/$fileName');
+      await ref.putFile(
+        File(_pendingPhotoPath!),
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+      return await ref.getDownloadURL();
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
   }
 
   Future<void> _save(Farm farm) async {
@@ -58,6 +97,9 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
     setState(() => _saving = true);
 
     try {
+      // Upload any freshly picked image before writing the Firestore doc so
+      // we don't persist an update with a stale photoUrl.
+      final finalPhotoUrl = await _uploadPendingPhoto();
       String? opt(String val) => val.trim().isEmpty ? null : val.trim();
       final updated = farm.copyWith(
         name: _nameController.text.trim(),
@@ -67,6 +109,7 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
         region: opt(_regionController.text),
         farmerName: opt(_farmerNameController.text),
         altitude: opt(_altitudeController.text),
+        photoUrl: finalPhotoUrl,
         updatedAt: DateTime.now(),
       );
 
@@ -103,6 +146,15 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
               key: _formKey,
               child: Column(
                 children: [
+                  const SizedBox(height: 8),
+                  ProfilePhotoPicker(
+                    photoUrl: _photoUrl,
+                    pendingPath: _pendingPhotoPath,
+                    uploading: _uploadingPhoto,
+                    onTap: _pickPhoto,
+                    fallbackIcon: Icons.agriculture_rounded,
+                  ),
+                  const SizedBox(height: 24),
                   AppTextField(
                     controller: _nameController,
                     label: 'Name',

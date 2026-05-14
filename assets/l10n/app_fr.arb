@@ -117,6 +117,9 @@
   "byOrigin": "Par origine",
   "noOriginsYet": "Aucune origine de café à afficher",
   "addCoffeesForMap": "Ajoutez des cafés avec une origine pour les voir sur la carte",
+  "mapScopeMine": "Ma carte",
+  "mapScopeGlobal": "Globale",
+  "suggestionMethodAuto": "Auto",
   "noCoffeesFromOrigin": "Aucun café trouvé pour cette origine",
   "deleteCoffeeConfirm": "Supprimer ce café et toutes ses dégustations ?",
 

@@ -1,11 +1,17 @@
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/profile_photo_picker.dart';
 import '../../domain/roaster.dart';
 import '../providers/roaster_provider.dart';
 
@@ -28,6 +34,9 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
   final _keyPeopleController = TextEditingController();
   bool _isLoading = false;
   bool _prefilled = false;
+  String? _photoUrl;
+  String? _pendingPhotoPath;
+  bool _uploadingPhoto = false;
 
   @override
   void dispose() {
@@ -49,6 +58,36 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
     _countryController.text = roaster.country ?? '';
     _cityController.text = roaster.city ?? '';
     _keyPeopleController.text = roaster.keyPeople ?? '';
+    _photoUrl = roaster.photoUrl;
+  }
+
+  Future<void> _pickPhoto() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (image == null) return;
+    setState(() => _pendingPhotoPath = image.path);
+  }
+
+  Future<String?> _uploadPendingPhoto() async {
+    if (_pendingPhotoPath == null) return _photoUrl;
+    setState(() => _uploadingPhoto = true);
+    try {
+      final fileName = '${const Uuid().v4()}.jpg';
+      final ref = FirebaseStorage.instance
+          .ref('roasters/${widget.roasterId}/$fileName');
+      await ref.putFile(
+        File(_pendingPhotoPath!),
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+      return await ref.getDownloadURL();
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
   }
 
   Future<void> _save(Roaster roaster) async {
@@ -57,6 +96,10 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Upload any freshly picked image before writing the Firestore doc so
+      // we don't persist an update with a stale photoUrl.
+      final finalPhotoUrl = await _uploadPendingPhoto();
+
       final updated = roaster.copyWith(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim().isEmpty
@@ -74,6 +117,7 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
         keyPeople: _keyPeopleController.text.trim().isEmpty
             ? null
             : _keyPeopleController.text.trim(),
+        photoUrl: finalPhotoUrl,
         updatedAt: DateTime.now(),
       );
 
@@ -118,6 +162,14 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 16),
+                    ProfilePhotoPicker(
+                      photoUrl: _photoUrl,
+                      pendingPath: _pendingPhotoPath,
+                      uploading: _uploadingPhoto,
+                      onTap: _pickPhoto,
+                      fallbackIcon: Icons.store_rounded,
+                    ),
+                    const SizedBox(height: 24),
                     AppTextField(
                       controller: _nameController,
                       label: l10n.coffeeName,

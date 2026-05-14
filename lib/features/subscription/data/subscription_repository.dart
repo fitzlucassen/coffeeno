@@ -69,6 +69,12 @@ class SubscriptionRepository {
 
   /// Streams a single unified subscription status. Prefer this over calling
   /// RevenueCat or Firestore directly — all callers read the same state.
+  ///
+  /// In debug builds, entitlements from the user's Firestore document are
+  /// merged in as an OR with RevenueCat — so flipping `premium` or
+  /// `roasterPro` on a user doc (e.g. via the Firebase console) lets us test
+  /// gated flows without going through a real purchase. In release builds
+  /// RevenueCat is the sole source of truth.
   Stream<SubscriptionStatus> watchStatus() {
     if (!_initialized) {
       return _watchFromFirestore();
@@ -76,24 +82,63 @@ class SubscriptionRepository {
 
     final controller = StreamController<SubscriptionStatus>.broadcast();
 
-    void listener(CustomerInfo info) {
-      final status = _buildStatus(info);
-      controller.add(status);
-      _syncToFirestore(status);
+    // Latest known RevenueCat status. Kept so we can recompute the merged
+    // output whenever Firestore emits an override in debug mode.
+    SubscriptionStatus revenueCatStatus = const SubscriptionStatus();
+    StreamSubscription<SubscriptionStatus>? devOverrideSub;
+
+    void emitMerged() {
+      controller.add(revenueCatStatus);
     }
 
-    Purchases.getCustomerInfo().then(listener).catchError((Object e) {
+    void handleRevenueCat(CustomerInfo info) {
+      revenueCatStatus = _buildStatus(info);
+      _syncToFirestore(revenueCatStatus);
+
+      if (!kDebugMode) {
+        controller.add(revenueCatStatus);
+      }
+      // In debug, the Firestore listener below will emit a merged value.
+    }
+
+    if (kDebugMode) {
+      devOverrideSub = _watchFromFirestore().listen((fsStatus) {
+        controller.add(_mergeStatuses(revenueCatStatus, fsStatus));
+      });
+    }
+
+    Purchases.getCustomerInfo().then(handleRevenueCat).catchError((Object e) {
       debugPrint('RevenueCat getCustomerInfo error: $e');
-      controller.add(const SubscriptionStatus());
+      emitMerged();
     });
 
-    Purchases.addCustomerInfoUpdateListener(listener);
+    Purchases.addCustomerInfoUpdateListener(handleRevenueCat);
 
     controller.onCancel = () {
-      Purchases.removeCustomerInfoUpdateListener(listener);
+      Purchases.removeCustomerInfoUpdateListener(handleRevenueCat);
+      devOverrideSub?.cancel();
     };
 
     return controller.stream;
+  }
+
+  /// Returns a status that holds whichever entitlement is active on *either*
+  /// source. Expiration dates fall back to the non-null one, preferring
+  /// RevenueCat when both are set.
+  SubscriptionStatus _mergeStatuses(
+    SubscriptionStatus rc,
+    SubscriptionStatus fs,
+  ) {
+    final hasPremium = rc.tier == SubscriptionTier.premium ||
+        fs.tier == SubscriptionTier.premium;
+    final hasRoasterPro = rc.roasterPro || fs.roasterPro;
+
+    return SubscriptionStatus(
+      tier: hasPremium ? SubscriptionTier.premium : SubscriptionTier.free,
+      premiumUntil: rc.premiumUntil ?? fs.premiumUntil,
+      roasterPro: hasRoasterPro,
+      roasterProUntil: rc.roasterProUntil ?? fs.roasterProUntil,
+    );
   }
 
   SubscriptionStatus _buildStatus(CustomerInfo info) {
@@ -171,6 +216,11 @@ class SubscriptionRepository {
   }
 
   Future<void> _syncToFirestore(SubscriptionStatus status) async {
+    // In debug we treat Firestore as an override source (see watchStatus),
+    // so the app must not mirror RevenueCat's empty state back over manually
+    // set flags. Skipping the write keeps dev test data intact.
+    if (kDebugMode) return;
+
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
 

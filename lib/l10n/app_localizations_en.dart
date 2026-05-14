@@ -377,6 +377,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add coffees with origin info to see them on the map';
 
   @override
+  String get mapScopeMine => 'My map';
+
+  @override
+  String get mapScopeGlobal => 'Global';
+
+  @override
+  String get suggestionMethodAuto => 'Auto';
+
+  @override
   String get noCoffeesFromOrigin => 'No coffees found for this origin';
 
   @override

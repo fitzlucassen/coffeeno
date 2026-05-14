@@ -19,49 +19,57 @@ class RoasterPostsTab extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final postsAsync = ref.watch(roasterPostsProvider(roasterId));
 
-    return Scaffold(
-      body: postsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('${l10n.error}: $e')),
-        data: (posts) {
-          if (posts.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.campaign_outlined,
-                        size: 48, color: colorScheme.onSurfaceVariant),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.noPostsYet,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: colorScheme.onSurfaceVariant),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+    return Stack(
+      children: [
+        postsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('${l10n.error}: $e')),
+          data: (posts) {
+            if (posts.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.campaign_outlined,
+                          size: 48, color: colorScheme.onSurfaceVariant),
+                      const SizedBox(height: 12),
+                      Text(
+                        l10n.noPostsYet,
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
+              );
+            }
+            // Bottom padding leaves room for the floating action button so
+            // the last post isn't obscured.
+            return ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              itemCount: posts.length,
+              itemBuilder: (context, i) => _PostTile(
+                post: posts[i],
+                onDelete: () => _confirmDelete(context, ref, posts[i]),
+                l10n: l10n,
               ),
             );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: posts.length,
-            itemBuilder: (context, i) => _PostTile(
-              post: posts[i],
-              onDelete: () => _confirmDelete(context, ref, posts[i]),
-              l10n: l10n,
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.edit_rounded),
-        label: Text(l10n.newPost),
-        onPressed: () =>
-            context.push('/roaster/$roasterId/dashboard/compose-post'),
-      ),
+          },
+        ),
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton.extended(
+            icon: const Icon(Icons.edit_rounded),
+            label: Text(l10n.newPost),
+            onPressed: () =>
+                context.push('/roaster/$roasterId/dashboard/compose-post'),
+          ),
+        ),
+      ],
     );
   }
 
