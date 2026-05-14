@@ -14,6 +14,9 @@ class TastingRepository {
   CollectionReference<Map<String, dynamic>> get _coffees =>
       _firestore.collection('coffees');
 
+  CollectionReference<Map<String, dynamic>> get _users =>
+      _firestore.collection('users');
+
   /// Adds a new tasting and updates the parent coffee's avgRating and
   /// ratingsCount atomically using a batch write.
   Future<String> addTasting(Tasting tasting) async {
@@ -37,6 +40,13 @@ class TastingRepository {
       'avgRating': newAvg,
       'ratingsCount': newCount,
     });
+    // Keep the profile-visible `tastingsCount` in sync. `set` with merge so
+    // the write also succeeds on legacy user docs that never had the field.
+    batch.set(
+      _users.doc(tasting.userId),
+      {'tastingsCount': FieldValue.increment(1)},
+      SetOptions(merge: true),
+    );
     await batch.commit();
 
     return tastingRef.id;
@@ -78,6 +88,10 @@ class TastingRepository {
       'avgRating': newAvg,
       'ratingsCount': newCount,
     });
+    batch.update(
+      _users.doc(tasting.userId),
+      {'tastingsCount': FieldValue.increment(-1)},
+    );
     await batch.commit();
   }
 

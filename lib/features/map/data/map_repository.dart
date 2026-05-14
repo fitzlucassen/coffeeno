@@ -14,13 +14,13 @@ class MapRepository {
 
   /// Aggregates coffees by originCountry to compute per-country stats.
   ///
-  /// We fetch all coffees that have an originCountry set, group them locally,
-  /// and compute count + average rating per country.
-  Stream<List<OriginStats>> getOriginStats() {
-    return _coffees
-        .where('originCountry', isNotEqualTo: '')
-        .snapshots()
-        .map((snapshot) {
+  /// When [uid] is non-null, only that user's coffees are counted; otherwise
+  /// the global (all-users) aggregate is returned.
+  Stream<List<OriginStats>> getOriginStats({String? uid}) {
+    final base = uid == null
+        ? _coffees.where('originCountry', isNotEqualTo: '')
+        : _coffees.where('uid', isEqualTo: uid);
+    return base.snapshots().map((snapshot) {
       final grouped = <String, List<double>>{};
 
       for (final doc in snapshot.docs) {

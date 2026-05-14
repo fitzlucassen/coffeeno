@@ -782,6 +782,24 @@ abstract class AppLocalizations {
   /// **'Add coffees with origin info to see them on the map'**
   String get addCoffeesForMap;
 
+  /// Map scope toggle label for only the current user's coffees
+  ///
+  /// In en, this message translates to:
+  /// **'My map'**
+  String get mapScopeMine;
+
+  /// Map scope toggle label for all users' coffees
+  ///
+  /// In en, this message translates to:
+  /// **'Global'**
+  String get mapScopeGlobal;
+
+  /// Chip label that lets the AI pick the brew method for the user (as opposed to constraining to a specific method)
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get suggestionMethodAuto;
+
   /// Empty origin ranking
   ///
   /// In en, this message translates to:

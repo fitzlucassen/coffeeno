@@ -381,6 +381,15 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ajoutez des cafés avec une origine pour les voir sur la carte';
 
   @override
+  String get mapScopeMine => 'Ma carte';
+
+  @override
+  String get mapScopeGlobal => 'Globale';
+
+  @override
+  String get suggestionMethodAuto => 'Auto';
+
+  @override
   String get noCoffeesFromOrigin => 'Aucun café trouvé pour cette origine';
 
   @override

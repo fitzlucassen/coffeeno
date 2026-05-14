@@ -57,6 +57,11 @@ You are a specialty coffee brewing expert. Given information about a coffee (nam
 Choose the brew method and parameters that best highlight the coffee's characteristics. For example, light-roast washed Ethiopian coffees shine with pour-over methods, while dark-roast Brazilian naturals may suit French Press or espresso. Do not include any text outside the JSON object.''';
 
   /// Suggests brew parameters based on the provided coffee characteristics.
+  ///
+  /// When [preferredMethodLabel] is provided, the model is constrained to
+  /// that specific brew method so the user can ask "what are the best params
+  /// for this coffee on an espresso machine?" rather than always letting the
+  /// AI pick. Pass the exact `BrewMethod.label` string.
   Future<BrewSuggestion> suggest({
     required String name,
     String? originCountry,
@@ -64,6 +69,7 @@ Choose the brew method and parameters that best highlight the coffee's character
     String? variety,
     String? processingMethod,
     String? roastLevel,
+    String? preferredMethodLabel,
   }) async {
     if (_apiKey.isEmpty) {
       throw Exception(
@@ -98,6 +104,13 @@ Choose the brew method and parameters that best highlight the coffee's character
     }
     if (roastLevel != null && roastLevel.isNotEmpty) {
       description.writeln('Roast level: $roastLevel');
+    }
+    if (preferredMethodLabel != null && preferredMethodLabel.isNotEmpty) {
+      description.writeln(
+        'Brew method constraint: MUST use "$preferredMethodLabel". '
+        'Return brew_method set to that exact string and tune grind, dose, '
+        'water, temp and time accordingly.',
+      );
     }
 
     final response = await model.generateContent([
