@@ -80,7 +80,10 @@ void main() {
     final posts = await repo.getActivePostsForRoasters(['r1'], now: now);
     expect(posts.length, 1);
     expect(posts.first.roasterId, 'r1');
-    expect(posts.first.isExpired, isFalse);
+    // Evaluate expiry against the same injected clock as the query, not the
+    // wall clock — otherwise this assertion is time-dependent and breaks once
+    // the real date reaches the post's expiresAt.
+    expect(posts.first.isExpiredAt(now), isFalse);
   });
 
   test('getActivePostsForRoasters returns empty when input is empty',

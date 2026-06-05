@@ -137,4 +137,39 @@ void main() {
     final result = await repo.getCommunityAverageRating('ghost', 'none');
     expect(result, isNull);
   });
+
+  group('searchCoffees', () {
+    setUp(() async {
+      await repo.addCoffee(_coffee(roaster: 'Blue Bottle', name: 'Kenya AA'));
+      await repo.addCoffee(_coffee(roaster: 'Café Rémy', name: 'House Blend'));
+      await repo.addCoffee(_coffee(roaster: 'Onyx', name: 'Geometry'));
+    });
+
+    test('matches a name prefix case-insensitively', () async {
+      // Lowercase query must still match the mixed-case "Kenya AA" because the
+      // query runs against the normalized field.
+      final results = await repo.searchCoffees('kenya');
+      expect(results.map((c) => c.name), contains('Kenya AA'));
+    });
+
+    test('matches a roaster prefix case-insensitively', () async {
+      final results = await repo.searchCoffees('blue');
+      expect(results.map((c) => c.roaster), contains('Blue Bottle'));
+    });
+
+    test('matches accent-insensitively via normalization', () async {
+      // "Cafe Remy" (no accents) must find "Café Rémy".
+      final results = await repo.searchCoffees('cafe');
+      expect(results.map((c) => c.roaster), contains('Café Rémy'));
+    });
+
+    test('returns empty for a blank query', () async {
+      expect(await repo.searchCoffees('   '), isEmpty);
+    });
+
+    test('does not match unrelated coffees', () async {
+      final results = await repo.searchCoffees('kenya');
+      expect(results.map((c) => c.name), isNot(contains('Geometry')));
+    });
+  });
 }

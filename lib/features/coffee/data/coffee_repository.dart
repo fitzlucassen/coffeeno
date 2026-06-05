@@ -37,6 +37,40 @@ class CoffeeRepository {
     await _collection.doc(coffee.id).update(coffee.toFirestore());
   }
 
+  /// Marks a coffee as having had its freshness notification scheduled.
+  ///
+  /// Writes only the `freshnessNotified` field rather than the whole document,
+  /// so it can't clobber a concurrent partial write (e.g. background
+  /// enrichment) that happens after this read but before its own write.
+  Future<void> markFreshnessNotified(String coffeeId) async {
+    await _collection.doc(coffeeId).update({'freshnessNotified': true});
+  }
+
+  /// Applies AI-enrichment results to a coffee, writing only the enrichment
+  /// fields. Null values are skipped so we never overwrite existing data with
+  /// nulls, and — like [markFreshnessNotified] — touching only these fields
+  /// avoids clobbering a concurrent writer (e.g. the freshness flag).
+  Future<void> applyEnrichment(
+    String coffeeId, {
+    String? roasterId,
+    String? farmId,
+    String? roasterUrl,
+    String? roasterDescription,
+    String? farmUrl,
+    String? farmDescription,
+  }) async {
+    final data = <String, dynamic>{
+      'roasterId': ?roasterId,
+      'farmId': ?farmId,
+      'roasterUrl': ?roasterUrl,
+      'roasterDescription': ?roasterDescription,
+      'farmUrl': ?farmUrl,
+      'farmDescription': ?farmDescription,
+    };
+    if (data.isEmpty) return;
+    await _collection.doc(coffeeId).update(data);
+  }
+
   /// Deletes a coffee document and all its associated tastings.
   Future<void> deleteCoffee(String coffeeId) async {
     final tastingsSnapshot = await _firestore
@@ -67,24 +101,27 @@ class CoffeeRepository {
   /// Searches coffees whose name or roaster matches the [query] string.
   ///
   /// Firestore does not support full-text search natively. This implementation
-  /// uses a prefix range query on the `name` field followed by a client-side
-  /// filter on `roaster`.  For production use, consider Algolia or Typesense.
+  /// runs prefix range queries against the normalized (lowercased,
+  /// diacritic-folded) `nameNormalized` / `roasterNormalized` fields \u2014 the same
+  /// fields written by [Coffee.toFirestore] \u2014 so the match is case- and
+  /// accent-insensitive. For production use, consider Algolia or Typesense.
   Future<List<Coffee>> searchCoffees(String query, {int limit = 20}) async {
-    final lowerQuery = query.toLowerCase();
+    final normalizedQuery = normalizeText(query);
+    if (normalizedQuery.isEmpty) return [];
 
     // Search by name prefix
     final nameSnapshot = await _collection
-        .orderBy('name')
-        .startAt([query])
-        .endAt(['$query\uf8ff'])
+        .orderBy('nameNormalized')
+        .startAt([normalizedQuery])
+        .endAt(['$normalizedQuery\uf8ff'])
         .limit(limit)
         .get();
 
     // Search by roaster prefix
     final roasterSnapshot = await _collection
-        .orderBy('roaster')
-        .startAt([query])
-        .endAt(['$query\uf8ff'])
+        .orderBy('roasterNormalized')
+        .startAt([normalizedQuery])
+        .endAt(['$normalizedQuery\uf8ff'])
         .limit(limit)
         .get();
 
@@ -97,10 +134,10 @@ class CoffeeRepository {
       results.putIfAbsent(doc.id, () => Coffee.fromFirestore(doc));
     }
 
-    // Secondary client-side filter for partial matches
+    // Secondary client-side filter for partial (non-prefix) matches.
     return results.values.where((coffee) {
-      return coffee.name.toLowerCase().contains(lowerQuery) ||
-          coffee.roaster.toLowerCase().contains(lowerQuery);
+      return normalizeText(coffee.name).contains(normalizedQuery) ||
+          normalizeText(coffee.roaster).contains(normalizedQuery);
     }).toList();
   }
 

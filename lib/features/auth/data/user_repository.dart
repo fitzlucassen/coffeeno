@@ -34,6 +34,38 @@ class UserRepository {
     await _usersRef.doc(uid).update(data);
   }
 
+  /// Builds the canonical profile-update map, keeping the denormalized
+  /// `*Lower` search fields in sync and normalizing the username consistently.
+  ///
+  /// Centralized here so the profile-setup and edit-profile screens can't drift
+  /// in how they lowercase/trim fields. Pass only the optional fields you want
+  /// to include (`bio`/`country` are written as `null` when empty to clear).
+  static Map<String, dynamic> buildProfileUpdate({
+    required String displayName,
+    required String username,
+    String? bio,
+    bool includeBio = false,
+    String? country,
+    bool includeCountry = false,
+  }) {
+    final trimmedName = displayName.trim();
+    final normalizedUsername = username.trim().toLowerCase();
+    final trimmedBio = bio?.trim();
+    final trimmedCountry = country?.trim();
+    return {
+      'displayName': trimmedName,
+      'displayNameLower': trimmedName.toLowerCase(),
+      'username': normalizedUsername,
+      'usernameLower': normalizedUsername,
+      if (includeBio)
+        'bio': (trimmedBio == null || trimmedBio.isEmpty) ? null : trimmedBio,
+      if (includeCountry)
+        'country': (trimmedCountry == null || trimmedCountry.isEmpty)
+            ? null
+            : trimmedCountry,
+    };
+  }
+
   /// Searches for users whose username starts with [query].
   ///
   /// Returns up to [limit] results (default 20).

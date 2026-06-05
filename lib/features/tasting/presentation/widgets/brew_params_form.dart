@@ -45,6 +45,12 @@ class BrewParamsForm extends StatelessWidget {
     return ((clamped / 5).round()) * 5;
   }
 
+  // The minutes dropdown only has items 0..15. An AI suggestion may return a
+  // longer brew (e.g. Cold Brew at 28+ minutes), so clamp any external value
+  // into the available range — otherwise `initialValue` has no matching item
+  // and Flutter's dropdown assertion fires.
+  int _clampMinutes(int minutes) => minutes.clamp(0, 15);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -156,8 +162,8 @@ class BrewParamsForm extends StatelessWidget {
             SizedBox(
               width: 80,
               child: DropdownButtonFormField<int>(
-                key: ValueKey('brewMinutes-$brewTimeMinutes'),
-                initialValue: brewTimeMinutes,
+                key: ValueKey('brewMinutes-${_clampMinutes(brewTimeMinutes)}'),
+                initialValue: _clampMinutes(brewTimeMinutes),
                 decoration: const InputDecoration(
                   labelText: 'Min',
                   contentPadding:
@@ -205,8 +211,13 @@ class BrewParamsForm extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Water temperature
+        // Water temperature. Keyed + initialValue on `waterTempC` so a value
+        // set externally (e.g. from an AI suggestion) actually shows up in the
+        // field — without the key the initialValue is one-shot and the field
+        // stays blank after a suggestion.
         AppTextField(
+          key: ValueKey('waterTemp-$waterTempC'),
+          initialValue: waterTempC?.toString(),
           label: l10n.waterTemperature,
           prefixIcon: Icons.thermostat_rounded,
           keyboardType: TextInputType.number,

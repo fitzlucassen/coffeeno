@@ -51,7 +51,12 @@ class RoasterPost {
 
   static const defaultLifetime = Duration(days: 30);
 
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
+  /// Whether the post has expired as of [now]. Clock-injectable so callers
+  /// (and tests) can evaluate expiry against the same reference time used for
+  /// querying, rather than the wall clock.
+  bool isExpiredAt(DateTime now) => now.isAfter(expiresAt);
+
+  bool get isExpired => isExpiredAt(DateTime.now());
 
   factory RoasterPost.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,

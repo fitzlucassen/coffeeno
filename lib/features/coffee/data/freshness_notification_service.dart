@@ -131,10 +131,10 @@ class FreshnessNotificationService {
     debugPrint(
         '[COFFEENO] Scheduled freshness notification for ${coffee.id} at $scheduledDate');
 
-    // Mark as notified so we don't schedule again.
-    await coffeeRepository.updateCoffee(
-      coffee.copyWith(freshnessNotified: true),
-    );
+    // Mark as notified so we don't schedule again. Use the targeted field
+    // update (not a full-document write) so this can't clobber a concurrent
+    // partial write such as background AI enrichment.
+    await coffeeRepository.markFreshnessNotified(coffee.id);
   }
 
   /// Cancels a pending notification for a coffee (e.g. when deleted).

@@ -17,9 +17,12 @@ class MapRepository {
   /// When [uid] is non-null, only that user's coffees are counted; otherwise
   /// the global (all-users) aggregate is returned.
   Stream<List<OriginStats>> getOriginStats({String? uid}) {
-    final base = uid == null
-        ? _coffees.where('originCountry', isNotEqualTo: '')
-        : _coffees.where('uid', isEqualTo: uid);
+    // For the global aggregate we read the whole collection and filter
+    // out missing/empty origins per-document below. A server-side
+    // `isNotEqualTo: ''` filter would *also* drop docs where the field is
+    // absent entirely (legacy/partial coffees), silently undercounting.
+    final base =
+        uid == null ? _coffees : _coffees.where('uid', isEqualTo: uid);
     return base.snapshots().map((snapshot) {
       final grouped = <String, List<double>>{};
 

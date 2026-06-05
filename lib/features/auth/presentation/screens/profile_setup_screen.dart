@@ -9,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../data/user_repository.dart';
 import '../../domain/app_user.dart';
 import '../providers/auth_provider.dart';
 
@@ -74,17 +75,15 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       final existing = await userRepo.getUser(user.uid);
 
       if (existing != null) {
-        final displayName = _displayNameController.text.trim();
-        final username = _usernameController.text.trim().toLowerCase();
-        await userRepo.updateUser(user.uid, {
-          'displayName': displayName,
-          'displayNameLower': displayName.toLowerCase(),
-          'username': username,
-          'usernameLower': username.toLowerCase(),
-          'bio': _bioController.text.trim().isEmpty
-              ? null
-              : _bioController.text.trim(),
-        });
+        await userRepo.updateUser(
+          user.uid,
+          UserRepository.buildProfileUpdate(
+            displayName: _displayNameController.text,
+            username: _usernameController.text,
+            bio: _bioController.text,
+            includeBio: true,
+          ),
+        );
       } else {
         // Create a new user doc (common after Google sign-in).
         final appUser = AppUser(

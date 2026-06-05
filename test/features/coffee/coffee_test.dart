@@ -107,22 +107,39 @@ void main() {
       expect(c.daysSinceRoast, isNull);
     });
 
-    test('resting (< 5 days)', () {
-      expect(withRoastDaysAgo(3).freshnessLabel, 'Resting');
+    // The label is derived from peakEndDays (single source of truth shared with
+    // the notification scheduler). For a medium/unknown roast peakEndDays = 18,
+    // so: resting < 4 (18~/4), peak <= 18, use soon <= 32 (peakEnd + 14),
+    // past peak afterwards.
+    group('medium/unknown roast (peakEndDays = 18)', () {
+      test('resting before the first quarter', () {
+        expect(withRoastDaysAgo(3).freshnessLabel, 'Resting');
+      });
+
+      test('peak up to and including peakEndDays', () {
+        expect(withRoastDaysAgo(4).freshnessLabel, 'Peak freshness');
+        expect(withRoastDaysAgo(16).freshnessLabel, 'Peak freshness');
+        expect(withRoastDaysAgo(18).freshnessLabel, 'Peak freshness');
+      });
+
+      test('use soon within the 14-day grace window past peak', () {
+        expect(withRoastDaysAgo(19).freshnessLabel, 'Use soon');
+        expect(withRoastDaysAgo(32).freshnessLabel, 'Use soon');
+      });
+
+      test('past peak after the grace window', () {
+        expect(withRoastDaysAgo(33).freshnessLabel, 'Past peak');
+        expect(withRoastDaysAgo(40).freshnessLabel, 'Past peak');
+      });
     });
 
-    test('peak (5..14 days)', () {
-      expect(withRoastDaysAgo(7).freshnessLabel, 'Peak freshness');
-      expect(withRoastDaysAgo(14).freshnessLabel, 'Peak freshness');
-    });
-
-    test('use soon (15..28 days)', () {
-      expect(withRoastDaysAgo(20).freshnessLabel, 'Use soon');
-      expect(withRoastDaysAgo(28).freshnessLabel, 'Use soon');
-    });
-
-    test('past peak (> 28 days)', () {
-      expect(withRoastDaysAgo(40).freshnessLabel, 'Past peak');
+    // The label must track the roast-level-dependent window, not a fixed one:
+    // a dark roast (peakEndDays = 14) leaves peak earlier than a light roast
+    // (peakEndDays = 21) for the same number of days since roast.
+    test('tracks roast level: same day, different labels', () {
+      expect(withRoastDaysAgo(16, level: 'Dark').freshnessLabel, 'Use soon');
+      expect(
+          withRoastDaysAgo(16, level: 'Light').freshnessLabel, 'Peak freshness');
     });
   });
 

@@ -18,36 +18,41 @@ class TastingRepository {
       _firestore.collection('users');
 
   /// Adds a new tasting and updates the parent coffee's avgRating and
-  /// ratingsCount atomically using a batch write.
+  /// ratingsCount atomically.
+  ///
+  /// Uses a transaction (not a batch) so the read-modify-write of the running
+  /// average is consistent: two tastings added concurrently would otherwise
+  /// both read the same count/avg and the second commit would clobber the
+  /// first, corrupting `avgRating` and undercounting `ratingsCount`.
   Future<String> addTasting(Tasting tasting) async {
     final tastingRef = _tastings.doc();
     final coffeeRef = _coffees.doc(tasting.coffeeId);
+    final userRef = _users.doc(tasting.userId);
 
-    // Read current coffee data to compute new average
-    final coffeeDoc = await coffeeRef.get();
-    final coffeeData = coffeeDoc.data();
+    await _firestore.runTransaction((txn) async {
+      final coffeeDoc = await txn.get(coffeeRef);
+      final coffeeData = coffeeDoc.data();
 
-    final currentCount = (coffeeData?['ratingsCount'] as int?) ?? 0;
-    final currentAvg = (coffeeData?['avgRating'] as num?)?.toDouble() ?? 0.0;
+      final currentCount = (coffeeData?['ratingsCount'] as int?) ?? 0;
+      final currentAvg = (coffeeData?['avgRating'] as num?)?.toDouble() ?? 0.0;
 
-    final newCount = currentCount + 1;
-    final newAvg =
-        ((currentAvg * currentCount) + tasting.overallRating) / newCount;
+      final newCount = currentCount + 1;
+      final newAvg =
+          ((currentAvg * currentCount) + tasting.overallRating) / newCount;
 
-    final batch = _firestore.batch();
-    batch.set(tastingRef, tasting.toFirestore());
-    batch.update(coffeeRef, {
-      'avgRating': newAvg,
-      'ratingsCount': newCount,
+      txn.set(tastingRef, tasting.toFirestore());
+      txn.update(coffeeRef, {
+        'avgRating': newAvg,
+        'ratingsCount': newCount,
+      });
+      // Keep the profile-visible `tastingsCount` in sync. `set` with merge so
+      // the write also succeeds on legacy user docs that never had the field.
+      txn.set(
+        userRef,
+        {'tastingsCount': FieldValue.increment(1)},
+        SetOptions(merge: true),
+      );
     });
-    // Keep the profile-visible `tastingsCount` in sync. `set` with merge so
-    // the write also succeeds on legacy user docs that never had the field.
-    batch.set(
-      _users.doc(tasting.userId),
-      {'tastingsCount': FieldValue.increment(1)},
-      SetOptions(merge: true),
-    );
-    await batch.commit();
 
     return tastingRef.id;
   }
@@ -65,34 +70,41 @@ class TastingRepository {
   }
 
   /// Deletes a tasting and adjusts the parent coffee's rating stats.
+  ///
+  /// Runs in a transaction for the same consistency reason as [addTasting]:
+  /// the new average is derived from the current count/avg, so concurrent
+  /// mutations must be serialized. All reads happen before any write, as
+  /// Firestore transactions require.
   Future<void> deleteTasting(String tastingId) async {
-    final tastingDoc = await _tastings.doc(tastingId).get();
-    if (!tastingDoc.exists || tastingDoc.data() == null) return;
+    final tastingRef = _tastings.doc(tastingId);
 
-    final tasting = Tasting.fromFirestore(tastingDoc);
-    final coffeeRef = _coffees.doc(tasting.coffeeId);
-    final coffeeDoc = await coffeeRef.get();
-    final coffeeData = coffeeDoc.data();
+    await _firestore.runTransaction((txn) async {
+      final tastingDoc = await txn.get(tastingRef);
+      if (!tastingDoc.exists || tastingDoc.data() == null) return;
 
-    final currentCount = (coffeeData?['ratingsCount'] as int?) ?? 0;
-    final currentAvg = (coffeeData?['avgRating'] as num?)?.toDouble() ?? 0.0;
+      final tasting = Tasting.fromFirestore(tastingDoc);
+      final coffeeRef = _coffees.doc(tasting.coffeeId);
+      final coffeeDoc = await txn.get(coffeeRef);
+      final coffeeData = coffeeDoc.data();
 
-    final newCount = (currentCount - 1).clamp(0, currentCount);
-    final newAvg = newCount > 0
-        ? ((currentAvg * currentCount) - tasting.overallRating) / newCount
-        : 0.0;
+      final currentCount = (coffeeData?['ratingsCount'] as int?) ?? 0;
+      final currentAvg = (coffeeData?['avgRating'] as num?)?.toDouble() ?? 0.0;
 
-    final batch = _firestore.batch();
-    batch.delete(_tastings.doc(tastingId));
-    batch.update(coffeeRef, {
-      'avgRating': newAvg,
-      'ratingsCount': newCount,
+      final newCount = (currentCount - 1).clamp(0, currentCount);
+      final newAvg = newCount > 0
+          ? ((currentAvg * currentCount) - tasting.overallRating) / newCount
+          : 0.0;
+
+      txn.delete(tastingRef);
+      txn.update(coffeeRef, {
+        'avgRating': newAvg,
+        'ratingsCount': newCount,
+      });
+      txn.update(
+        _users.doc(tasting.userId),
+        {'tastingsCount': FieldValue.increment(-1)},
+      );
     });
-    batch.update(
-      _users.doc(tasting.userId),
-      {'tastingsCount': FieldValue.increment(-1)},
-    );
-    await batch.commit();
   }
 
   /// Streams tastings for a specific coffee, ordered by creation date

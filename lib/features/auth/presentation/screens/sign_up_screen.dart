@@ -70,7 +70,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
       await userRepo.createUser(appUser);
 
-      if (mounted) context.go(AppRoutes.profileSetup);
+      // The email form already collected displayName + username, so there's
+      // nothing left for ProfileSetup to gather — go straight into the app.
+      // The router redirect then sends first-time users to onboarding (the
+      // user doc starts with hasSeenOnboarding = false). ProfileSetup stays
+      // for the Google path, where no user doc exists yet.
+      if (mounted) context.go(AppRoutes.feed);
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _mapAuthError(e.code));
     } catch (e) {

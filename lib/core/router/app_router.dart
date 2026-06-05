@@ -92,28 +92,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isProfileSetup =
           state.matchedLocation == AppRoutes.profileSetup;
       final isOnboarding = state.matchedLocation == AppRoutes.onboarding;
-      final isShellRoute =
-          state.matchedLocation == AppRoutes.feed ||
-          state.matchedLocation == AppRoutes.explore ||
-          state.matchedLocation == AppRoutes.library ||
-          state.matchedLocation == AppRoutes.map ||
-          state.matchedLocation == AppRoutes.profile;
 
       if (!isLoggedIn && !isAuthRoute) return AppRoutes.welcome;
       if (isLoggedIn && isAuthRoute) return AppRoutes.feed;
 
+      // Profile-setup and onboarding gating must apply to *every* protected
+      // destination, not just the shell tabs — otherwise a logged-in user can
+      // deep-link / push straight to a detail route (e.g. /coffee/:id, /scan)
+      // and skip the flow entirely. We only exempt the two setup screens so we
+      // don't redirect them onto themselves.
       if (isLoggedIn &&
-          isShellRoute &&
           !isProfileSetup &&
+          !isOnboarding &&
           currentUser is AsyncData<AppUser?> &&
           currentUser.value == null) {
         return AppRoutes.profileSetup;
       }
 
       // Once the profile exists, show the onboarding carousel to first-time
-      // users before letting them into the main shell.
+      // users before letting them into the rest of the app.
       if (isLoggedIn &&
-          isShellRoute &&
+          !isProfileSetup &&
           !isOnboarding &&
           currentUser is AsyncData<AppUser?> &&
           currentUser.value != null &&
@@ -318,8 +317,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 
-  ref.listen(authStateProvider, (_, __) => router.refresh());
-  ref.listen(currentUserProvider, (_, __) => router.refresh());
+  ref.listen(authStateProvider, (_, _) => router.refresh());
+  ref.listen(currentUserProvider, (_, _) => router.refresh());
 
   return router;
 });

@@ -115,7 +115,10 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
         _doseController.text = suggestion.doseGrams.toString();
         _waterController.text = suggestion.waterMl.toString();
         _waterTempC = suggestion.waterTempC;
-        _brewTimeMinutes = suggestion.brewTimeSec ~/ 60;
+        // The brew-time dropdowns cap at 15 min / 55 sec. Clamp the suggested
+        // value into that range so the saved tasting matches what the form
+        // actually displays (the form also clamps defensively).
+        _brewTimeMinutes = (suggestion.brewTimeSec ~/ 60).clamp(0, 15);
         _brewTimeSeconds = suggestion.brewTimeSec % 60;
         _suggestionTips = suggestion.tips;
       });

@@ -313,17 +313,19 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
       }
     }
 
-    // Update the coffee with entity references + inline fields
-    final saved = await coffeeRepo.getCoffee(coffeeId);
-    if (saved == null) return;
-    await coffeeRepo.updateCoffee(saved.copyWith(
+    // Update the coffee with entity references + inline fields. Use a targeted
+    // partial update (only the enrichment fields) instead of reading and
+    // rewriting the whole document — otherwise this races with the freshness
+    // notification writer and whichever finishes last clobbers the other.
+    await coffeeRepo.applyEnrichment(
+      coffeeId,
       roasterId: roasterId,
       farmId: farmId,
       roasterUrl: roasterUrl,
       roasterDescription: roasterDescription,
       farmUrl: farmUrl,
       farmDescription: farmDescription,
-    ));
+    );
     debugPrint('[COFFEENO] Enrichment saved for $coffeeId');
   }
 

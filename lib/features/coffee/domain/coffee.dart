@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 /// Normalizes text for case- and diacritic-insensitive matching.
 String normalizeText(String text) {
@@ -80,20 +81,26 @@ class Coffee {
     return DateTime.now().difference(roastDate!).inDays;
   }
 
-  String? get freshnessLabel {
-    final days = daysSinceRoast;
-    if (days == null) return null;
-    if (days < 5) return 'Resting';
-    if (days <= 14) return 'Peak freshness';
-    if (days <= 28) return 'Use soon';
-    return 'Past peak';
-  }
-
+  /// The end of the peak-freshness window, in days from roast, varying by
+  /// roast level. Single source of truth shared by [freshnessLabel] and the
+  /// freshness notification scheduler.
   int get peakEndDays {
     final level = roastLevel?.toLowerCase() ?? '';
     if (level.contains('light')) return 21;
     if (level.contains('dark')) return 14;
     return 18;
+  }
+
+  String? get freshnessLabel {
+    final days = daysSinceRoast;
+    if (days == null) return null;
+    // Derived from peakEndDays so the in-app label and the notification timing
+    // agree: ~first quarter is resting, up to peakEnd is peak, a short grace
+    // window past that is "use soon", then past peak.
+    if (days < peakEndDays ~/ 4) return 'Resting';
+    if (days <= peakEndDays) return 'Peak freshness';
+    if (days <= peakEndDays + 14) return 'Use soon';
+    return 'Past peak';
   }
 
   factory Coffee.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -249,22 +256,30 @@ class Coffee {
           processingMethod == other.processingMethod &&
           roastDate == other.roastDate &&
           roastLevel == other.roastLevel &&
+          listEquals(flavorNotes, other.flavorNotes) &&
           photoUrl == other.photoUrl &&
           avgRating == other.avgRating &&
           ratingsCount == other.ratingsCount &&
+          roasterUrl == other.roasterUrl &&
+          roasterDescription == other.roasterDescription &&
+          farmUrl == other.farmUrl &&
+          farmDescription == other.farmDescription &&
           roasterId == other.roasterId &&
           farmId == other.farmId &&
           price == other.price &&
           lot == other.lot &&
           harvestYear == other.harvestYear &&
+          freshnessNotified == other.freshnessNotified &&
           createdAt == other.createdAt;
 
   @override
   int get hashCode => Object.hashAll([
         id, uid, roaster, name, originCountry, originRegion,
         farmName, farmerName, altitude, variety, processingMethod,
-        roastDate, roastLevel, photoUrl, avgRating, ratingsCount,
-        roasterId, farmId, price, lot, harvestYear, createdAt,
+        roastDate, roastLevel, Object.hashAll(flavorNotes), photoUrl,
+        avgRating, ratingsCount, roasterUrl, roasterDescription,
+        farmUrl, farmDescription, roasterId, farmId, price, lot,
+        harvestYear, freshnessNotified, createdAt,
       ]);
 
   @override

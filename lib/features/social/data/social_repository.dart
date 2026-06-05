@@ -149,20 +149,22 @@ class SocialRepository {
     if (query.trim().isEmpty) return [];
 
     final lowerQuery = query.toLowerCase();
-    final upperBound = '${lowerQuery.substring(0, lowerQuery.length - 1)}'
-        '${String.fromCharCode(lowerQuery.codeUnitAt(lowerQuery.length - 1) + 1)}';
+    // Use the high-Unicode sentinel as the prefix upper bound (same pattern as
+    // the other repositories). Incrementing the last code unit by hand breaks
+    // on surrogate pairs / high code points and can throw or mis-bound.
+    final upperBound = '$lowerQuery';
 
     // Search by usernameLower field first.
     final usernameResults = await _users
         .where('usernameLower', isGreaterThanOrEqualTo: lowerQuery)
-        .where('usernameLower', isLessThan: upperBound)
+        .where('usernameLower', isLessThanOrEqualTo: upperBound)
         .limit(20)
         .get();
 
     // Also search by displayNameLower.
     final displayNameResults = await _users
         .where('displayNameLower', isGreaterThanOrEqualTo: lowerQuery)
-        .where('displayNameLower', isLessThan: upperBound)
+        .where('displayNameLower', isLessThanOrEqualTo: upperBound)
         .limit(20)
         .get();
 

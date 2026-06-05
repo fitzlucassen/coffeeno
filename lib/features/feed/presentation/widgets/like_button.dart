@@ -85,6 +85,16 @@ class _LikeButtonState extends ConsumerState<LikeButton>
           (tastingId: widget.tastingId, userId: userId),
         ),
       );
+      // Clear the optimistic overrides on success so the authoritative values
+      // (the refreshed provider + the streamed likesCount from the parent)
+      // take over again. Without this they stay sticky for the widget's life
+      // and the displayed count drifts from Firestore.
+      if (mounted) {
+        setState(() {
+          _optimisticLiked = null;
+          _optimisticCount = null;
+        });
+      }
     } catch (_) {
       // Revert on error.
       if (mounted) {

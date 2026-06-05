@@ -46,4 +46,42 @@ void main() {
     final stats = await repo.getOriginStats().first;
     expect(stats.map((s) => s.country), ['Ethiopia']);
   });
+
+  test('global stats include docs even when originCountry field is absent',
+      () async {
+    // A legacy/partial doc with no originCountry field at all must not be
+    // dropped by a server-side filter — it's simply skipped client-side while
+    // valid docs are still counted. (Regression guard for the previous
+    // `isNotEqualTo: ''` filter, which excluded missing fields entirely.)
+    await firestore.collection('coffees').add({
+      'avgRating': 3.0,
+      'ratingsCount': 1,
+      'createdAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+    });
+    await _seedCoffee(firestore, origin: 'Colombia', rating: 4.0);
+
+    final stats = await repo.getOriginStats().first;
+    expect(stats.map((s) => s.country), ['Colombia']);
+  });
+
+  test('getOriginStats scoped to a uid only counts that user\'s coffees',
+      () async {
+    await firestore.collection('coffees').add({
+      'uid': 'me',
+      'originCountry': 'Kenya',
+      'avgRating': 4.0,
+      'ratingsCount': 1,
+      'createdAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+    });
+    await firestore.collection('coffees').add({
+      'uid': 'other',
+      'originCountry': 'Brazil',
+      'avgRating': 3.0,
+      'ratingsCount': 1,
+      'createdAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+    });
+
+    final stats = await repo.getOriginStats(uid: 'me').first;
+    expect(stats.map((s) => s.country), ['Kenya']);
+  });
 }

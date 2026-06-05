@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../data/user_repository.dart';
 import '../../domain/app_user.dart';
 import '../providers/auth_provider.dart';
 import '../../../social/presentation/providers/social_provider.dart';
@@ -54,21 +55,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (uid == null) return;
 
       final userRepo = ref.read(userRepositoryProvider);
-      final displayName = _displayNameController.text.trim();
-      final username = _usernameController.text.trim().toLowerCase();
 
-      await userRepo.updateUser(uid, {
-        'displayName': displayName,
-        'displayNameLower': displayName.toLowerCase(),
-        'username': username,
-        'usernameLower': username.toLowerCase(),
-        'bio': _bioController.text.trim().isEmpty
-            ? null
-            : _bioController.text.trim(),
-        'country': _countryController.text.trim().isEmpty
-            ? null
-            : _countryController.text.trim(),
-      });
+      await userRepo.updateUser(
+        uid,
+        UserRepository.buildProfileUpdate(
+          displayName: _displayNameController.text,
+          username: _usernameController.text,
+          bio: _bioController.text,
+          includeBio: true,
+          country: _countryController.text,
+          includeCountry: true,
+        ),
+      );
 
       ref.invalidate(userProfileProvider(uid));
       ref.invalidate(currentUserProvider);
