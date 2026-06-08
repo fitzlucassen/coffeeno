@@ -13,6 +13,7 @@ class UserSearchResult {
     this.tastingsCount = 0,
     this.followersCount = 0,
     this.followingCount = 0,
+    this.points = 0,
   });
 
   final String uid;
@@ -23,6 +24,7 @@ class UserSearchResult {
   final int tastingsCount;
   final int followersCount;
   final int followingCount;
+  final int points;
 
   factory UserSearchResult.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -37,6 +39,7 @@ class UserSearchResult {
       tastingsCount: (data['tastingsCount'] as num?)?.toInt() ?? 0,
       followersCount: (data['followersCount'] as num?)?.toInt() ?? 0,
       followingCount: (data['followingCount'] as num?)?.toInt() ?? 0,
+      points: (data['points'] as num?)?.toInt() ?? 0,
     );
   }
 }

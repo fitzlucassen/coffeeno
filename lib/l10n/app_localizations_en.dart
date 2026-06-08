@@ -49,6 +49,88 @@ class AppLocalizationsEn extends AppLocalizations {
       'See every coffee you\'ve tasted plotted on a world map and dive into each origin.';
 
   @override
+  String get onboardingPrefsTitle => 'Tell us your taste';
+
+  @override
+  String get onboardingPrefsBody =>
+      'Pick a few favorites so we can tailor what you discover. You can change these anytime.';
+
+  @override
+  String get onboardingPrefsBrewMethods => 'How do you brew?';
+
+  @override
+  String get onboardingPrefsRoastLevels => 'Roast levels you enjoy';
+
+  @override
+  String get onboardingPrefsFlavors => 'Flavors you love';
+
+  @override
+  String get levelBeanSprout => 'Bean Sprout';
+
+  @override
+  String get levelHomeBrewer => 'Home Brewer';
+
+  @override
+  String get levelEnthusiast => 'Coffee Enthusiast';
+
+  @override
+  String get levelCupper => 'Cupper';
+
+  @override
+  String get levelConnoisseur => 'Connoisseur';
+
+  @override
+  String get levelMasterTaster => 'Master Taster';
+
+  @override
+  String pointsLabel(int points) {
+    return '$points pts';
+  }
+
+  @override
+  String pointsToNextLevel(int points, String level) {
+    return '$points pts to $level';
+  }
+
+  @override
+  String get levelUpTitle => 'Level up!';
+
+  @override
+  String levelUpBody(String level) {
+    return 'You\'re now a $level.';
+  }
+
+  @override
+  String get brewGuideStart => 'Start brew';
+
+  @override
+  String get brewGuideStop => 'Stop';
+
+  @override
+  String get brewGuideReset => 'Reset';
+
+  @override
+  String get brewGuideTargetReached => 'Target time reached';
+
+  @override
+  String get brewGuideTitle => 'Guided brew';
+
+  @override
+  String get brewSuggestionApplied => 'Suggested parameters applied below';
+
+  @override
+  String get alreadyInLibrary => 'Already in your library';
+
+  @override
+  String get addAgain => 'Add again';
+
+  @override
+  String get openExisting => 'Open';
+
+  @override
+  String get reAddedToShelf => 'Added a fresh bag to your shelf';
+
+  @override
   String get feedTab => 'Feed';
 
   @override

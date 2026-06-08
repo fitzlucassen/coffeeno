@@ -138,6 +138,119 @@ void main() {
     expect(result, isNull);
   });
 
+  group('findCanonicalMatchForUser', () {
+    test('matches an existing coffee by roaster + name + origin', () async {
+      await repo.addCoffee(_coffee(
+        uid: 'me',
+        roaster: 'Blue Bottle',
+        name: 'Bella Donovan',
+        originCountry: 'Ethiopia',
+      ));
+
+      // Case/accent variations of the same coffee should still match.
+      final match = await repo.findCanonicalMatchForUser(
+        userId: 'me',
+        roaster: 'blue bottle',
+        name: 'BELLA DONOVAN',
+        originCountry: 'Ethiopia',
+      );
+      expect(match, isNotNull);
+      expect(match!.name, 'Bella Donovan');
+    });
+
+    test('does not match another user\'s coffee', () async {
+      await repo.addCoffee(_coffee(
+        uid: 'other',
+        roaster: 'Blue Bottle',
+        name: 'Bella Donovan',
+        originCountry: 'Ethiopia',
+      ));
+
+      final match = await repo.findCanonicalMatchForUser(
+        userId: 'me',
+        roaster: 'Blue Bottle',
+        name: 'Bella Donovan',
+        originCountry: 'Ethiopia',
+      );
+      expect(match, isNull);
+    });
+
+    test('does not match when origin differs', () async {
+      await repo.addCoffee(_coffee(
+        uid: 'me',
+        roaster: 'R',
+        name: 'Blend',
+        originCountry: 'Ethiopia',
+      ));
+
+      final match = await repo.findCanonicalMatchForUser(
+        userId: 'me',
+        roaster: 'R',
+        name: 'Blend',
+        originCountry: 'Colombia',
+      );
+      expect(match, isNull);
+    });
+
+    test('returns the most recently added match', () async {
+      await repo.addCoffee(_coffee(
+        uid: 'me',
+        roaster: 'R',
+        name: 'N',
+        originCountry: 'Ethiopia',
+        createdAt: DateTime(2026, 1, 1),
+      ));
+      await repo.addCoffee(_coffee(
+        uid: 'me',
+        roaster: 'R',
+        name: 'N',
+        originCountry: 'Ethiopia',
+        avgRating: 4.2,
+        createdAt: DateTime(2026, 5, 1),
+      ));
+
+      final match = await repo.findCanonicalMatchForUser(
+        userId: 'me',
+        roaster: 'R',
+        name: 'N',
+        originCountry: 'Ethiopia',
+      );
+      expect(match, isNotNull);
+      expect(match!.avgRating, 4.2);
+    });
+  });
+
+  group('communityOwnerCount', () {
+    test('counts distinct owners of the same canonical coffee', () async {
+      await repo.addCoffee(_coffee(
+          uid: 'a', roaster: 'R', name: 'N', originCountry: 'Ethiopia'));
+      await repo.addCoffee(_coffee(
+          uid: 'b', roaster: 'R', name: 'N', originCountry: 'Ethiopia'));
+      // Same user, second bag — still one owner.
+      await repo.addCoffee(_coffee(
+          uid: 'a', roaster: 'R', name: 'N', originCountry: 'Ethiopia'));
+      // Different coffee — excluded.
+      await repo.addCoffee(_coffee(
+          uid: 'c', roaster: 'R', name: 'Other', originCountry: 'Ethiopia'));
+
+      final count = await repo.communityOwnerCount(
+        roaster: 'R',
+        name: 'N',
+        originCountry: 'Ethiopia',
+      );
+      expect(count, 2);
+    });
+
+    test('returns zero when nobody owns it', () async {
+      final count = await repo.communityOwnerCount(
+        roaster: 'Ghost',
+        name: 'None',
+        originCountry: 'Nowhere',
+      );
+      expect(count, 0);
+    });
+  });
+
   group('searchCoffees', () {
     setUp(() async {
       await repo.addCoffee(_coffee(roaster: 'Blue Bottle', name: 'Kenya AA'));

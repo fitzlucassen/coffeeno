@@ -49,6 +49,89 @@ class AppLocalizationsFr extends AppLocalizations {
       'Retrouvez chaque café que vous avez goûté sur la carte du monde et plongez dans chaque origine.';
 
   @override
+  String get onboardingPrefsTitle => 'Parlez-nous de vos goûts';
+
+  @override
+  String get onboardingPrefsBody =>
+      'Choisissez quelques favoris pour personnaliser vos découvertes. Vous pourrez les modifier à tout moment.';
+
+  @override
+  String get onboardingPrefsBrewMethods => 'Comment préparez-vous votre café ?';
+
+  @override
+  String get onboardingPrefsRoastLevels => 'Niveaux de torréfaction appréciés';
+
+  @override
+  String get onboardingPrefsFlavors => 'Arômes que vous adorez';
+
+  @override
+  String get levelBeanSprout => 'Graine de café';
+
+  @override
+  String get levelHomeBrewer => 'Préparateur amateur';
+
+  @override
+  String get levelEnthusiast => 'Passionné de café';
+
+  @override
+  String get levelCupper => 'Dégustateur';
+
+  @override
+  String get levelConnoisseur => 'Connaisseur';
+
+  @override
+  String get levelMasterTaster => 'Maître dégustateur';
+
+  @override
+  String pointsLabel(int points) {
+    return '$points pts';
+  }
+
+  @override
+  String pointsToNextLevel(int points, String level) {
+    return '$points pts avant $level';
+  }
+
+  @override
+  String get levelUpTitle => 'Niveau supérieur !';
+
+  @override
+  String levelUpBody(String level) {
+    return 'Vous êtes maintenant $level.';
+  }
+
+  @override
+  String get brewGuideStart => 'Démarrer';
+
+  @override
+  String get brewGuideStop => 'Arrêter';
+
+  @override
+  String get brewGuideReset => 'Réinitialiser';
+
+  @override
+  String get brewGuideTargetReached => 'Temps cible atteint';
+
+  @override
+  String get brewGuideTitle => 'Préparation guidée';
+
+  @override
+  String get brewSuggestionApplied =>
+      'Paramètres suggérés appliqués ci-dessous';
+
+  @override
+  String get alreadyInLibrary => 'Déjà dans votre bibliothèque';
+
+  @override
+  String get addAgain => 'Ajouter à nouveau';
+
+  @override
+  String get openExisting => 'Ouvrir';
+
+  @override
+  String get reAddedToShelf => 'Nouveau paquet ajouté à votre étagère';
+
+  @override
   String get feedTab => 'Fil';
 
   @override

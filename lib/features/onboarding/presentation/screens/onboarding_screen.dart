@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:coffeeno/core/constants/app_constants.dart';
 import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/core/theme/app_colors.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
+
+import '../widgets/preference_chips.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -21,10 +24,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _index = 0;
   bool _finishing = false;
 
+  // Captured taste preferences (the final, interactive onboarding page).
+  final Set<String> _brewMethods = {};
+  final Set<String> _roastLevels = {};
+  final Set<String> _flavors = {};
+
+  // Number of informational (non-interactive) carousel pages before the
+  // preferences page. The preferences page is the last index.
+  static const _infoPageCount = 4;
+  int get _pageCount => _infoPageCount + 1;
+  bool get _isPrefsPage => _index == _pageCount - 1;
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _toggle(Set<String> set, String value) {
+    setState(() => set.contains(value) ? set.remove(value) : set.add(value));
   }
 
   List<_OnboardingPage> _pages(AppLocalizations l10n) => [
@@ -57,9 +75,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
       try {
-        await ref
-            .read(userRepositoryProvider)
-            .updateUser(uid, {'hasSeenOnboarding': true});
+        // Persist onboarding completion plus any captured preferences. Empty
+        // sets are written as empty lists (the user simply skipped picking).
+        await ref.read(userRepositoryProvider).updateUser(uid, {
+          'hasSeenOnboarding': true,
+          'preferredBrewMethods': _brewMethods.toList(),
+          'preferredRoastLevels': _roastLevels.toList(),
+          'favoriteFlavors': _flavors.toList(),
+        });
+        ref.invalidate(currentUserProvider);
       } catch (_) {
         // Non-blocking: if the write fails we still let the user in.
       }
@@ -72,8 +96,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final pages = _pages(l10n);
-    final isLast = _index == pages.length - 1;
+    final infoPages = _pages(l10n);
+    final isLast = _isPrefsPage;
 
     return Scaffold(
       body: SafeArea(
@@ -92,12 +116,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Expanded(
               child: PageView.builder(
                 controller: _controller,
-                itemCount: pages.length,
+                itemCount: _pageCount,
                 onPageChanged: (i) => setState(() => _index = i),
-                itemBuilder: (context, i) => _OnboardingPageView(page: pages[i]),
+                itemBuilder: (context, i) {
+                  if (i < _infoPageCount) {
+                    return _OnboardingPageView(page: infoPages[i]);
+                  }
+                  return _PreferencesPageView(
+                    l10n: l10n,
+                    brewMethods: _brewMethods,
+                    roastLevels: _roastLevels,
+                    flavors: _flavors,
+                    onToggleBrew: (v) => _toggle(_brewMethods, v),
+                    onToggleRoast: (v) => _toggle(_roastLevels, v),
+                    onToggleFlavor: (v) => _toggle(_flavors, v),
+                  );
+                },
               ),
             ),
-            _Dots(count: pages.length, index: _index, theme: theme),
+            _Dots(count: _pageCount, index: _index, theme: theme),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
               child: AppButton(
@@ -185,6 +222,77 @@ class _OnboardingPageView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The interactive final onboarding page: captures brew/roast/flavor
+/// preferences via multi-select chips. All selections are optional.
+class _PreferencesPageView extends StatelessWidget {
+  const _PreferencesPageView({
+    required this.l10n,
+    required this.brewMethods,
+    required this.roastLevels,
+    required this.flavors,
+    required this.onToggleBrew,
+    required this.onToggleRoast,
+    required this.onToggleFlavor,
+  });
+
+  final AppLocalizations l10n;
+  final Set<String> brewMethods;
+  final Set<String> roastLevels;
+  final Set<String> flavors;
+  final ValueChanged<String> onToggleBrew;
+  final ValueChanged<String> onToggleRoast;
+  final ValueChanged<String> onToggleFlavor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      children: [
+        const SizedBox(height: 8),
+        Text(
+          l10n.onboardingPrefsTitle,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          l10n.onboardingPrefsBody,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 28),
+        PreferenceChips(
+          label: l10n.onboardingPrefsBrewMethods,
+          options: [for (final m in BrewMethod.values) m.label],
+          selected: brewMethods,
+          onToggle: onToggleBrew,
+        ),
+        const SizedBox(height: 24),
+        PreferenceChips(
+          label: l10n.onboardingPrefsRoastLevels,
+          options: [for (final r in RoastLevel.values) r.label],
+          selected: roastLevels,
+          onToggle: onToggleRoast,
+        ),
+        const SizedBox(height: 24),
+        PreferenceChips(
+          label: l10n.onboardingPrefsFlavors,
+          options: AppConstants.flavorFamilies,
+          selected: flavors,
+          onToggle: onToggleFlavor,
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

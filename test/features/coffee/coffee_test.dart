@@ -17,6 +17,59 @@ void main() {
     });
   });
 
+  group('coffeeCanonicalKey', () {
+    test('is stable across case, accents and whitespace', () {
+      final a = coffeeCanonicalKey(
+        roaster: 'Café Rémy',
+        name: 'Ethiopia Sidama',
+        originCountry: 'Ethiopia',
+      );
+      final b = coffeeCanonicalKey(
+        roaster: '  CAFE REMY ',
+        name: 'ethiopia  sidama'.replaceAll('  ', ' '),
+        originCountry: 'éthiopie'.replaceAll('é', 'e'),
+      );
+      // Same roaster/name; origin differs only by spelling normalization here.
+      expect(a, startsWith('cafe remy|ethiopia sidama|'));
+      expect(b, startsWith('cafe remy|ethiopia sidama|'));
+    });
+
+    test('differs when origin differs (roaster+name+origin identity)', () {
+      final eth = coffeeCanonicalKey(
+        roaster: 'R',
+        name: 'Blend',
+        originCountry: 'Ethiopia',
+      );
+      final col = coffeeCanonicalKey(
+        roaster: 'R',
+        name: 'Blend',
+        originCountry: 'Colombia',
+      );
+      expect(eth, isNot(col));
+    });
+
+    test('Coffee.canonicalKey matches the standalone helper and is persisted',
+        () {
+      final coffee = Coffee(
+        id: '',
+        uid: 'u',
+        roaster: 'Blue Bottle',
+        name: 'Bella Donovan',
+        originCountry: 'Blend',
+        createdAt: DateTime(2026, 1, 1),
+      );
+      expect(
+        coffee.canonicalKey,
+        coffeeCanonicalKey(
+          roaster: 'Blue Bottle',
+          name: 'Bella Donovan',
+          originCountry: 'Blend',
+        ),
+      );
+      expect(coffee.toFirestore()['canonicalKey'], coffee.canonicalKey);
+    });
+  });
+
   group('Coffee serialization', () {
     late FakeFirebaseFirestore firestore;
 

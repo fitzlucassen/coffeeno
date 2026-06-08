@@ -62,4 +62,18 @@ abstract final class AppConstants {
 
   static const freeTierMaxCoffees = 10;
   static const freeTierMaxTastingsPerMonth = 7;
+
+  /// Top-level SCA flavor families, used for quick taste-preference capture
+  /// (e.g. onboarding). These mirror the top tier of the full flavor wheel in
+  /// the tasting flavor selector, kept short on purpose so the choice is fast.
+  static const List<String> flavorFamilies = [
+    'Fruity',
+    'Sour/Fermented',
+    'Green/Vegetative',
+    'Roasted',
+    'Spices',
+    'Nutty/Cocoa',
+    'Sweet',
+    'Floral',
+  ];
 }

@@ -170,6 +170,156 @@ abstract class AppLocalizations {
   /// **'See every coffee you\'ve tasted plotted on a world map and dive into each origin.'**
   String get onboardingMapBody;
 
+  /// Onboarding preferences page title
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us your taste'**
+  String get onboardingPrefsTitle;
+
+  /// Onboarding preferences page body
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a few favorites so we can tailor what you discover. You can change these anytime.'**
+  String get onboardingPrefsBody;
+
+  /// Onboarding brew method preference section label
+  ///
+  /// In en, this message translates to:
+  /// **'How do you brew?'**
+  String get onboardingPrefsBrewMethods;
+
+  /// Onboarding roast level preference section label
+  ///
+  /// In en, this message translates to:
+  /// **'Roast levels you enjoy'**
+  String get onboardingPrefsRoastLevels;
+
+  /// Onboarding flavor preference section label
+  ///
+  /// In en, this message translates to:
+  /// **'Flavors you love'**
+  String get onboardingPrefsFlavors;
+
+  /// Gamification tier 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Bean Sprout'**
+  String get levelBeanSprout;
+
+  /// Gamification tier 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Home Brewer'**
+  String get levelHomeBrewer;
+
+  /// Gamification tier 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'Coffee Enthusiast'**
+  String get levelEnthusiast;
+
+  /// Gamification tier 4 title
+  ///
+  /// In en, this message translates to:
+  /// **'Cupper'**
+  String get levelCupper;
+
+  /// Gamification tier 5 title
+  ///
+  /// In en, this message translates to:
+  /// **'Connoisseur'**
+  String get levelConnoisseur;
+
+  /// Gamification tier 6 title
+  ///
+  /// In en, this message translates to:
+  /// **'Master Taster'**
+  String get levelMasterTaster;
+
+  /// Compact points display
+  ///
+  /// In en, this message translates to:
+  /// **'{points} pts'**
+  String pointsLabel(int points);
+
+  /// Progress to next tier
+  ///
+  /// In en, this message translates to:
+  /// **'{points} pts to {level}'**
+  String pointsToNextLevel(int points, String level);
+
+  /// Title of the level-up celebration
+  ///
+  /// In en, this message translates to:
+  /// **'Level up!'**
+  String get levelUpTitle;
+
+  /// Body of the level-up celebration
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re now a {level}.'**
+  String levelUpBody(String level);
+
+  /// Button to start the guided brew timer
+  ///
+  /// In en, this message translates to:
+  /// **'Start brew'**
+  String get brewGuideStart;
+
+  /// Button to stop the guided brew timer
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get brewGuideStop;
+
+  /// Button to reset the guided brew timer
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get brewGuideReset;
+
+  /// Shown when the brew timer hits the suggested time
+  ///
+  /// In en, this message translates to:
+  /// **'Target time reached'**
+  String get brewGuideTargetReached;
+
+  /// Guided brew section title
+  ///
+  /// In en, this message translates to:
+  /// **'Guided brew'**
+  String get brewGuideTitle;
+
+  /// Confirmation that AI params filled the form
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested parameters applied below'**
+  String get brewSuggestionApplied;
+
+  /// Banner when scanning a coffee you already own
+  ///
+  /// In en, this message translates to:
+  /// **'Already in your library'**
+  String get alreadyInLibrary;
+
+  /// Button to re-add a previously owned coffee
+  ///
+  /// In en, this message translates to:
+  /// **'Add again'**
+  String get addAgain;
+
+  /// Button to open an existing coffee instead of re-adding
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get openExisting;
+
+  /// Confirmation after re-adding a coffee
+  ///
+  /// In en, this message translates to:
+  /// **'Added a fresh bag to your shelf'**
+  String get reAddedToShelf;
+
   /// Feed tab label
   ///
   /// In en, this message translates to:

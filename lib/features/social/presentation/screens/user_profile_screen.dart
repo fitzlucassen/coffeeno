@@ -8,6 +8,7 @@ import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
 import 'package:coffeeno/features/social/presentation/providers/block_provider.dart';
 import 'package:coffeeno/features/social/presentation/providers/social_provider.dart';
+import 'package:coffeeno/features/gamification/presentation/widgets/expert_badge.dart';
 import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
 
@@ -234,6 +235,9 @@ class UserProfileScreen extends ConsumerWidget {
                     ),
                   ),
                 ],
+                const SizedBox(height: 16),
+
+                Center(child: ExpertBadge(points: profile.points)),
                 const SizedBox(height: 20),
 
                 _StatsRow(

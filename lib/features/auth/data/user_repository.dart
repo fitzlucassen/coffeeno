@@ -34,6 +34,19 @@ class UserRepository {
     await _usersRef.doc(uid).update(data);
   }
 
+  /// Atomically adds [delta] gamification points to the user document.
+  ///
+  /// Uses `FieldValue.increment` so concurrent awards (e.g. adding a coffee and
+  /// logging a tasting in quick succession) don't clobber each other. `set`
+  /// with merge so it also succeeds on legacy docs that never had the field.
+  Future<void> awardPoints(String uid, int delta) async {
+    if (delta == 0) return;
+    await _usersRef.doc(uid).set(
+      {'points': FieldValue.increment(delta)},
+      SetOptions(merge: true),
+    );
+  }
+
   /// Builds the canonical profile-update map, keeping the denormalized
   /// `*Lower` search fields in sync and normalizing the username consistently.
   ///

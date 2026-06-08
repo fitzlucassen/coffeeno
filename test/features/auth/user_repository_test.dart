@@ -65,6 +65,32 @@ void main() {
     });
   });
 
+  group('awardPoints', () {
+    test('increments points on an existing user', () async {
+      await repo.createUser(_user('alice'));
+      await repo.awardPoints('alice', 10);
+      await repo.awardPoints('alice', 25);
+      final fetched = await repo.getUser('alice');
+      expect(fetched!.points, 35);
+    });
+
+    test('creates the field via merge on a doc without points', () async {
+      await repo.createUser(_user('bob'));
+      await repo.awardPoints('bob', 10);
+      final fetched = await repo.getUser('bob');
+      expect(fetched!.points, 10);
+      // Other fields are untouched.
+      expect(fetched.username, 'bob');
+    });
+
+    test('a zero delta is a no-op', () async {
+      await repo.createUser(_user('carol'));
+      await repo.awardPoints('carol', 0);
+      final fetched = await repo.getUser('carol');
+      expect(fetched!.points, 0);
+    });
+  });
+
   test('watchUser streams latest changes', () async {
     await repo.createUser(_user('carla'));
 

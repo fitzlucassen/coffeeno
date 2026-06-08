@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../domain/coffee.dart' show Coffee, normalizeText;
+import '../domain/coffee.dart' show Coffee, normalizeText, coffeeCanonicalKey;
 
 class CoffeeRepository {
   CoffeeRepository({FirebaseFirestore? firestore})
@@ -96,6 +96,54 @@ class CoffeeRepository {
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList());
+  }
+
+  /// Finds an existing coffee in [userId]'s library matching the canonical
+  /// identity (roaster + name + origin), if any. Used to detect a re-bought
+  /// bag so the user can re-add it without re-typing everything.
+  ///
+  /// Returns the most recently added match, or null when none exists.
+  Future<Coffee?> findCanonicalMatchForUser({
+    required String userId,
+    required String roaster,
+    required String name,
+    required String originCountry,
+  }) async {
+    final key = coffeeCanonicalKey(
+      roaster: roaster,
+      name: name,
+      originCountry: originCountry,
+    );
+    final snapshot = await _collection
+        .where('uid', isEqualTo: userId)
+        .where('canonicalKey', isEqualTo: key)
+        .orderBy('createdAt', descending: true)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+    return Coffee.fromFirestore(snapshot.docs.first);
+  }
+
+  /// Returns how many distinct users have a coffee with the given canonical
+  /// identity in their library. Powers the "X people brew this" social signal.
+  Future<int> communityOwnerCount({
+    required String roaster,
+    required String name,
+    required String originCountry,
+  }) async {
+    final key = coffeeCanonicalKey(
+      roaster: roaster,
+      name: name,
+      originCountry: originCountry,
+    );
+    final snapshot =
+        await _collection.where('canonicalKey', isEqualTo: key).get();
+    final owners = snapshot.docs
+        .map((d) => d.data()['uid'] as String?)
+        .whereType<String>()
+        .toSet();
+    return owners.length;
   }
 
   /// Searches coffees whose name or roaster matches the [query] string.

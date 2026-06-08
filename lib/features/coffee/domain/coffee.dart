@@ -15,6 +15,20 @@ String normalizeText(String text) {
       .replaceAll(RegExp(r'[ç]'), 'c');
 }
 
+/// Builds the canonical identity key for a coffee from its roaster, name and
+/// origin country. Two coffees with the same key are considered "the same
+/// coffee" (a re-bought bag), regardless of roast date / lot. Stored on each
+/// coffee doc as `canonicalKey` so the library can detect re-buys with a single
+/// indexed equality query.
+String coffeeCanonicalKey({
+  required String roaster,
+  required String name,
+  required String originCountry,
+}) {
+  return '${normalizeText(roaster)}|${normalizeText(name)}|'
+      '${normalizeText(originCountry)}';
+}
+
 class Coffee {
   const Coffee({
     required this.id,
@@ -84,6 +98,14 @@ class Coffee {
   /// The end of the peak-freshness window, in days from roast, varying by
   /// roast level. Single source of truth shared by [freshnessLabel] and the
   /// freshness notification scheduler.
+  /// This coffee's canonical identity key (roaster + name + origin, normalized).
+  /// See [coffeeCanonicalKey].
+  String get canonicalKey => coffeeCanonicalKey(
+        roaster: roaster,
+        name: name,
+        originCountry: originCountry,
+      );
+
   int get peakEndDays {
     final level = roastLevel?.toLowerCase() ?? '';
     if (level.contains('light')) return 21;
@@ -148,6 +170,7 @@ class Coffee {
       'roasterNormalized': normalizeText(roaster),
       'name': name,
       'nameNormalized': normalizeText(name),
+      'canonicalKey': canonicalKey,
       'originCountry': originCountry,
       'originRegion': originRegion,
       'farmName': farmName,

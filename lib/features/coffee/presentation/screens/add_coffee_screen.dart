@@ -20,9 +20,11 @@ import '../../../scanner/domain/scan_result.dart';
 import '../../../roaster/data/roaster_repository.dart';
 import '../../../roaster/domain/roaster.dart';
 import '../../../roaster/presentation/providers/roaster_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../farm/data/farm_repository.dart';
 import '../../../farm/domain/farm.dart';
 import '../../../farm/presentation/providers/farm_provider.dart';
+import '../../../gamification/domain/gamification.dart';
 import '../../data/coffee_enrichment_service.dart';
 import '../../data/coffee_repository.dart';
 import '../../domain/coffee.dart';
@@ -58,6 +60,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
   String? _photoPath;
   bool _isSaving = false;
   bool _prefilled = false;
+  bool _rebuyDismissed = false;
 
   void _prefillFromScan(BuildContext context) {
     if (_prefilled) return;
@@ -410,6 +413,13 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
 
       final coffeeId = await repository.addCoffee(coffee);
 
+      // Award gamification points for adding a coffee (fire-and-forget; a
+      // points write must never block or fail the core save).
+      ref.read(userRepositoryProvider).awardPoints(
+            userId,
+            GamificationPoints.addCoffee,
+          );
+
       // Schedule a freshness reminder notification for this coffee.
       final savedCoffee = coffee.copyWith(id: coffeeId);
       final notificationService = ref.read(freshnessNotificationProvider);
@@ -442,6 +452,89 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
     }
   }
 
+  /// Re-buy banner. Watches the canonical-match provider for the currently
+  /// entered roaster + name + country; renders nothing until a match is found
+  /// in the user's own library. Offers opening the existing coffee or
+  /// dismissing to add a fresh entry anyway.
+  Widget _buildRebuyBanner(AppLocalizations l10n) {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final roaster = _roasterController.text.trim();
+    final name = _nameController.text.trim();
+    final country = _countryController.text.trim();
+
+    // Need the identity fields populated before a lookup is meaningful.
+    if (userId.isEmpty ||
+        roaster.isEmpty ||
+        name.isEmpty ||
+        country.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final match = ref.watch(canonicalMatchProvider((
+      userId: userId,
+      roaster: roaster,
+      name: name,
+      originCountry: country,
+    )));
+
+    final coffee = match.asData?.value;
+    if (coffee == null) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Card(
+        color: theme.colorScheme.secondaryContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(Icons.inventory_2_outlined,
+                  color: theme.colorScheme.onSecondaryContainer),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.alreadyInLibrary,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${coffee.name} · ${coffee.roaster}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FilledButton(
+                    onPressed: () => context.go('/coffee/${coffee.id}'),
+                    child: Text(l10n.openExisting),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => _rebuyDismissed = true),
+                    child: Text(l10n.addAgain),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _prefillFromScan(context);
@@ -459,6 +552,11 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
+            // Re-buy banner: shown when this coffee already exists in the
+            // user's library (same roaster + name + origin). Lets the user
+            // open the existing entry instead of creating a duplicate.
+            if (!_rebuyDismissed) _buildRebuyBanner(l10n),
+
             // Photo picker
             GestureDetector(
               onTap: _pickPhoto,

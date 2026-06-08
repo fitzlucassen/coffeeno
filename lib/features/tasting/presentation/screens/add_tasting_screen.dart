@@ -7,13 +7,16 @@ import 'package:go_router/go_router.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import 'package:coffeeno/core/constants/app_constants.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../coffee/presentation/providers/coffee_provider.dart';
+import '../../../gamification/domain/gamification.dart';
 import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../../../subscription/presentation/widgets/upgrade_prompt.dart';
 import '../../data/brew_suggestion_service.dart';
 import '../../domain/tasting.dart';
 import '../providers/tasting_provider.dart';
 import '../widgets/brew_params_form.dart';
+import '../widgets/brew_timer.dart';
 import '../widgets/flavor_selector.dart';
 import '../widgets/tasting_notes_input.dart';
 
@@ -52,7 +55,13 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
   bool _isSaving = false;
   bool _isSuggesting = false;
   String? _suggestionTips;
+  bool _suggestionApplied = false;
   BrewMethod? _preferredSuggestionMethod;
+
+  /// Target brew time (seconds) for the guided timer. Set when an AI
+  /// suggestion is applied; the timer is shown only when this is positive.
+  int get _suggestedBrewTimeSec =>
+      (_brewTimeMinutes * 60) + _brewTimeSeconds;
 
   @override
   void dispose() {
@@ -121,9 +130,19 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
         _brewTimeMinutes = (suggestion.brewTimeSec ~/ 60).clamp(0, 15);
         _brewTimeSeconds = suggestion.brewTimeSec % 60;
         _suggestionTips = suggestion.tips;
+        _suggestionApplied = true;
       });
 
       _calculateRatio();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).brewSuggestionApplied),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (_) {
       // Silently hide suggestion on failure.
     } finally {
@@ -194,6 +213,15 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
       );
 
       await repository.addTasting(tasting);
+
+      // Award gamification points for logging a tasting (fire-and-forget; a
+      // points write must never block or fail the core save).
+      if (userId.isNotEmpty) {
+        ref.read(userRepositoryProvider).awardPoints(
+              userId,
+              GamificationPoints.addTasting,
+            );
+      }
 
       if (mounted) context.pop();
     } catch (e) {
@@ -345,6 +373,17 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
                       ),
                     ],
                   ),
+                ),
+              ),
+            ],
+
+            // ── Guided brew timer (after an AI suggestion sets a target) ──
+            if (_suggestionApplied && _suggestedBrewTimeSec > 0) ...[
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: BrewTimer(targetSeconds: _suggestedBrewTimeSec),
                 ),
               ),
             ],

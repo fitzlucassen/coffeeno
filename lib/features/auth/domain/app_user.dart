@@ -20,6 +20,10 @@ class AppUser {
     this.roasterPro = false,
     this.roasterProUntil,
     this.hasSeenOnboarding = false,
+    this.preferredBrewMethods = const [],
+    this.preferredRoastLevels = const [],
+    this.favoriteFlavors = const [],
+    this.points = 0,
     required this.createdAt,
   });
 
@@ -39,6 +43,19 @@ class AppUser {
   final bool roasterPro;
   final DateTime? roasterProUntil;
   final bool hasSeenOnboarding;
+
+  /// Taste/brew preferences captured during onboarding. Stored as the string
+  /// labels of the corresponding enums (BrewMethod.label, RoastLevel.label)
+  /// and free-form flavor strings, so they round-trip without coupling the
+  /// auth domain to the constants enums.
+  final List<String> preferredBrewMethods;
+  final List<String> preferredRoastLevels;
+  final List<String> favoriteFlavors;
+
+  /// Cumulative gamification points. Maps to a cosmetic expert tier via
+  /// [ExpertLevel.fromPoints].
+  final int points;
+
   final DateTime createdAt;
 
   bool get isAdmin => roles.contains(UserRole.admin);
@@ -80,6 +97,10 @@ class AppUser {
       roasterPro: data['roasterPro'] as bool? ?? false,
       roasterProUntil: (data['roasterProUntil'] as Timestamp?)?.toDate(),
       hasSeenOnboarding: data['hasSeenOnboarding'] as bool? ?? false,
+      preferredBrewMethods: _stringList(data['preferredBrewMethods']),
+      preferredRoastLevels: _stringList(data['preferredRoastLevels']),
+      favoriteFlavors: _stringList(data['favoriteFlavors']),
+      points: (data['points'] as num?)?.toInt() ?? 0,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -106,6 +127,10 @@ class AppUser {
           ? Timestamp.fromDate(roasterProUntil!)
           : null,
       'hasSeenOnboarding': hasSeenOnboarding,
+      'preferredBrewMethods': preferredBrewMethods,
+      'preferredRoastLevels': preferredRoastLevels,
+      'favoriteFlavors': favoriteFlavors,
+      'points': points,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -127,6 +152,10 @@ class AppUser {
     bool? roasterPro,
     DateTime? roasterProUntil,
     bool? hasSeenOnboarding,
+    List<String>? preferredBrewMethods,
+    List<String>? preferredRoastLevels,
+    List<String>? favoriteFlavors,
+    int? points,
     DateTime? createdAt,
   }) {
     return AppUser(
@@ -146,6 +175,10 @@ class AppUser {
       roasterPro: roasterPro ?? this.roasterPro,
       roasterProUntil: roasterProUntil ?? this.roasterProUntil,
       hasSeenOnboarding: hasSeenOnboarding ?? this.hasSeenOnboarding,
+      preferredBrewMethods: preferredBrewMethods ?? this.preferredBrewMethods,
+      preferredRoastLevels: preferredRoastLevels ?? this.preferredRoastLevels,
+      favoriteFlavors: favoriteFlavors ?? this.favoriteFlavors,
+      points: points ?? this.points,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -171,10 +204,14 @@ class AppUser {
           roasterPro == other.roasterPro &&
           roasterProUntil == other.roasterProUntil &&
           hasSeenOnboarding == other.hasSeenOnboarding &&
+          _listEquals(preferredBrewMethods, other.preferredBrewMethods) &&
+          _listEquals(preferredRoastLevels, other.preferredRoastLevels) &&
+          _listEquals(favoriteFlavors, other.favoriteFlavors) &&
+          points == other.points &&
           createdAt == other.createdAt;
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
         uid,
         email,
         displayName,
@@ -191,8 +228,12 @@ class AppUser {
         roasterPro,
         roasterProUntil,
         hasSeenOnboarding,
+        Object.hashAll(preferredBrewMethods),
+        Object.hashAll(preferredRoastLevels),
+        Object.hashAll(favoriteFlavors),
+        points,
         createdAt,
-      );
+      ]);
 
   @override
   String toString() => 'AppUser(uid: $uid, email: $email, username: $username)';
@@ -202,4 +243,20 @@ bool _setEquals<T>(Set<T> a, Set<T> b) {
   if (identical(a, b)) return true;
   if (a.length != b.length) return false;
   return a.every(b.contains);
+}
+
+bool _listEquals<T>(List<T> a, List<T> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+/// Reads a Firestore list field into a `List<String>`, tolerating null and
+/// non-string elements.
+List<String> _stringList(Object? value) {
+  if (value is! List) return const [];
+  return value.whereType<String>().toList();
 }

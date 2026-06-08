@@ -31,6 +31,9 @@ void main() {
         premiumUntil: premiumUntil,
         roasterPro: true,
         roasterProUntil: roasterProUntil,
+        preferredBrewMethods: const ['V60', 'AeroPress'],
+        preferredRoastLevels: const ['Light'],
+        favoriteFlavors: const ['Fruity', 'Floral'],
         createdAt: createdAt,
       );
 
@@ -39,6 +42,35 @@ void main() {
       final round = AppUser.fromFirestore(snap);
 
       expect(round, user);
+    });
+
+    test('preferences default to empty lists when absent', () async {
+      await firestore.collection('users').doc('bare').set({
+        'email': 'b@x',
+        'displayName': 'Bare',
+        'username': 'bare',
+        'createdAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+      });
+      final snap = await firestore.collection('users').doc('bare').get();
+      final user = AppUser.fromFirestore(snap);
+
+      expect(user.preferredBrewMethods, isEmpty);
+      expect(user.preferredRoastLevels, isEmpty);
+      expect(user.favoriteFlavors, isEmpty);
+    });
+
+    test('preference parsing tolerates non-string list elements', () async {
+      await firestore.collection('users').doc('mixed').set({
+        'email': 'm@x',
+        'displayName': 'Mixed',
+        'username': 'mixed',
+        'favoriteFlavors': ['Fruity', 42, null, 'Sweet'],
+        'createdAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+      });
+      final snap = await firestore.collection('users').doc('mixed').get();
+      final user = AppUser.fromFirestore(snap);
+
+      expect(user.favoriteFlavors, ['Fruity', 'Sweet']);
     });
 
     test('reads legacy role field when roles array is missing', () async {

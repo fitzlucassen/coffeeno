@@ -43,3 +43,17 @@ final communityRatingProvider = FutureProvider.family<
   final repository = ref.watch(coffeeRepositoryProvider);
   return repository.getCommunityAverageRating(params.roaster, params.name);
 });
+
+/// Looks up an existing coffee in the given user's library matching the
+/// canonical identity (roaster + name + origin), for re-buy detection.
+final canonicalMatchProvider = FutureProvider.family<Coffee?,
+    ({String userId, String roaster, String name, String originCountry})>(
+        (ref, params) {
+  final repository = ref.watch(coffeeRepositoryProvider);
+  return repository.findCanonicalMatchForUser(
+    userId: params.userId,
+    roaster: params.roaster,
+    name: params.name,
+    originCountry: params.originCountry,
+  );
+});
