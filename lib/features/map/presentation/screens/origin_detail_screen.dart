@@ -9,10 +9,7 @@ import 'package:coffeeno/features/map/presentation/widgets/origin_ranking_list.d
 /// Detail screen for a single coffee origin country, showing the top-rated
 /// coffees from that country.
 class OriginDetailScreen extends ConsumerWidget {
-  const OriginDetailScreen({
-    super.key,
-    required this.country,
-  });
+  const OriginDetailScreen({super.key, required this.country});
 
   final String country;
 
@@ -25,9 +22,7 @@ class OriginDetailScreen extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.mostLovedFrom(decodedCountry)),
-      ),
+      appBar: AppBar(title: Text(l10n.mostLovedFrom(decodedCountry))),
       body: coffeesAsync.when(
         data: (entries) {
           return SingleChildScrollView(
@@ -43,18 +38,13 @@ class OriginDetailScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 48,
-                color: colorScheme.error,
-              ),
+              Icon(Icons.error_outline, size: 48, color: colorScheme.error),
               const SizedBox(height: 12),
               Text(l10n.error, style: textTheme.titleMedium),
               const SizedBox(height: 16),
               OutlinedButton.icon(
-                onPressed: () => ref.invalidate(
-                  coffeesByOriginProvider(decodedCountry),
-                ),
+                onPressed: () =>
+                    ref.invalidate(coffeesByOriginProvider(decodedCountry)),
                 icon: const Icon(Icons.refresh),
                 label: Text(l10n.retry),
               ),

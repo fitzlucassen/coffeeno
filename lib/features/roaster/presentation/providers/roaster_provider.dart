@@ -7,8 +7,10 @@ final roasterRepositoryProvider = Provider<RoasterRepository>((ref) {
   return RoasterRepository();
 });
 
-final roasterDetailProvider =
-    StreamProvider.family<Roaster?, String>((ref, roasterId) {
+final roasterDetailProvider = StreamProvider.family<Roaster?, String>((
+  ref,
+  roasterId,
+) {
   final repository = ref.watch(roasterRepositoryProvider);
   return repository.watchRoaster(roasterId);
 });

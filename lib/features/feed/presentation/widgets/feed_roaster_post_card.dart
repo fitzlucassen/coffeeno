@@ -87,7 +87,9 @@ class FeedRoasterPostCard extends StatelessWidget {
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: colorScheme.primary,
                       borderRadius: BorderRadius.circular(8),
@@ -120,10 +122,7 @@ class FeedRoasterPostCard extends StatelessWidget {
               ],
 
               const SizedBox(height: 8),
-              Text(
-                post.body,
-                style: textTheme.bodyMedium,
-              ),
+              Text(post.body, style: textTheme.bodyMedium),
 
               // Optional CTA button
               if (post.ctaLabel != null &&

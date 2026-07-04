@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,8 +16,7 @@ class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
 
   @override
-  ConsumerState<ProfileSetupScreen> createState() =>
-      _ProfileSetupScreenState();
+  ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
 }
 
 class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
@@ -41,12 +39,14 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       _usernameController.text = existingUser.username;
       _bioController.text = existingUser.bio ?? '';
     } else {
-      final user = FirebaseAuth.instance.currentUser;
+      final user = ref.read(authStateProvider).value;
       if (user != null) {
         _displayNameController.text = user.displayName ?? '';
         final emailPrefix = user.email?.split('@').first ?? '';
-        _usernameController.text =
-            emailPrefix.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+        _usernameController.text = emailPrefix.replaceAll(
+          RegExp(r'[^a-zA-Z0-9_]'),
+          '',
+        );
       }
     }
   }
@@ -65,7 +65,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      final user = ref.read(authStateProvider).value;
       if (user == null) return;
 
       final userRepo = ref.read(userRepositoryProvider);
@@ -116,7 +116,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Future<void> _skip() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     final userRepo = ref.read(userRepositoryProvider);
@@ -206,7 +206,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   prefixIcon: Icons.person_outline,
                   textInputAction: TextInputAction.next,
                   validator: (value) =>
-                      Validators.required(value, l10n.displayName),
+                      Validators.required(value, l10n, l10n.displayName),
                 ),
                 const SizedBox(height: 16),
 
@@ -216,7 +216,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   label: l10n.username,
                   prefixIcon: Icons.alternate_email,
                   textInputAction: TextInputAction.next,
-                  validator: Validators.username,
+                  validator: (value) => Validators.username(value, l10n),
                 ),
                 const SizedBox(height: 16),
 

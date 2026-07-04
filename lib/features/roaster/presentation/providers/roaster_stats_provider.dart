@@ -4,22 +4,23 @@ import '../../../tasting/domain/tasting.dart';
 import '../../data/roaster_stats_repository.dart';
 import '../../domain/roaster_stats.dart';
 
-final roasterStatsRepositoryProvider =
-    Provider<RoasterStatsRepository>((ref) {
+final roasterStatsRepositoryProvider = Provider<RoasterStatsRepository>((ref) {
   return RoasterStatsRepository();
 });
 
-final roasterStatsProvider =
-    FutureProvider.family<RoasterStats, String>((ref, roasterId) {
+final roasterStatsProvider = FutureProvider.family<RoasterStats, String>((
+  ref,
+  roasterId,
+) {
   final repository = ref.watch(roasterStatsRepositoryProvider);
   return repository.getStatsForRoaster(roasterId);
 });
 
 final roasterRecentTastingsProvider =
     FutureProvider.family<List<Tasting>, String>((ref, roasterId) {
-  final repository = ref.watch(roasterStatsRepositoryProvider);
-  return repository.getRecentTastingsForRoaster(roasterId);
-});
+      final repository = ref.watch(roasterStatsRepositoryProvider);
+      return repository.getRecentTastingsForRoaster(roasterId);
+    });
 
 /// Parameter for the timeseries provider. Families need an Equatable key.
 class RoasterTimeseriesParams {
@@ -38,11 +39,14 @@ class RoasterTimeseriesParams {
   int get hashCode => Object.hash(roasterId, period);
 }
 
-final roasterTimeseriesProvider = FutureProvider.family<List<TimeseriesPoint>,
-    RoasterTimeseriesParams>((ref, params) {
-  final repository = ref.watch(roasterStatsRepositoryProvider);
-  return repository.getTimeseriesForRoaster(
-    params.roasterId,
-    period: params.period,
-  );
-});
+final roasterTimeseriesProvider =
+    FutureProvider.family<List<TimeseriesPoint>, RoasterTimeseriesParams>((
+      ref,
+      params,
+    ) {
+      final repository = ref.watch(roasterStatsRepositoryProvider);
+      return repository.getTimeseriesForRoaster(
+        params.roasterId,
+        period: params.period,
+      );
+    });

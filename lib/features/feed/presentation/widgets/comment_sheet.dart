@@ -40,7 +40,10 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
     super.dispose();
   }
 
-  Future<void> _deleteComment(FeedComment comment, AppLocalizations l10n) async {
+  Future<void> _deleteComment(
+    FeedComment comment,
+    AppLocalizations l10n,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -60,14 +63,14 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
     if (confirmed != true) return;
 
     try {
-      await ref.read(feedRepositoryProvider).deleteComment(
-            tastingId: widget.tastingId,
-            commentId: comment.id,
-          );
+      await ref
+          .read(feedRepositoryProvider)
+          .deleteComment(tastingId: widget.tastingId, commentId: comment.id);
     } catch (e) {
+      debugPrint('[COFFEENO] Delete comment failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     }
@@ -111,8 +114,10 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
     final l10n = AppLocalizations.of(context);
     final commentsAsync = ref.watch(tastingCommentsProvider(widget.tastingId));
     final currentUid = ref.watch(currentUserProvider).value?.uid;
-    final tastingOwnerUid =
-        ref.watch(tastingDetailProvider(widget.tastingId)).value?.userId;
+    final tastingOwnerUid = ref
+        .watch(tastingDetailProvider(widget.tastingId))
+        .value
+        ?.userId;
     final blocked = ref.watch(blockedUidsProvider);
 
     return DraggableScrollableSheet(
@@ -141,7 +146,10 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 children: [
-                  Text(AppLocalizations.of(context).comments, style: textTheme.titleMedium),
+                  Text(
+                    AppLocalizations.of(context).comments,
+                    style: textTheme.titleMedium,
+                  ),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -196,7 +204,8 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
                     separatorBuilder: (_, _) => const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final comment = comments[index];
-                      final canDelete = currentUid != null &&
+                      final canDelete =
+                          currentUid != null &&
                           (comment.authorId == currentUid ||
                               tastingOwnerUid == currentUid);
                       return _CommentTile(
@@ -207,9 +216,7 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
                     },
                   );
                 },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (_, _) => Center(
                   child: Text(
                     AppLocalizations.of(context).couldNotLoadComments,
@@ -311,10 +318,7 @@ class _CommentTile extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(
-                    comment.authorName,
-                    style: textTheme.titleSmall,
-                  ),
+                  Text(comment.authorName, style: textTheme.titleSmall),
                   const SizedBox(width: 8),
                   Text(
                     timeago.format(comment.createdAt),

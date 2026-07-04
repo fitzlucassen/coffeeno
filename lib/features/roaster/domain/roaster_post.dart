@@ -74,9 +74,9 @@ class RoasterPost {
       coffeeName: data['coffeeName'] as String?,
       ctaLabel: data['ctaLabel'] as String?,
       ctaUrl: data['ctaUrl'] as String?,
-      createdAt:
-          (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ??
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      expiresAt:
+          (data['expiresAt'] as Timestamp?)?.toDate() ??
           DateTime.now().add(defaultLifetime),
     );
   }

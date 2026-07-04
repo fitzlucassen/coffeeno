@@ -1,6 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+/// A coffee's freshness relative to its roast date. The UI maps each stage to
+/// a localized label and color; keeping this a typed enum (rather than raw
+/// English strings) avoids stringly-typed switches at the call sites.
+enum FreshnessStage { resting, peak, useSoon, pastPeak }
+
 /// Normalizes text for case- and diacritic-insensitive matching.
 String normalizeText(String text) {
   return text
@@ -96,15 +101,15 @@ class Coffee {
   }
 
   /// The end of the peak-freshness window, in days from roast, varying by
-  /// roast level. Single source of truth shared by [freshnessLabel] and the
+  /// roast level. Single source of truth shared by [freshnessStage] and the
   /// freshness notification scheduler.
   /// This coffee's canonical identity key (roaster + name + origin, normalized).
   /// See [coffeeCanonicalKey].
   String get canonicalKey => coffeeCanonicalKey(
-        roaster: roaster,
-        name: name,
-        originCountry: originCountry,
-      );
+    roaster: roaster,
+    name: name,
+    originCountry: originCountry,
+  );
 
   int get peakEndDays {
     final level = roastLevel?.toLowerCase() ?? '';
@@ -113,16 +118,18 @@ class Coffee {
     return 18;
   }
 
-  String? get freshnessLabel {
+  /// The coffee's current freshness stage, or null when no roast date is known.
+  ///
+  /// Derived from [peakEndDays] so the in-app label and the notification timing
+  /// agree: ~first quarter is resting, up to peakEnd is peak, a short grace
+  /// window past that is "use soon", then past peak.
+  FreshnessStage? get freshnessStage {
     final days = daysSinceRoast;
     if (days == null) return null;
-    // Derived from peakEndDays so the in-app label and the notification timing
-    // agree: ~first quarter is resting, up to peakEnd is peak, a short grace
-    // window past that is "use soon", then past peak.
-    if (days < peakEndDays ~/ 4) return 'Resting';
-    if (days <= peakEndDays) return 'Peak freshness';
-    if (days <= peakEndDays + 14) return 'Use soon';
-    return 'Past peak';
+    if (days < peakEndDays ~/ 4) return FreshnessStage.resting;
+    if (days <= peakEndDays) return FreshnessStage.peak;
+    if (days <= peakEndDays + 14) return FreshnessStage.useSoon;
+    return FreshnessStage.pastPeak;
   }
 
   factory Coffee.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -141,7 +148,8 @@ class Coffee {
       processingMethod: data['processingMethod'] as String?,
       roastDate: (data['roastDate'] as Timestamp?)?.toDate(),
       roastLevel: data['roastLevel'] as String?,
-      flavorNotes: (data['flavorNotes'] as List<dynamic>?)
+      flavorNotes:
+          (data['flavorNotes'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -158,8 +166,7 @@ class Coffee {
       lot: data['lot'] as String?,
       harvestYear: data['harvestYear'] as int?,
       freshnessNotified: data['freshnessNotified'] as bool? ?? false,
-      createdAt:
-          (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
@@ -178,8 +185,7 @@ class Coffee {
       'altitude': altitude,
       'variety': variety,
       'processingMethod': processingMethod,
-      'roastDate':
-          roastDate != null ? Timestamp.fromDate(roastDate!) : null,
+      'roastDate': roastDate != null ? Timestamp.fromDate(roastDate!) : null,
       'roastLevel': roastLevel,
       'flavorNotes': flavorNotes,
       'photoUrl': photoUrl,
@@ -297,13 +303,35 @@ class Coffee {
 
   @override
   int get hashCode => Object.hashAll([
-        id, uid, roaster, name, originCountry, originRegion,
-        farmName, farmerName, altitude, variety, processingMethod,
-        roastDate, roastLevel, Object.hashAll(flavorNotes), photoUrl,
-        avgRating, ratingsCount, roasterUrl, roasterDescription,
-        farmUrl, farmDescription, roasterId, farmId, price, lot,
-        harvestYear, freshnessNotified, createdAt,
-      ]);
+    id,
+    uid,
+    roaster,
+    name,
+    originCountry,
+    originRegion,
+    farmName,
+    farmerName,
+    altitude,
+    variety,
+    processingMethod,
+    roastDate,
+    roastLevel,
+    Object.hashAll(flavorNotes),
+    photoUrl,
+    avgRating,
+    ratingsCount,
+    roasterUrl,
+    roasterDescription,
+    farmUrl,
+    farmDescription,
+    roasterId,
+    farmId,
+    price,
+    lot,
+    harvestYear,
+    freshnessNotified,
+    createdAt,
+  ]);
 
   @override
   String toString() => 'Coffee(id: $id, name: $name, roaster: $roaster)';

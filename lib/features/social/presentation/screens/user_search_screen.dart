@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
+import 'package:coffeeno/core/widgets/empty_state_view.dart';
+import 'package:coffeeno/core/widgets/error_retry_view.dart';
 import 'package:coffeeno/features/social/presentation/providers/block_provider.dart';
 import 'package:coffeeno/features/social/presentation/providers/social_provider.dart';
-import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
-import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
+import 'package:coffeeno/features/social/presentation/widgets/user_list_tile.dart';
 
 /// A screen for searching users by username or display name.
 class UserSearchScreen extends ConsumerStatefulWidget {
@@ -29,8 +29,6 @@ class _UserSearchScreenState extends ConsumerState<UserSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -61,24 +59,9 @@ class _UserSearchScreenState extends ConsumerState<UserSearchScreen> {
         ],
       ),
       body: _query.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.person_search,
-                    size: 64,
-                    color: colorScheme.outlineVariant,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    l10n.searchForCoffeeLovers,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+          ? EmptyStateView(
+              icon: Icons.person_search,
+              message: l10n.searchForCoffeeLovers,
             )
           : _SearchResults(query: _query),
     );
@@ -93,34 +76,18 @@ class _SearchResults extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final resultsAsync = ref.watch(userSearchResultsProvider(query));
     final blocked = ref.watch(blockedUidsProvider);
 
     return resultsAsync.when(
       data: (rawResults) {
-        final results =
-            rawResults.where((u) => !blocked.contains(u.uid)).toList();
+        final results = rawResults
+            .where((u) => !blocked.contains(u.uid))
+            .toList();
         if (results.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.search_off,
-                  size: 48,
-                  color: colorScheme.outlineVariant,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  l10n.noUsersFound(query),
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+          return EmptyStateView(
+            icon: Icons.search_off,
+            message: l10n.noUsersFound(query),
           );
         }
 
@@ -129,41 +96,17 @@ class _SearchResults extends ConsumerWidget {
           itemCount: results.length,
           itemBuilder: (context, index) {
             final user = results[index];
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 4,
-              ),
-              leading: UserAvatar(
-                imageUrl: user.avatarUrl,
-                displayName: user.displayName,
-              ),
-              title: Text(
-                user.displayName,
-                style: textTheme.titleSmall,
-              ),
-              subtitle: user.username != null && user.username!.isNotEmpty
-                  ? Text(
-                      '@${user.username}',
-                      style: textTheme.bodySmall,
-                    )
-                  : null,
-              trailing: FollowButton(
-                targetUserId: user.uid,
-                compact: true,
-              ),
-              onTap: () => context.push('/user/${user.uid}'),
+            return UserListTile(
+              userId: user.uid,
+              displayName: user.displayName,
+              avatarUrl: user.avatarUrl,
+              username: user.username,
             );
           },
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => Center(
-        child: Text(
-          l10n.error,
-          style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
-        ),
-      ),
+      error: (_, _) => const ErrorRetryView(),
     );
   }
 }

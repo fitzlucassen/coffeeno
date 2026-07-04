@@ -35,7 +35,10 @@ class ScanResult {
   final String rawOcrText;
 
   /// Creates a [ScanResult] from a JSON map returned by the Gemini API.
-  factory ScanResult.fromJson(Map<String, dynamic> json, {String rawOcrText = ''}) {
+  factory ScanResult.fromJson(
+    Map<String, dynamic> json, {
+    String rawOcrText = '',
+  }) {
     return ScanResult(
       roaster: json['roaster'] as String?,
       name: json['name'] as String?,
@@ -48,7 +51,8 @@ class ScanResult {
       processingMethod: json['processing_method'] as String?,
       roastDate: json['roast_date'] as String?,
       roastLevel: json['roast_level'] as String?,
-      flavorNotes: (json['flavor_notes'] as List<dynamic>?)
+      flavorNotes:
+          (json['flavor_notes'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -59,7 +63,10 @@ class ScanResult {
 
   /// Parses a JSON string response (potentially with markdown fences) into
   /// a [ScanResult].
-  factory ScanResult.fromJsonString(String jsonString, {String rawOcrText = ''}) {
+  factory ScanResult.fromJsonString(
+    String jsonString, {
+    String rawOcrText = '',
+  }) {
     // Strip markdown code fences if present.
     var cleaned = jsonString.trim();
     if (cleaned.startsWith('```')) {
@@ -71,20 +78,20 @@ class ScanResult {
   }
 
   Map<String, dynamic> toJson() => {
-        'roaster': roaster,
-        'name': name,
-        'origin_country': originCountry,
-        'origin_region': originRegion,
-        'farm_name': farmName,
-        'farmer_name': farmerName,
-        'altitude': altitude,
-        'variety': variety,
-        'processing_method': processingMethod,
-        'roast_date': roastDate,
-        'roast_level': roastLevel,
-        'flavor_notes': flavorNotes,
-        'additional_info': additionalInfo,
-      };
+    'roaster': roaster,
+    'name': name,
+    'origin_country': originCountry,
+    'origin_region': originRegion,
+    'farm_name': farmName,
+    'farmer_name': farmerName,
+    'altitude': altitude,
+    'variety': variety,
+    'processing_method': processingMethod,
+    'roast_date': roastDate,
+    'roast_level': roastLevel,
+    'flavor_notes': flavorNotes,
+    'additional_info': additionalInfo,
+  };
 
   ScanResult copyWith({
     String? roaster,
@@ -121,7 +128,8 @@ class ScanResult {
   }
 
   @override
-  String toString() => 'ScanResult(roaster: $roaster, name: $name, '
+  String toString() =>
+      'ScanResult(roaster: $roaster, name: $name, '
       'originCountry: $originCountry, flavorNotes: $flavorNotes)';
 
   @override
@@ -145,18 +153,18 @@ class ScanResult {
 
   @override
   int get hashCode => Object.hash(
-        roaster,
-        name,
-        originCountry,
-        originRegion,
-        farmName,
-        farmerName,
-        altitude,
-        variety,
-        processingMethod,
-        roastDate,
-        roastLevel,
-        additionalInfo,
-        rawOcrText,
-      );
+    roaster,
+    name,
+    originCountry,
+    originRegion,
+    farmName,
+    farmerName,
+    altitude,
+    variety,
+    processingMethod,
+    roastDate,
+    roastLevel,
+    additionalInfo,
+    rawOcrText,
+  );
 }

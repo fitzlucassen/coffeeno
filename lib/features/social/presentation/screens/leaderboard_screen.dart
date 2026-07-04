@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
-import 'package:coffeeno/features/map/domain/origin_stats.dart';
+import 'package:coffeeno/core/widgets/empty_state_view.dart';
+import 'package:coffeeno/core/widgets/error_retry_view.dart';
 import 'package:coffeeno/features/social/presentation/providers/leaderboard_provider.dart';
 import 'package:coffeeno/features/social/presentation/widgets/leaderboard_tile.dart';
 
@@ -19,9 +20,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   String? _selectedCountry;
-
-  static final List<String> _countries =
-      OriginStats.knownOrigins.keys.toList()..sort();
 
   @override
   void initState() {
@@ -62,7 +60,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             ref: ref,
             l10n: l10n,
             selectedCountry: _selectedCountry,
-            countries: _countries,
             onCountryChanged: (country) {
               setState(() => _selectedCountry = country);
             },
@@ -82,30 +79,13 @@ class _GlobalTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final leaderboardAsync = ref.watch(globalLeaderboardProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return leaderboardAsync.when(
       data: (entries) {
         if (entries.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.emoji_events_outlined,
-                  size: 48,
-                  color: colorScheme.outlineVariant,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  l10n.noRatedCoffeesYet,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+          return EmptyStateView(
+            icon: Icons.emoji_events_outlined,
+            message: l10n.noRatedCoffeesYet,
           );
         }
 
@@ -123,9 +103,7 @@ class _GlobalTab extends StatelessWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => Center(
-        child: Text(l10n.error),
-      ),
+      error: (_, _) => const ErrorRetryView(),
     );
   }
 }
@@ -135,35 +113,43 @@ class _ByOriginTab extends StatelessWidget {
     required this.ref,
     required this.l10n,
     required this.selectedCountry,
-    required this.countries,
     required this.onCountryChanged,
   });
 
   final WidgetRef ref;
   final AppLocalizations l10n;
   final String? selectedCountry;
-  final List<String> countries;
   final ValueChanged<String?> onCountryChanged;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final originsAsync = ref.watch(leaderboardOriginsProvider);
 
     return Column(
       children: [
-        // Country picker.
+        // Country picker. The options are the origins actually present in the
+        // corpus, so a selection always maps to real, queryable coffees.
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           child: DropdownButtonFormField<String>(
             initialValue: selectedCountry,
+            isExpanded: true, // Prevent horizontal overflow on long names.
             decoration: InputDecoration(
               labelText: l10n.originCountry,
               prefixIcon: const Icon(Icons.public),
             ),
-            items: countries
-                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                .toList(),
+            items:
+                originsAsync.asData?.value
+                    .map(
+                      (c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(c, overflow: TextOverflow.ellipsis),
+                      ),
+                    )
+                    .toList() ??
+                const [],
             onChanged: onCountryChanged,
           ),
         ),
@@ -234,7 +220,7 @@ class _OriginLeaderboard extends StatelessWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => Center(child: Text(l10n.error)),
+      error: (_, _) => const ErrorRetryView(),
     );
   }
 }

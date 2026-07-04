@@ -10,26 +10,31 @@ final socialRepositoryProvider = Provider<SocialRepository>((ref) {
 
 /// Checks whether [userId] is following [targetId].
 final isFollowingProvider =
-    FutureProvider.family<bool, ({String userId, String targetId})>(
-  (ref, params) {
-    final repository = ref.watch(socialRepositoryProvider);
-    return repository.isFollowing(
-      userId: params.userId,
-      targetId: params.targetId,
-    );
-  },
-);
+    FutureProvider.family<bool, ({String userId, String targetId})>((
+      ref,
+      params,
+    ) {
+      final repository = ref.watch(socialRepositoryProvider);
+      return repository.isFollowing(
+        userId: params.userId,
+        targetId: params.targetId,
+      );
+    });
 
 /// Streams the followers of a user.
-final followersProvider =
-    StreamProvider.family<List<Follow>, String>((ref, userId) {
+final followersProvider = StreamProvider.family<List<Follow>, String>((
+  ref,
+  userId,
+) {
   final repository = ref.watch(socialRepositoryProvider);
   return repository.getFollowers(userId);
 });
 
 /// Streams the users that a user is following.
-final followingProvider =
-    StreamProvider.family<List<Follow>, String>((ref, userId) {
+final followingProvider = StreamProvider.family<List<Follow>, String>((
+  ref,
+  userId,
+) {
   final repository = ref.watch(socialRepositoryProvider);
   return repository.getFollowing(userId);
 });
@@ -37,13 +42,15 @@ final followingProvider =
 /// Streams user search results.
 final userSearchResultsProvider =
     FutureProvider.family<List<UserSearchResult>, String>((ref, query) {
-  final repository = ref.watch(socialRepositoryProvider);
-  return repository.searchUsers(query);
-});
+      final repository = ref.watch(socialRepositoryProvider);
+      return repository.searchUsers(query);
+    });
 
 /// Fetches a single user profile.
-final userProfileProvider =
-    FutureProvider.family<UserSearchResult?, String>((ref, userId) {
+final userProfileProvider = FutureProvider.family<UserSearchResult?, String>((
+  ref,
+  userId,
+) {
   final repository = ref.watch(socialRepositoryProvider);
   return repository.getUserProfile(userId);
 });
@@ -51,6 +58,6 @@ final userProfileProvider =
 /// Fetches a user's tastings.
 final userTastingsProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>((ref, userId) {
-  final repository = ref.watch(socialRepositoryProvider);
-  return repository.getUserTastings(userId);
-});
+      final repository = ref.watch(socialRepositoryProvider);
+      return repository.getUserTastings(userId);
+    });

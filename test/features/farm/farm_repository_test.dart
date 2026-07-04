@@ -4,12 +4,12 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Farm _farm(String name, {String? country}) => Farm(
-      id: '',
-      name: name,
-      country: country,
-      createdAt: DateTime(2026, 1, 1),
-      updatedAt: DateTime(2026, 1, 1),
-    );
+  id: '',
+  name: name,
+  country: country,
+  createdAt: DateTime(2026, 1, 1),
+  updatedAt: DateTime(2026, 1, 1),
+);
 
 void main() {
   late FakeFirebaseFirestore firestore;

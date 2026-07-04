@@ -14,8 +14,9 @@ void main() {
       createdAt: DateTime(2026, 1, 1),
       updatedAt: DateTime(2026, 1, 2),
     );
-    final ref =
-        await firestore.collection('roasters').add(roaster.toFirestore());
+    final ref = await firestore
+        .collection('roasters')
+        .add(roaster.toFirestore());
     final round = Roaster.fromFirestore(await ref.get());
 
     expect(round.name, 'ACME Roasters');

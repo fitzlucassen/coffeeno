@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 
+/// A selectable option with a stable persisted [value] and a localized
+/// [display] string shown on the chip.
+class PreferenceOption {
+  const PreferenceOption({required this.value, required this.display});
+
+  final String value;
+  final String display;
+}
+
 /// A labelled wrap of multi-select [FilterChip]s used to capture a set of
 /// preferences (brew methods, roast levels, flavors). Stateless: the parent
-/// owns the selected set and is notified via [onToggle].
+/// owns the selected set (of stable values) and is notified via [onToggle].
 class PreferenceChips extends StatelessWidget {
   const PreferenceChips({
     super.key,
@@ -14,13 +23,13 @@ class PreferenceChips extends StatelessWidget {
 
   final String label;
 
-  /// The full list of selectable option labels.
-  final List<String> options;
+  /// The full list of selectable options (value + localized display).
+  final List<PreferenceOption> options;
 
-  /// The currently-selected option labels.
+  /// The currently-selected option values.
   final Set<String> selected;
 
-  /// Called with the toggled option label whenever a chip is tapped.
+  /// Called with the toggled option value whenever a chip is tapped.
   final ValueChanged<String> onToggle;
 
   @override
@@ -37,9 +46,9 @@ class PreferenceChips extends StatelessWidget {
           children: [
             for (final option in options)
               FilterChip(
-                label: Text(option),
-                selected: selected.contains(option),
-                onSelected: (_) => onToggle(option),
+                label: Text(option.display),
+                selected: selected.contains(option.value),
+                onSelected: (_) => onToggle(option.value),
               ),
           ],
         ),

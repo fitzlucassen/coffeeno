@@ -27,19 +27,11 @@ class CoffeeEnrichmentResult {
   final String? farmRegion;
   final String? farmFarmerName;
   final String? farmAltitude;
-
-  bool get isEmpty =>
-      roasterUrl == null &&
-      roasterDescription == null &&
-      roasterCountry == null &&
-      roasterCity == null &&
-      farmUrl == null &&
-      farmDescription == null;
 }
 
 class CoffeeEnrichmentService {
   CoffeeEnrichmentService()
-      : _apiKey = const String.fromEnvironment('GEMINI_API_KEY');
+    : _apiKey = const String.fromEnvironment('GEMINI_API_KEY');
 
   final String _apiKey;
 

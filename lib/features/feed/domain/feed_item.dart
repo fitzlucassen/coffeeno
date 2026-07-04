@@ -67,10 +67,7 @@ class FeedItem {
     };
   }
 
-  FeedItem copyWith({
-    int? likesCount,
-    int? commentsCount,
-  }) {
+  FeedItem copyWith({int? likesCount, int? commentsCount}) {
     return FeedItem(
       tastingId: tastingId,
       authorId: authorId,

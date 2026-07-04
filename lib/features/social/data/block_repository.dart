@@ -10,23 +10,27 @@ import '../domain/user_block.dart';
 /// is relevant.
 class BlockRepository {
   BlockRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
-  DocumentReference<Map<String, dynamic>> _outgoingRef(String actor, String target) =>
-      _firestore
-          .collection('users')
-          .doc(actor)
-          .collection('blocked')
-          .doc(target);
+  DocumentReference<Map<String, dynamic>> _outgoingRef(
+    String actor,
+    String target,
+  ) => _firestore
+      .collection('users')
+      .doc(actor)
+      .collection('blocked')
+      .doc(target);
 
-  DocumentReference<Map<String, dynamic>> _incomingRef(String target, String actor) =>
-      _firestore
-          .collection('users')
-          .doc(target)
-          .collection('blocked_by')
-          .doc(actor);
+  DocumentReference<Map<String, dynamic>> _incomingRef(
+    String target,
+    String actor,
+  ) => _firestore
+      .collection('users')
+      .doc(target)
+      .collection('blocked_by')
+      .doc(actor);
 
   /// Creates a mutual block: [actor] blocks [target].
   Future<void> block({required String actor, required String target}) async {
@@ -38,7 +42,10 @@ class BlockRepository {
 
     final batch = _firestore.batch()
       ..set(_outgoingRef(actor, target), payload)
-      ..set(_incomingRef(target, actor), UserBlock(uid: actor, createdAt: now).toFirestore());
+      ..set(
+        _incomingRef(target, actor),
+        UserBlock(uid: actor, createdAt: now).toFirestore(),
+      );
     await batch.commit();
   }
 

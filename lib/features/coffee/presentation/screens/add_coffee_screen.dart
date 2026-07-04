@@ -1,34 +1,26 @@
 import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
 
 import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/core/constants/app_constants.dart';
+import 'package:coffeeno/core/services/photo_upload_service.dart';
+import 'package:coffeeno/core/utils/enum_labels.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import 'package:coffeeno/core/utils/validators.dart';
 import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../../../subscription/presentation/widgets/upgrade_prompt.dart';
 import '../../../scanner/domain/scan_result.dart';
-import '../../../roaster/data/roaster_repository.dart';
-import '../../../roaster/domain/roaster.dart';
-import '../../../roaster/presentation/providers/roaster_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../farm/data/farm_repository.dart';
-import '../../../farm/domain/farm.dart';
-import '../../../farm/presentation/providers/farm_provider.dart';
 import '../../../gamification/domain/gamification.dart';
-import '../../data/coffee_enrichment_service.dart';
-import '../../data/coffee_repository.dart';
 import '../../domain/coffee.dart';
 import '../providers/coffee_provider.dart';
+import '../../data/freshness_notification_service.dart';
 import '../providers/freshness_notification_provider.dart';
 
 class AddCoffeeScreen extends ConsumerStatefulWidget {
@@ -79,22 +71,13 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
     _varietyController.text = extra.variety ?? '';
     _flavorNotes.addAll(extra.flavorNotes);
 
+    // Scanner-extracted values arrive as English labels; existing coffees may
+    // arrive as stable keys. `fromStored` handles both.
     if (extra.processingMethod != null) {
-      for (final m in ProcessingMethod.values) {
-        if (m.label.toLowerCase() == extra.processingMethod!.toLowerCase()) {
-          _processingMethod = m;
-          break;
-        }
-      }
+      _processingMethod = ProcessingMethod.fromStored(extra.processingMethod);
     }
-
     if (extra.roastLevel != null) {
-      for (final r in RoastLevel.values) {
-        if (r.label.toLowerCase() == extra.roastLevel!.toLowerCase()) {
-          _roastLevel = r;
-          break;
-        }
-      }
+      _roastLevel = RoastLevel.fromStored(extra.roastLevel);
     }
 
     if (extra.roastDate != null) {
@@ -161,16 +144,12 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
 
   Future<String?> _uploadPhoto(String userId) async {
     if (_photoPath == null) return null;
-
-    final file = File(_photoPath!);
-    final fileName = '${const Uuid().v4()}.jpg';
-    final storageRef = FirebaseStorage.instance
-        .ref('users/$userId/coffees/$fileName');
-    await storageRef.putFile(
-      file,
-      SettableMetadata(contentType: 'image/jpeg'),
-    );
-    return storageRef.getDownloadURL();
+    return ref
+        .read(photoUploadServiceProvider)
+        .uploadJpeg(
+          pathPrefix: 'users/$userId/coffees',
+          localPath: _photoPath!,
+        );
   }
 
   Future<Coffee?> _findSimilarCoffee(String userId) async {
@@ -187,165 +166,42 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
       if (farm.isNotEmpty &&
           c.farmName != null &&
           c.farmName!.toLowerCase() == farm.toLowerCase() &&
-          c.roaster.toLowerCase() != _roasterController.text.trim().toLowerCase()) {
+          c.roaster.toLowerCase() !=
+              _roasterController.text.trim().toLowerCase()) {
         return c;
       }
       if (farm.isEmpty &&
           region.isNotEmpty &&
           c.originRegion != null &&
           c.originRegion!.toLowerCase() == region.toLowerCase() &&
-          c.roaster.toLowerCase() != _roasterController.text.trim().toLowerCase()) {
+          c.roaster.toLowerCase() !=
+              _roasterController.text.trim().toLowerCase()) {
         return c;
       }
     }
     return null;
   }
 
-  void _enrichInBackground(
-    CoffeeEnrichmentService enrichmentService,
-    CoffeeRepository coffeeRepo,
-    RoasterRepository roasterRepo,
-    FarmRepository farmRepo,
-    String coffeeId,
-    Coffee coffee,
-  ) {
-    _resolveEntities(
-      enrichmentService,
-      coffeeRepo,
-      roasterRepo,
-      farmRepo,
-      coffeeId,
-      coffee,
-    ).catchError((e) {
-      debugPrint('[COFFEENO] Enrichment failed for $coffeeId: $e');
-    });
-  }
-
-  Future<void> _resolveEntities(
-    CoffeeEnrichmentService enrichmentService,
-    CoffeeRepository coffeeRepo,
-    RoasterRepository roasterRepo,
-    FarmRepository farmRepo,
-    String coffeeId,
-    Coffee coffee,
-  ) async {
-    final now = DateTime.now();
-    String? roasterId;
-    String? farmId;
-    String? roasterUrl;
-    String? roasterDescription;
-    String? farmUrl;
-    String? farmDescription;
-
-    // Check if roaster already exists
-    final existingRoaster = await roasterRepo.findByName(coffee.roaster);
-    if (existingRoaster != null) {
-      roasterId = existingRoaster.id;
-      roasterUrl = existingRoaster.url;
-      roasterDescription = existingRoaster.description;
-      debugPrint('[COFFEENO] Reusing roaster: ${existingRoaster.name}');
-    }
-
-    // Check if farm already exists
-    Farm? existingFarm;
-    if (coffee.farmName != null && coffee.farmName!.isNotEmpty) {
-      existingFarm = await farmRepo.findByName(
-        coffee.farmName!,
-        country: coffee.originCountry,
-      );
-      if (existingFarm != null) {
-        farmId = existingFarm.id;
-        farmUrl = existingFarm.url;
-        farmDescription = existingFarm.description;
-        debugPrint('[COFFEENO] Reusing farm: ${existingFarm.name}');
-      }
-    }
-
-    // Call Gemini only if we need info for either entity
-    final needsRoasterInfo = existingRoaster == null;
-    final needsFarmInfo =
-        coffee.farmName != null && coffee.farmName!.isNotEmpty && existingFarm == null;
-
-    if ((needsRoasterInfo || needsFarmInfo) && enrichmentService.isAvailable) {
-      final result = await enrichmentService.lookupInfo(
-        roaster: coffee.roaster,
-        farmName: coffee.farmName,
-        originCountry: coffee.originCountry,
-        originRegion: coffee.originRegion,
-      );
-      debugPrint('[COFFEENO] Enrichment result for $coffeeId: '
-          'roasterUrl=${result.roasterUrl}, farmUrl=${result.farmUrl}');
-
-      if (needsRoasterInfo) {
-        roasterUrl = result.roasterUrl;
-        roasterDescription = result.roasterDescription;
-        final roaster = Roaster(
-          id: '',
-          name: coffee.roaster,
-          description: result.roasterDescription,
-          url: result.roasterUrl,
-          country: result.roasterCountry,
-          city: result.roasterCity,
-          keyPeople: result.roasterKeyPeople,
-          source: 'ai',
-          createdAt: now,
-          updatedAt: now,
-        );
-        roasterId = await roasterRepo.addRoaster(roaster);
-        debugPrint('[COFFEENO] Created roaster $roasterId');
-      }
-
-      if (needsFarmInfo) {
-        farmUrl = result.farmUrl;
-        farmDescription = result.farmDescription;
-        final farm = Farm(
-          id: '',
-          name: coffee.farmName!,
-          description: result.farmDescription,
-          url: result.farmUrl,
-          country: coffee.originCountry,
-          region: result.farmRegion ?? coffee.originRegion,
-          farmerName: result.farmFarmerName ?? coffee.farmerName,
-          altitude: result.farmAltitude ?? coffee.altitude,
-          source: 'ai',
-          createdAt: now,
-          updatedAt: now,
-        );
-        farmId = await farmRepo.addFarm(farm);
-        debugPrint('[COFFEENO] Created farm $farmId');
-      }
-    }
-
-    // Update the coffee with entity references + inline fields. Use a targeted
-    // partial update (only the enrichment fields) instead of reading and
-    // rewriting the whole document — otherwise this races with the freshness
-    // notification writer and whichever finishes last clobbers the other.
-    await coffeeRepo.applyEnrichment(
-      coffeeId,
-      roasterId: roasterId,
-      farmId: farmId,
-      roasterUrl: roasterUrl,
-      roasterDescription: roasterDescription,
-      farmUrl: farmUrl,
-      farmDescription: farmDescription,
-    );
-    debugPrint('[COFFEENO] Enrichment saved for $coffeeId');
-  }
-
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
     final isPremium = ref.read(isPremiumProvider);
+    final userId = ref.read(authStateProvider).value?.uid;
+    if (userId == null) return;
+
+    // Captured once up front so it can be used after later awaits without
+    // touching BuildContext across async gaps.
+    final l10n = AppLocalizations.of(context);
 
     if (!isPremium) {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
-      final coffeeCount =
-          await ref.read(coffeeRepositoryProvider).countForUser(uid);
+      final coffeeCount = await ref
+          .read(coffeeRepositoryProvider)
+          .countForUser(userId);
       if (coffeeCount >= AppConstants.freeTierMaxCoffees && mounted) {
-        final l10n = AppLocalizations.of(context);
         showUpgradePrompt(
-            context, l10n.coffeeLimitReached(AppConstants.freeTierMaxCoffees));
+          context,
+          l10n.coffeeLimitReached(AppConstants.freeTierMaxCoffees),
+        );
         return;
       }
     }
@@ -353,12 +209,10 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       final repository = ref.read(coffeeRepositoryProvider);
 
       final similar = await _findSimilarCoffee(userId);
       if (similar != null && mounted) {
-        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.similarCoffeeAlert(similar.roaster)),
@@ -395,9 +249,9 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
         variety: _varietyController.text.trim().isNotEmpty
             ? _varietyController.text.trim()
             : null,
-        processingMethod: _processingMethod?.label,
+        processingMethod: _processingMethod?.key,
         roastDate: _roastDate,
-        roastLevel: _roastLevel?.label,
+        roastLevel: _roastLevel?.key,
         flavorNotes: _flavorNotes,
         price: _priceController.text.trim().isNotEmpty
             ? double.tryParse(_priceController.text.trim())
@@ -415,36 +269,40 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
 
       // Award gamification points for adding a coffee (fire-and-forget; a
       // points write must never block or fail the core save).
-      ref.read(userRepositoryProvider).awardPoints(
-            userId,
-            GamificationPoints.addCoffee,
-          );
+      ref
+          .read(userRepositoryProvider)
+          .awardPoints(userId, GamificationPoints.addCoffee);
 
       // Schedule a freshness reminder notification for this coffee.
       final savedCoffee = coffee.copyWith(id: coffeeId);
+      final notificationTitle = l10n.freshnessNotificationTitle;
       final notificationService = ref.read(freshnessNotificationProvider);
       notificationService.init().then((_) {
-        notificationService.scheduleForCoffee(savedCoffee).catchError((e) {
-          debugPrint('[COFFEENO] Freshness notification scheduling failed: $e');
-        });
+        notificationService
+            .scheduleForCoffee(
+              savedCoffee,
+              title: notificationTitle,
+              body: (c) => freshnessNotificationBody(l10n, c),
+            )
+            .catchError((e) {
+              debugPrint(
+                '[COFFEENO] Freshness notification scheduling failed: $e',
+              );
+            });
       });
 
       if (isPremium) {
-        final enrichmentService = ref.read(coffeeEnrichmentProvider);
-        final roasterRepo = ref.read(roasterRepositoryProvider);
-        final farmRepo = ref.read(farmRepositoryProvider);
-        _enrichInBackground(
-            enrichmentService, repository, roasterRepo, farmRepo, coffeeId, coffee);
+        ref
+            .read(coffeeEnrichmentOrchestratorProvider)
+            .resolveInBackground(coffeeId, coffee);
       }
 
       if (mounted) context.go(AppRoutes.library);
     } catch (e) {
+      debugPrint('[COFFEENO] Failed to save coffee: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            duration: const Duration(seconds: 10),
-          ),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     } finally {
@@ -457,25 +315,24 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
   /// in the user's own library. Offers opening the existing coffee or
   /// dismissing to add a fresh entry anyway.
   Widget _buildRebuyBanner(AppLocalizations l10n) {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final roaster = _roasterController.text.trim();
     final name = _nameController.text.trim();
     final country = _countryController.text.trim();
 
     // Need the identity fields populated before a lookup is meaningful.
-    if (userId.isEmpty ||
-        roaster.isEmpty ||
-        name.isEmpty ||
-        country.isEmpty) {
+    if (userId.isEmpty || roaster.isEmpty || name.isEmpty || country.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final match = ref.watch(canonicalMatchProvider((
-      userId: userId,
-      roaster: roaster,
-      name: name,
-      originCountry: country,
-    )));
+    final match = ref.watch(
+      canonicalMatchProvider((
+        userId: userId,
+        roaster: roaster,
+        name: name,
+        originCountry: country,
+      )),
+    );
 
     final coffee = match.asData?.value;
     if (coffee == null) return const SizedBox.shrink();
@@ -489,8 +346,10 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Icon(Icons.inventory_2_outlined,
-                  color: theme.colorScheme.onSecondaryContainer),
+              Icon(
+                Icons.inventory_2_outlined,
+                color: theme.colorScheme.onSecondaryContainer,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -544,9 +403,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.addCoffee),
-      ),
+      appBar: AppBar(title: Text(l10n.addCoffee)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -574,9 +431,8 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
                           File(_photoPath!),
                           fit: BoxFit.cover,
                           width: double.infinity,
-                          errorBuilder: (_, _, _) => _PhotoPlaceholder(
-                            colorScheme: colorScheme,
-                          ),
+                          errorBuilder: (_, _, _) =>
+                              _PhotoPlaceholder(colorScheme: colorScheme),
                         ),
                       )
                     : _PhotoPlaceholder(colorScheme: colorScheme),
@@ -590,7 +446,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
               label: l10n.coffeeName,
               prefixIcon: Icons.coffee_rounded,
               textInputAction: TextInputAction.next,
-              validator: (v) => Validators.required(v, l10n.coffeeName),
+              validator: (v) => Validators.required(v, l10n, l10n.coffeeName),
             ),
             const SizedBox(height: 16),
 
@@ -599,7 +455,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
               label: l10n.roaster,
               prefixIcon: Icons.store_rounded,
               textInputAction: TextInputAction.next,
-              validator: (v) => Validators.required(v, l10n.roaster),
+              validator: (v) => Validators.required(v, l10n, l10n.roaster),
             ),
             const SizedBox(height: 16),
 
@@ -608,7 +464,8 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
               label: l10n.originCountry,
               prefixIcon: Icons.public_rounded,
               textInputAction: TextInputAction.next,
-              validator: (v) => Validators.required(v, l10n.originCountry),
+              validator: (v) =>
+                  Validators.required(v, l10n, l10n.originCountry),
             ),
             const SizedBox(height: 16),
 
@@ -662,10 +519,12 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
                 prefixIcon: const Icon(Icons.water_drop_rounded),
               ),
               items: ProcessingMethod.values
-                  .map((m) => DropdownMenuItem(
-                        value: m,
-                        child: Text(m.label),
-                      ))
+                  .map(
+                    (m) => DropdownMenuItem(
+                      value: m,
+                      child: Text(m.displayLabel(l10n)),
+                    ),
+                  )
                   .toList(),
               onChanged: (v) => setState(() => _processingMethod = v),
             ),
@@ -679,10 +538,12 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
                 prefixIcon: const Icon(Icons.local_fire_department_rounded),
               ),
               items: RoastLevel.values
-                  .map((r) => DropdownMenuItem(
-                        value: r,
-                        child: Text(r.label),
-                      ))
+                  .map(
+                    (r) => DropdownMenuItem(
+                      value: r,
+                      child: Text(r.displayLabel(l10n)),
+                    ),
+                  )
                   .toList(),
               onChanged: (v) => setState(() => _roastLevel = v),
             ),
@@ -695,7 +556,8 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
               title: Text(l10n.roastDate),
               subtitle: _roastDate != null
                   ? Text(
-                      '${_roastDate!.year}-${_roastDate!.month.toString().padLeft(2, '0')}-${_roastDate!.day.toString().padLeft(2, '0')}')
+                      '${_roastDate!.year}-${_roastDate!.month.toString().padLeft(2, '0')}-${_roastDate!.day.toString().padLeft(2, '0')}',
+                    )
                   : null,
               trailing: IconButton(
                 icon: const Icon(Icons.edit_calendar_rounded),
@@ -710,7 +572,9 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
               controller: _priceController,
               label: l10n.price,
               prefixIcon: Icons.euro_rounded,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               textInputAction: TextInputAction.next,
               suffixIcon: const Padding(
                 padding: EdgeInsets.only(right: 12),
@@ -753,8 +617,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
                 ),
                 const SizedBox(width: 8),
                 IconButton.filled(
-                  onPressed: () =>
-                      _addFlavorNote(_flavorNoteController.text),
+                  onPressed: () => _addFlavorNote(_flavorNoteController.text),
                   icon: const Icon(Icons.add),
                 ),
               ],
@@ -765,10 +628,12 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
                 spacing: 8,
                 runSpacing: 4,
                 children: _flavorNotes
-                    .map((note) => Chip(
-                          label: Text(note),
-                          onDeleted: () => _removeFlavorNote(note),
-                        ))
+                    .map(
+                      (note) => Chip(
+                        label: Text(note),
+                        onDeleted: () => _removeFlavorNote(note),
+                      ),
+                    )
                     .toList(),
               ),
             const SizedBox(height: 32),
@@ -804,10 +669,7 @@ class _PhotoPlaceholder extends StatelessWidget {
             color: colorScheme.onSecondaryContainer.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Add photo',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text('Add photo', style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );

@@ -39,7 +39,7 @@ class BrewSuggestion {
 /// coffee based on its characteristics.
 class BrewSuggestionService {
   BrewSuggestionService()
-      : _apiKey = const String.fromEnvironment('GEMINI_API_KEY');
+    : _apiKey = const String.fromEnvironment('GEMINI_API_KEY');
 
   final String _apiKey;
 
@@ -88,8 +88,7 @@ Choose the brew method and parameters that best highlight the coffee's character
       ),
     );
 
-    final description = StringBuffer()
-      ..writeln('Coffee name: $name');
+    final description = StringBuffer()..writeln('Coffee name: $name');
     if (originCountry != null && originCountry.isNotEmpty) {
       description.writeln('Origin country: $originCountry');
     }

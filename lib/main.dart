@@ -16,18 +16,14 @@ Future<void> main() async {
     );
   } catch (e) {
     debugPrint('Firebase init failed: $e');
-    debugPrint('Running without Firebase — set up Firebase to enable all features.');
+    debugPrint(
+      'Running without Firebase — set up Firebase to enable all features.',
+    );
   }
 
   await SubscriptionRepository.init();
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  runApp(
-    const ProviderScope(
-      child: CoffenoApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: CoffeenoApp()));
 }

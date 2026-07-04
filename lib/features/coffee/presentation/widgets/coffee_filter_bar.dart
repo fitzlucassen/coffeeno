@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
 import 'package:coffeeno/core/constants/app_constants.dart';
+import 'package:coffeeno/core/utils/enum_labels.dart';
 
 enum CoffeeSortOption { rating, dateAdded, name }
 
@@ -46,14 +47,15 @@ class CoffeeFilterBar extends StatelessWidget {
               label: selectedCountry ?? l10n.originCountry,
               selected: selectedCountry != null,
               onTap: () => _showCountryPicker(context),
-              onDeleted:
-                  selectedCountry != null ? () => onCountryChanged?.call(null) : null,
+              onDeleted: selectedCountry != null
+                  ? () => onCountryChanged?.call(null)
+                  : null,
             ),
           const SizedBox(width: 8),
 
           // Roast level filter
           _FilterChip(
-            label: selectedRoastLevel?.label ?? l10n.roastLevel,
+            label: selectedRoastLevel?.displayLabel(l10n) ?? l10n.roastLevel,
             selected: selectedRoastLevel != null,
             onTap: () => _showRoastLevelPicker(context),
             onDeleted: selectedRoastLevel != null
@@ -64,7 +66,9 @@ class CoffeeFilterBar extends StatelessWidget {
 
           // Processing method filter
           _FilterChip(
-            label: selectedProcessingMethod?.label ?? l10n.processingMethod,
+            label:
+                selectedProcessingMethod?.displayLabel(l10n) ??
+                l10n.processingMethod,
             selected: selectedProcessingMethod != null,
             onTap: () => _showProcessingMethodPicker(context),
             onDeleted: selectedProcessingMethod != null
@@ -102,9 +106,9 @@ class CoffeeFilterBar extends StatelessWidget {
       case CoffeeSortOption.rating:
         return l10n.topRated;
       case CoffeeSortOption.dateAdded:
-        return 'Newest';
+        return l10n.sortNewest;
       case CoffeeSortOption.name:
-        return 'A-Z';
+        return l10n.sortAlphabetical;
     }
   }
 
@@ -116,8 +120,9 @@ class CoffeeFilterBar extends StatelessWidget {
         children: availableCountries.map((country) {
           return ListTile(
             title: Text(country),
-            trailing:
-                country == selectedCountry ? const Icon(Icons.check) : null,
+            trailing: country == selectedCountry
+                ? const Icon(Icons.check)
+                : null,
             onTap: () {
               Navigator.of(ctx).pop();
               onCountryChanged?.call(country);
@@ -135,9 +140,10 @@ class CoffeeFilterBar extends StatelessWidget {
         shrinkWrap: true,
         children: RoastLevel.values.map((level) {
           return ListTile(
-            title: Text(level.label),
-            trailing:
-                level == selectedRoastLevel ? const Icon(Icons.check) : null,
+            title: Text(level.displayLabel(AppLocalizations.of(ctx))),
+            trailing: level == selectedRoastLevel
+                ? const Icon(Icons.check)
+                : null,
             onTap: () {
               Navigator.of(ctx).pop();
               onRoastLevelChanged?.call(level);
@@ -155,7 +161,7 @@ class CoffeeFilterBar extends StatelessWidget {
         shrinkWrap: true,
         children: ProcessingMethod.values.map((method) {
           return ListTile(
-            title: Text(method.label),
+            title: Text(method.displayLabel(AppLocalizations.of(ctx))),
             trailing: method == selectedProcessingMethod
                 ? const Icon(Icons.check)
                 : null,

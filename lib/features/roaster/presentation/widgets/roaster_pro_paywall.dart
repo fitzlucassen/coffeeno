@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
 import 'package:coffeeno/features/subscription/presentation/providers/subscription_provider.dart';
+import 'package:coffeeno/features/subscription/presentation/widgets/purchase_controller.dart';
 
 /// Paywall shown when a non-Roaster-Pro user tries to open the dashboard.
 /// Identical to the old inline paywall; extracted so the dashboard screen
@@ -22,16 +23,12 @@ class _RoasterProPaywallState extends ConsumerState<RoasterProPaywall> {
   Future<void> _subscribe() async {
     setState(() => _isLoading = true);
     try {
-      final repo = ref.read(subscriptionRepositoryProvider);
-      await repo.purchaseRoasterPro();
-      for (var i = 0; i < 30; i++) {
-        if (ref.read(isRoasterProProvider)) break;
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-      }
+      await PurchaseController(ref).purchaseRoasterPro();
     } catch (e) {
+      debugPrint('[COFFEENO] Roaster Pro purchase failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     } finally {
@@ -42,18 +39,18 @@ class _RoasterProPaywallState extends ConsumerState<RoasterProPaywall> {
   Future<void> _restore() async {
     setState(() => _isLoading = true);
     try {
-      final repo = ref.read(subscriptionRepositoryProvider);
-      final success = await repo.restore();
+      final success = await PurchaseController(ref).restore();
       if (mounted && !success) {
         final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.error)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.error)));
       }
     } catch (e) {
+      debugPrint('[COFFEENO] Roaster Pro restore failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     } finally {
@@ -77,8 +74,7 @@ class _RoasterProPaywallState extends ConsumerState<RoasterProPaywall> {
         child: Column(
           children: [
             const Spacer(),
-            Icon(Icons.analytics_rounded,
-                size: 64, color: colorScheme.primary),
+            Icon(Icons.analytics_rounded, size: 64, color: colorScheme.primary),
             const SizedBox(height: 16),
             Text(
               l10n.roasterProRequired,
@@ -88,15 +84,17 @@ class _RoasterProPaywallState extends ConsumerState<RoasterProPaywall> {
             const SizedBox(height: 8),
             Text(
               l10n.roasterProDesc,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             Text(
               l10n.roasterProPrice,
-              style: theme.textTheme.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(

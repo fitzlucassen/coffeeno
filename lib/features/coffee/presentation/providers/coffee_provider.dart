@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../farm/presentation/providers/farm_provider.dart';
+import '../../../roaster/presentation/providers/roaster_provider.dart';
+import '../../data/coffee_enrichment_orchestrator.dart';
 import '../../data/coffee_enrichment_service.dart';
 import '../../data/coffee_repository.dart';
 import '../../domain/coffee.dart';
@@ -14,46 +17,69 @@ final coffeeEnrichmentProvider = Provider<CoffeeEnrichmentService>((ref) {
   return CoffeeEnrichmentService();
 });
 
+/// Provides the [CoffeeEnrichmentOrchestrator], which coordinates roaster/farm
+/// resolution + AI enrichment for a newly added coffee. Wiring the repos here
+/// keeps that multi-repo orchestration out of the presentation layer.
+final coffeeEnrichmentOrchestratorProvider =
+    Provider<CoffeeEnrichmentOrchestrator>((ref) {
+      return CoffeeEnrichmentOrchestrator(
+        enrichmentService: ref.watch(coffeeEnrichmentProvider),
+        coffeeRepository: ref.watch(coffeeRepositoryProvider),
+        roasterRepository: ref.watch(roasterRepositoryProvider),
+        farmRepository: ref.watch(farmRepositoryProvider),
+      );
+    });
+
 /// Streams the current user's coffees, keyed by [userId].
-final userCoffeesProvider =
-    StreamProvider.family<List<Coffee>, String>((ref, userId) {
+final userCoffeesProvider = StreamProvider.family<List<Coffee>, String>((
+  ref,
+  userId,
+) {
   final repository = ref.watch(coffeeRepositoryProvider);
   return repository.getUserCoffees(userId);
 });
 
 /// Streams a single coffee by its [coffeeId] for real-time updates.
-final coffeeDetailProvider =
-    StreamProvider.family<Coffee?, String>((ref, coffeeId) {
+final coffeeDetailProvider = StreamProvider.family<Coffee?, String>((
+  ref,
+  coffeeId,
+) {
   final repository = ref.watch(coffeeRepositoryProvider);
   return repository.watchCoffee(coffeeId);
 });
 
 /// Streams coffees from a specific origin [country].
-final coffeesByOriginProvider =
-    StreamProvider.family<List<Coffee>, String>((ref, country) {
+final coffeesByOriginProvider = StreamProvider.family<List<Coffee>, String>((
+  ref,
+  country,
+) {
   final repository = ref.watch(coffeeRepositoryProvider);
   return repository.getCoffeesByOrigin(country);
 });
 
 /// Fetches the community average rating for a coffee identified by
 /// its roaster and name (normalized matching across all users).
-final communityRatingProvider = FutureProvider.family<
-    ({double average, int count})?,
-    ({String roaster, String name})>((ref, params) {
-  final repository = ref.watch(coffeeRepositoryProvider);
-  return repository.getCommunityAverageRating(params.roaster, params.name);
-});
+final communityRatingProvider =
+    FutureProvider.family<
+      ({double average, int count})?,
+      ({String roaster, String name})
+    >((ref, params) {
+      final repository = ref.watch(coffeeRepositoryProvider);
+      return repository.getCommunityAverageRating(params.roaster, params.name);
+    });
 
 /// Looks up an existing coffee in the given user's library matching the
 /// canonical identity (roaster + name + origin), for re-buy detection.
-final canonicalMatchProvider = FutureProvider.family<Coffee?,
-    ({String userId, String roaster, String name, String originCountry})>(
-        (ref, params) {
-  final repository = ref.watch(coffeeRepositoryProvider);
-  return repository.findCanonicalMatchForUser(
-    userId: params.userId,
-    roaster: params.roaster,
-    name: params.name,
-    originCountry: params.originCountry,
-  );
-});
+final canonicalMatchProvider =
+    FutureProvider.family<
+      Coffee?,
+      ({String userId, String roaster, String name, String originCountry})
+    >((ref, params) {
+      final repository = ref.watch(coffeeRepositoryProvider);
+      return repository.findCanonicalMatchForUser(
+        userId: params.userId,
+        roaster: params.roaster,
+        name: params.name,
+        originCountry: params.originCountry,
+      );
+    });

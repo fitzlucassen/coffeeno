@@ -4,6 +4,7 @@ import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/subscription_provider.dart';
+import '../widgets/purchase_controller.dart';
 
 class PaywallScreen extends ConsumerStatefulWidget {
   const PaywallScreen({super.key});
@@ -18,33 +19,20 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   Future<void> _subscribe() async {
     setState(() => _isLoading = true);
     try {
-      final repo = ref.read(subscriptionRepositoryProvider);
-      // Don't trust purchase()'s boolean return value — it can report false
-      // even on a successful purchase because RevenueCat's entitlement flag
-      // flips active asynchronously via the customer-info update listener.
-      // Instead, kick off the purchase and then wait for the provider to
-      // reflect the new state.
-      debugPrint('[PAYWALL] starting purchase()');
-      await repo.purchase();
-      debugPrint('[PAYWALL] purchase() returned, polling isPremium...');
-
-      for (var i = 0; i < 30; i++) {
-        if (ref.read(isPremiumProvider)) break;
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-      }
-      debugPrint('[PAYWALL] poll done, isPremium=${ref.read(isPremiumProvider)}');
+      final isPremium = await PurchaseController(ref).purchasePremium();
 
       if (!mounted) return;
-      if (ref.read(isPremiumProvider)) {
+      if (isPremium) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).premium)),
         );
         context.pop();
       }
     } catch (e) {
+      debugPrint('[COFFEENO] Premium purchase failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     } finally {
@@ -55,31 +43,28 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   Future<void> _restore() async {
     setState(() => _isLoading = true);
     try {
-      final repo = ref.read(subscriptionRepositoryProvider);
-      await repo.restore();
-
-      for (var i = 0; i < 30; i++) {
-        if (ref.read(isPremiumProvider)) break;
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-      }
+      final isPremium = await PurchaseController(
+        ref,
+      ).restoreAndWaitForPremium();
 
       if (mounted) {
         final l10n = AppLocalizations.of(context);
-        if (ref.read(isPremiumProvider)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.premium)),
-          );
+        if (isPremium) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.premium)));
           context.pop();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.error)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.error)));
         }
       }
     } catch (e) {
+      debugPrint('[COFFEENO] Restore purchases failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     } finally {
@@ -114,30 +99,40 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
         child: Column(
           children: [
             const SizedBox(height: 16),
-            Icon(Icons.workspace_premium_rounded,
-                size: 64, color: colorScheme.primary),
+            Icon(
+              Icons.workspace_premium_rounded,
+              size: 64,
+              color: colorScheme.primary,
+            ),
             const SizedBox(height: 16),
-            Text(l10n.upgradeToPremium,
-                style: theme.textTheme.headlineSmall),
+            Text(l10n.upgradeToPremium, style: theme.textTheme.headlineSmall),
             const SizedBox(height: 8),
-            Text(l10n.premiumFeatures,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: colorScheme.onSurfaceVariant)),
+            Text(
+              l10n.premiumFeatures,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 32),
-            ...features.map((f) => Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    children: [
-                      Icon(f.$1, size: 24, color: colorScheme.primary),
-                      const SizedBox(width: 16),
-                      Text(f.$2, style: theme.textTheme.bodyLarge),
-                    ],
-                  ),
-                )),
+            ...features.map(
+              (f) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Row(
+                  children: [
+                    Icon(f.$1, size: 24, color: colorScheme.primary),
+                    const SizedBox(width: 16),
+                    Text(f.$2, style: theme.textTheme.bodyLarge),
+                  ],
+                ),
+              ),
+            ),
             const Spacer(),
-            Text(l10n.premiumPrice,
-                style: theme.textTheme.headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.w600)),
+            Text(
+              l10n.premiumPrice,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,

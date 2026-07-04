@@ -89,11 +89,7 @@ class CoffeeMapScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 48,
-                color: colorScheme.error,
-              ),
+              Icon(Icons.error_outline, size: 48, color: colorScheme.error),
               const SizedBox(height: 12),
               Text(l10n.error, style: textTheme.titleMedium),
               const SizedBox(height: 16),

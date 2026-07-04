@@ -7,8 +7,9 @@ import 'coffee_provider.dart';
 ///
 /// Depends on [coffeeRepositoryProvider] so the service can mark coffees
 /// as notified in Firestore after scheduling.
-final freshnessNotificationProvider =
-    Provider<FreshnessNotificationService>((ref) {
+final freshnessNotificationProvider = Provider<FreshnessNotificationService>((
+  ref,
+) {
   final coffeeRepository = ref.watch(coffeeRepositoryProvider);
   return FreshnessNotificationService(coffeeRepository: coffeeRepository);
 });

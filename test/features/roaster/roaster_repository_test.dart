@@ -4,11 +4,11 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Roaster _roaster(String name) => Roaster(
-      id: '',
-      name: name,
-      createdAt: DateTime(2026, 1, 1),
-      updatedAt: DateTime(2026, 1, 1),
-    );
+  id: '',
+  name: name,
+  createdAt: DateTime(2026, 1, 1),
+  updatedAt: DateTime(2026, 1, 1),
+);
 
 void main() {
   late FakeFirebaseFirestore firestore;

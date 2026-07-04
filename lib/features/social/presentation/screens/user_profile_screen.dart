@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
 import 'package:coffeeno/core/router/app_router.dart';
@@ -12,7 +11,11 @@ import 'package:coffeeno/features/gamification/presentation/widgets/expert_badge
 import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
 
-void _showSettingsSheet(BuildContext context, {bool isAdmin = false}) {
+void _showSettingsSheet(
+  BuildContext context,
+  WidgetRef ref, {
+  bool isAdmin = false,
+}) {
   final l10n = AppLocalizations.of(context);
   final colorScheme = Theme.of(context).colorScheme;
 
@@ -34,8 +37,10 @@ void _showSettingsSheet(BuildContext context, {bool isAdmin = false}) {
           const SizedBox(height: 16),
           if (isAdmin)
             ListTile(
-              leading: Icon(Icons.admin_panel_settings,
-                  color: colorScheme.primary),
+              leading: Icon(
+                Icons.admin_panel_settings,
+                color: colorScheme.primary,
+              ),
               title: Text(l10n.adminClaims),
               onTap: () {
                 Navigator.of(ctx).pop();
@@ -52,11 +57,13 @@ void _showSettingsSheet(BuildContext context, {bool isAdmin = false}) {
           ),
           ListTile(
             leading: Icon(Icons.logout, color: colorScheme.error),
-            title: Text(l10n.signOut,
-                style: TextStyle(color: colorScheme.error)),
+            title: Text(
+              l10n.signOut,
+              style: TextStyle(color: colorScheme.error),
+            ),
             onTap: () async {
               Navigator.of(ctx).pop();
-              await FirebaseAuth.instance.signOut();
+              await ref.read(authRepositoryProvider).signOut();
             },
           ),
           const SizedBox(height: 8),
@@ -77,9 +84,9 @@ Future<void> _toggleBlock({
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (_) => AlertDialog(
-      content: Text(currentlyBlocked
-          ? l10n.unblockUserConfirm
-          : l10n.blockUserConfirm),
+      content: Text(
+        currentlyBlocked ? l10n.unblockUserConfirm : l10n.blockUserConfirm,
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
@@ -87,8 +94,7 @@ Future<void> _toggleBlock({
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: Text(
-              currentlyBlocked ? l10n.unblockUser : l10n.blockUser),
+          child: Text(currentlyBlocked ? l10n.unblockUser : l10n.blockUser),
         ),
       ],
     ),
@@ -114,17 +120,14 @@ class UserProfileScreen extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final firebaseUser = FirebaseAuth.instance.currentUser;
-    final profileUserId = userId ?? firebaseUser?.uid;
-    final isOwnProfile =
-        userId == null || profileUserId == firebaseUser?.uid;
+    final currentUid = ref.watch(authStateProvider).value?.uid;
+    final profileUserId = userId ?? currentUid;
+    final isOwnProfile = userId == null || profileUserId == currentUid;
 
     if (profileUserId == null) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.profileTab)),
-        body: Center(
-          child: Text(l10n.error, style: textTheme.bodyLarge),
-        ),
+        body: Center(child: Text(l10n.error, style: textTheme.bodyLarge)),
       );
     }
 
@@ -143,22 +146,24 @@ class UserProfileScreen extends ConsumerWidget {
                   icon: const Icon(Icons.settings_outlined),
                   tooltip: l10n.settings,
                   onPressed: () {
-                    final appUser =
-                        ref.read(currentUserProvider).value;
-                    _showSettingsSheet(context,
-                        isAdmin: appUser?.isAdmin ?? false);
+                    final appUser = ref.read(currentUserProvider).value;
+                    _showSettingsSheet(
+                      context,
+                      ref,
+                      isAdmin: appUser?.isAdmin ?? false,
+                    );
                   },
                 ),
               ]
             : [
-                if (firebaseUser != null)
+                if (currentUid != null)
                   PopupMenuButton<String>(
                     onSelected: (value) async {
                       if (value == 'block' || value == 'unblock') {
                         await _toggleBlock(
                           context: context,
                           ref: ref,
-                          actor: firebaseUser.uid,
+                          actor: currentUid,
                           target: profileUserId,
                           currentlyBlocked: isBlocked,
                         );
@@ -168,7 +173,8 @@ class UserProfileScreen extends ConsumerWidget {
                       PopupMenuItem(
                         value: isBlocked ? 'unblock' : 'block',
                         child: Text(
-                            isBlocked ? l10n.unblockUser : l10n.blockUser),
+                          isBlocked ? l10n.unblockUser : l10n.blockUser,
+                        ),
                       ),
                     ],
                   ),
@@ -178,10 +184,7 @@ class UserProfileScreen extends ConsumerWidget {
         data: (profile) {
           if (profile == null) {
             return Center(
-              child: Text(
-                l10n.userNotFound,
-                style: textTheme.bodyLarge,
-              ),
+              child: Text(l10n.userNotFound, style: textTheme.bodyLarge),
             );
           }
 
@@ -253,8 +256,7 @@ class UserProfileScreen extends ConsumerWidget {
                   child: isOwnProfile
                       ? _OwnProfileActions(l10n: l10n)
                       : Center(
-                          child:
-                              FollowButton(targetUserId: profileUserId),
+                          child: FollowButton(targetUserId: profileUserId),
                         ),
                 ),
                 const SizedBox(height: 24),
@@ -323,10 +325,7 @@ class UserProfileScreen extends ConsumerWidget {
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: SelectableText(
-              error.toString(),
-              style: textTheme.bodyLarge,
-            ),
+            child: SelectableText(error.toString(), style: textTheme.bodyLarge),
           ),
         ),
       ),
@@ -355,10 +354,7 @@ class _StatsRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _StatItem(
-          count: tastingsCount,
-          label: l10n.tastings,
-        ),
+        _StatItem(count: tastingsCount, label: l10n.tastings),
         Container(
           width: 1,
           height: 32,
@@ -387,11 +383,7 @@ class _StatsRow extends StatelessWidget {
 }
 
 class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.count,
-    required this.label,
-    this.onTap,
-  });
+  const _StatItem({required this.count, required this.label, this.onTap});
 
   final int count;
   final String label;
@@ -404,31 +396,20 @@ class _StatItem extends StatelessWidget {
     final child = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          '$count',
-          style: textTheme.titleLarge,
-        ),
+        Text('$count', style: textTheme.titleLarge),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: textTheme.labelSmall,
-        ),
+        Text(label, style: textTheme.labelSmall),
       ],
     );
 
     if (onTap == null) return child;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: child,
-    );
+    return GestureDetector(onTap: onTap, child: child);
   }
 }
 
 class _OwnProfileActions extends StatelessWidget {
-  const _OwnProfileActions({
-    required this.l10n,
-  });
+  const _OwnProfileActions({required this.l10n});
 
   final AppLocalizations l10n;
 
@@ -458,10 +439,7 @@ class _OwnProfileActions extends StatelessWidget {
 }
 
 class _TastingTile extends StatelessWidget {
-  const _TastingTile({
-    required this.tasting,
-    this.onTap,
-  });
+  const _TastingTile({required this.tasting, this.onTap});
 
   final Map<String, dynamic> tasting;
   final VoidCallback? onTap;
@@ -471,7 +449,9 @@ class _TastingTile extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final coffeeName = tasting['coffeeName'] as String? ?? 'Unknown Coffee';
+    final coffeeName =
+        tasting['coffeeName'] as String? ??
+        AppLocalizations.of(context).unknownCoffee;
     final roasterName = tasting['roasterName'] as String? ?? '';
     final overallRating = (tasting['overallRating'] as num?)?.toDouble() ?? 0;
     final brewMethod = tasting['brewMethod'] as String?;

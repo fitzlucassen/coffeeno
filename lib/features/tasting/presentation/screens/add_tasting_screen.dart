@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
@@ -7,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import 'package:coffeeno/core/constants/app_constants.dart';
+import 'package:coffeeno/core/utils/enum_labels.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../coffee/presentation/providers/coffee_provider.dart';
 import '../../../gamification/domain/gamification.dart';
@@ -60,8 +60,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
 
   /// Target brew time (seconds) for the guided timer. Set when an AI
   /// suggestion is applied; the timer is shown only when this is positive.
-  int get _suggestedBrewTimeSec =>
-      (_brewTimeMinutes * 60) + _brewTimeSeconds;
+  int get _suggestedBrewTimeSec => (_brewTimeMinutes * 60) + _brewTimeSeconds;
 
   @override
   void dispose() {
@@ -89,8 +88,9 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
     });
 
     try {
-      final coffee =
-          await ref.read(coffeeDetailProvider(widget.coffeeId).future);
+      final coffee = await ref.read(
+        coffeeDetailProvider(widget.coffeeId).future,
+      );
       if (coffee == null) return;
 
       final service = BrewSuggestionService();
@@ -107,10 +107,13 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
       if (!mounted) return;
 
       // Match brew method label to enum value.
-      final matchedBrewMethod = BrewMethod.values.cast<BrewMethod?>().firstWhere(
-        (e) => e!.label.toLowerCase() == suggestion.brewMethod.toLowerCase(),
-        orElse: () => null,
-      );
+      final matchedBrewMethod = BrewMethod.values
+          .cast<BrewMethod?>()
+          .firstWhere(
+            (e) =>
+                e!.label.toLowerCase() == suggestion.brewMethod.toLowerCase(),
+            orElse: () => null,
+          );
 
       // Match grind size label to enum value.
       final matchedGrindSize = GrindSize.values.cast<GrindSize?>().firstWhere(
@@ -124,11 +127,14 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
         _doseController.text = suggestion.doseGrams.toString();
         _waterController.text = suggestion.waterMl.toString();
         _waterTempC = suggestion.waterTempC;
-        // The brew-time dropdowns cap at 15 min / 55 sec. Clamp the suggested
-        // value into that range so the saved tasting matches what the form
-        // actually displays (the form also clamps defensively).
+        // The brew-time dropdowns cap at 15 min and step seconds by 5 (0..55).
+        // Clamp minutes and snap seconds to the nearest 5 so the saved tasting
+        // matches exactly what the form displays (the form also snaps
+        // defensively, but keeping the source of truth aligned avoids a silent
+        // divergence between the shown and stored value).
         _brewTimeMinutes = (suggestion.brewTimeSec ~/ 60).clamp(0, 15);
-        _brewTimeSeconds = suggestion.brewTimeSec % 60;
+        _brewTimeSeconds = (((suggestion.brewTimeSec % 60) / 5).round() * 5)
+            .clamp(0, 55);
         _suggestionTips = suggestion.tips;
         _suggestionApplied = true;
       });
@@ -154,16 +160,20 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final isPremium = ref.read(isPremiumProvider);
+    final currentUser = ref.read(authStateProvider).value;
+    final userId = currentUser?.uid;
+    if (userId == null) return;
 
     if (!isPremium) {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
-      final tastingCount =
-          await ref.read(tastingRepositoryProvider).countForUserInMonth(uid);
+      final tastingCount = await ref
+          .read(tastingRepositoryProvider)
+          .countForUserInMonth(userId);
       if (tastingCount >= AppConstants.freeTierMaxTastingsPerMonth && mounted) {
         final l10n = AppLocalizations.of(context);
-        showUpgradePrompt(context,
-            l10n.tastingLimitReached(AppConstants.freeTierMaxTastingsPerMonth));
+        showUpgradePrompt(
+          context,
+          l10n.tastingLimitReached(AppConstants.freeTierMaxTastingsPerMonth),
+        );
         return;
       }
     }
@@ -171,27 +181,29 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      final coffee =
-          await ref.read(coffeeDetailProvider(widget.coffeeId).future);
+      final coffee = await ref.read(
+        coffeeDetailProvider(widget.coffeeId).future,
+      );
       final repository = ref.read(tastingRepositoryProvider);
 
       final dose = double.parse(_doseController.text);
       final water = double.parse(_waterController.text);
       final brewTimeSec = (_brewTimeMinutes * 60) + _brewTimeSeconds;
 
-      final currentUser = FirebaseAuth.instance.currentUser;
       final tasting = Tasting(
         id: '',
         userId: userId,
-        authorName: currentUser?.displayName ?? currentUser?.email?.split('@').first ?? '',
+        authorName:
+            currentUser?.displayName ??
+            currentUser?.email?.split('@').first ??
+            '',
         authorAvatar: currentUser?.photoURL,
         coffeeId: widget.coffeeId,
         coffeeName: coffee?.name ?? '',
         coffeePhotoUrl: coffee?.photoUrl,
         roasterName: coffee?.roaster ?? '',
-        brewMethod: _brewMethod!.label,
-        grindSize: _grindSize!.label,
+        brewMethod: _brewMethod!.key,
+        grindSize: _grindSize!.key,
         doseGrams: dose,
         waterMl: water,
         ratio: _ratioDisplay,
@@ -217,10 +229,9 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
       // Award gamification points for logging a tasting (fire-and-forget; a
       // points write must never block or fail the core save).
       if (userId.isNotEmpty) {
-        ref.read(userRepositoryProvider).awardPoints(
-              userId,
-              GamificationPoints.addTasting,
-            );
+        ref
+            .read(userRepositoryProvider)
+            .awardPoints(userId, GamificationPoints.addTasting);
       }
 
       if (mounted) context.pop();
@@ -242,9 +253,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
     final coffeeAsync = ref.watch(coffeeDetailProvider(widget.coffeeId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.addTasting),
-      ),
+      appBar: AppBar(title: Text(l10n.addTasting)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -262,12 +271,10 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
                     child: Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor:
-                              theme.colorScheme.secondaryContainer,
+                          backgroundColor: theme.colorScheme.secondaryContainer,
                           child: Icon(
                             Icons.coffee_rounded,
-                            color:
-                                theme.colorScheme.onSecondaryContainer,
+                            color: theme.colorScheme.onSecondaryContainer,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -306,15 +313,15 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
                     _MethodChip(
                       label: l10n.suggestionMethodAuto,
                       selected: _preferredSuggestionMethod == null,
-                      onTap: () => setState(
-                          () => _preferredSuggestionMethod = null),
+                      onTap: () =>
+                          setState(() => _preferredSuggestionMethod = null),
                     ),
                     for (final m in BrewMethod.values)
                       _MethodChip(
-                        label: m.label,
+                        label: m.displayLabel(l10n),
                         selected: _preferredSuggestionMethod == m,
-                        onTap: () => setState(
-                            () => _preferredSuggestionMethod = m),
+                        onTap: () =>
+                            setState(() => _preferredSuggestionMethod = m),
                       ),
                   ],
                 ),
@@ -429,8 +436,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
               onBodyChanged: (v) => setState(() => _body = v),
               onSweetnessChanged: (v) => setState(() => _sweetness = v),
               onAftertasteChanged: (v) => setState(() => _aftertaste = v),
-              onOverallRatingChanged: (v) =>
-                  setState(() => _overallRating = v),
+              onOverallRatingChanged: (v) => setState(() => _overallRating = v),
             ),
 
             const SizedBox(height: 32),

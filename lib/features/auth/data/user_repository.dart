@@ -4,7 +4,7 @@ import '../domain/app_user.dart';
 
 class UserRepository {
   UserRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -41,10 +41,9 @@ class UserRepository {
   /// with merge so it also succeeds on legacy docs that never had the field.
   Future<void> awardPoints(String uid, int delta) async {
     if (delta == 0) return;
-    await _usersRef.doc(uid).set(
-      {'points': FieldValue.increment(delta)},
-      SetOptions(merge: true),
-    );
+    await _usersRef.doc(uid).set({
+      'points': FieldValue.increment(delta),
+    }, SetOptions(merge: true));
   }
 
   /// Builds the canonical profile-update map, keeping the denormalized

@@ -40,18 +40,24 @@ void main() {
 
     test('targetReached flips at or past the target', () {
       expect(
-        const BrewTimerState(elapsedSeconds: 99, targetSeconds: 100)
-            .targetReached,
+        const BrewTimerState(
+          elapsedSeconds: 99,
+          targetSeconds: 100,
+        ).targetReached,
         isFalse,
       );
       expect(
-        const BrewTimerState(elapsedSeconds: 100, targetSeconds: 100)
-            .targetReached,
+        const BrewTimerState(
+          elapsedSeconds: 100,
+          targetSeconds: 100,
+        ).targetReached,
         isTrue,
       );
       expect(
-        const BrewTimerState(elapsedSeconds: 120, targetSeconds: 100)
-            .targetReached,
+        const BrewTimerState(
+          elapsedSeconds: 120,
+          targetSeconds: 100,
+        ).targetReached,
         isTrue,
       );
     });

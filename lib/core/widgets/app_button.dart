@@ -28,42 +28,33 @@ class AppButton extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 2),
           )
         : icon != null
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: 20),
-                  const SizedBox(width: 8),
-                  Text(label),
-                ],
-              )
-            : Text(label);
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(width: 8),
+              Text(label),
+            ],
+          )
+        : Text(label);
 
     final effectiveOnPressed = isLoading
         ? null
         : onPressed != null
-            ? () {
-                HapticFeedback.lightImpact();
-                onPressed!();
-              }
-            : null;
+        ? () {
+            HapticFeedback.lightImpact();
+            onPressed!();
+          }
+        : null;
 
     Widget button;
     switch (variant) {
       case AppButtonVariant.primary:
-        button = ElevatedButton(
-          onPressed: effectiveOnPressed,
-          child: child,
-        );
+        button = ElevatedButton(onPressed: effectiveOnPressed, child: child);
       case AppButtonVariant.secondary:
-        button = OutlinedButton(
-          onPressed: effectiveOnPressed,
-          child: child,
-        );
+        button = OutlinedButton(onPressed: effectiveOnPressed, child: child);
       case AppButtonVariant.text:
-        button = TextButton(
-          onPressed: effectiveOnPressed,
-          child: child,
-        );
+        button = TextButton(onPressed: effectiveOnPressed, child: child);
     }
 
     if (isFullWidth) {

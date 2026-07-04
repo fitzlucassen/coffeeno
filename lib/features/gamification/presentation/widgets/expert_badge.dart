@@ -69,8 +69,9 @@ class ExpertBadge extends StatelessWidget {
               Text(
                 l10n.pointsLabel(level.points),
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onPrimaryContainer
-                      .withValues(alpha: 0.8),
+                  color: theme.colorScheme.onPrimaryContainer.withValues(
+                    alpha: 0.8,
+                  ),
                 ),
               ),
             ],

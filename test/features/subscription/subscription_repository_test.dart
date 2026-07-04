@@ -18,10 +18,7 @@ void main() {
 
   setUp(() {
     firestore = FakeFirebaseFirestore();
-    auth = MockFirebaseAuth(
-      signedIn: true,
-      mockUser: MockUser(uid: 'alice'),
-    );
+    auth = MockFirebaseAuth(signedIn: true, mockUser: MockUser(uid: 'alice'));
     repo = SubscriptionRepository(firestore: firestore, auth: auth);
     SubscriptionRepository.resetForTests();
   });
@@ -34,17 +31,23 @@ void main() {
 
   test('emits free status when user is signed out', () async {
     final signedOut = MockFirebaseAuth();
-    final offlineRepo =
-        SubscriptionRepository(firestore: firestore, auth: signedOut);
+    final offlineRepo = SubscriptionRepository(
+      firestore: firestore,
+      auth: signedOut,
+    );
     final status = await offlineRepo.watchStatus().first;
     expect(status, const SubscriptionStatus());
   });
 
   test('reads premium flag from the user doc', () async {
-    await seedUser(firestore, uid: 'alice', overrides: {
-      'premium': true,
-      'premiumUntil': Timestamp.fromDate(DateTime(2026, 12, 31)),
-    });
+    await seedUser(
+      firestore,
+      uid: 'alice',
+      overrides: {
+        'premium': true,
+        'premiumUntil': Timestamp.fromDate(DateTime(2026, 12, 31)),
+      },
+    );
     final status = await repo.watchStatus().first;
 
     expect(status.isPremium, isTrue);
@@ -53,10 +56,14 @@ void main() {
   });
 
   test('reads roasterPro flag from the user doc', () async {
-    await seedUser(firestore, uid: 'alice', overrides: {
-      'roasterPro': true,
-      'roasterProUntil': Timestamp.fromDate(DateTime(2026, 9, 1)),
-    });
+    await seedUser(
+      firestore,
+      uid: 'alice',
+      overrides: {
+        'roasterPro': true,
+        'roasterProUntil': Timestamp.fromDate(DateTime(2026, 9, 1)),
+      },
+    );
     final status = await repo.watchStatus().first;
 
     expect(status.isRoasterPro, isTrue);
@@ -66,10 +73,11 @@ void main() {
   });
 
   test('dual-subscribed user has both flags and is premium', () async {
-    await seedUser(firestore, uid: 'alice', overrides: {
-      'premium': true,
-      'roasterPro': true,
-    });
+    await seedUser(
+      firestore,
+      uid: 'alice',
+      overrides: {'premium': true, 'roasterPro': true},
+    );
     final status = await repo.watchStatus().first;
 
     expect(status.isPremium, isTrue);
@@ -78,32 +86,42 @@ void main() {
 
   test('expired premium: Firestore flag true but premiumUntil in the past '
       'must NOT grant premium access', () async {
-    await seedUser(firestore, uid: 'alice', overrides: {
-      'premium': true,
-      'premiumUntil': Timestamp.fromDate(DateTime(2020, 1, 1)),
-    });
+    await seedUser(
+      firestore,
+      uid: 'alice',
+      overrides: {
+        'premium': true,
+        'premiumUntil': Timestamp.fromDate(DateTime(2020, 1, 1)),
+      },
+    );
     final status = await repo.watchStatus().first;
 
     expect(status.isPremium, isFalse);
   });
 
   test('expired roaster pro does not grant premium either', () async {
-    await seedUser(firestore, uid: 'alice', overrides: {
-      'roasterPro': true,
-      'roasterProUntil': Timestamp.fromDate(DateTime(2020, 1, 1)),
-    });
+    await seedUser(
+      firestore,
+      uid: 'alice',
+      overrides: {
+        'roasterPro': true,
+        'roasterProUntil': Timestamp.fromDate(DateTime(2020, 1, 1)),
+      },
+    );
     final status = await repo.watchStatus().first;
 
     expect(status.isPremium, isFalse);
     expect(status.isRoasterPro, isFalse);
   });
 
-  test('returns free when RevenueCat uninitialized and no user doc exists',
-      () async {
-    // No seed call — doc is absent.
-    final status = await repo.watchStatus().first;
-    expect(status.isPremium, isFalse);
-  });
+  test(
+    'returns free when RevenueCat uninitialized and no user doc exists',
+    () async {
+      // No seed call — doc is absent.
+      final status = await repo.watchStatus().first;
+      expect(status.isPremium, isFalse);
+    },
+  );
 
   test('loginUser is a no-op when RevenueCat is not initialized', () async {
     await expectLater(repo.loginUser('alice'), completes);

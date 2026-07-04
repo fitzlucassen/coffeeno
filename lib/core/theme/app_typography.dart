@@ -95,17 +95,17 @@ abstract final class AppTypography {
   );
 
   static TextTheme textTheme({required Color color}) => TextTheme(
-        headlineLarge: headlineLarge.copyWith(color: color),
-        headlineMedium: headlineMedium.copyWith(color: color),
-        headlineSmall: headlineSmall.copyWith(color: color),
-        titleLarge: titleLarge.copyWith(color: color),
-        titleMedium: titleMedium.copyWith(color: color),
-        titleSmall: titleSmall.copyWith(color: color),
-        bodyLarge: bodyLarge.copyWith(color: color),
-        bodyMedium: bodyMedium.copyWith(color: color),
-        bodySmall: bodySmall.copyWith(color: color.withValues(alpha: 0.7)),
-        labelLarge: labelLarge.copyWith(color: color),
-        labelMedium: labelMedium.copyWith(color: color.withValues(alpha: 0.7)),
-        labelSmall: labelSmall.copyWith(color: color.withValues(alpha: 0.5)),
-      );
+    headlineLarge: headlineLarge.copyWith(color: color),
+    headlineMedium: headlineMedium.copyWith(color: color),
+    headlineSmall: headlineSmall.copyWith(color: color),
+    titleLarge: titleLarge.copyWith(color: color),
+    titleMedium: titleMedium.copyWith(color: color),
+    titleSmall: titleSmall.copyWith(color: color),
+    bodyLarge: bodyLarge.copyWith(color: color),
+    bodyMedium: bodyMedium.copyWith(color: color),
+    bodySmall: bodySmall.copyWith(color: color.withValues(alpha: 0.7)),
+    labelLarge: labelLarge.copyWith(color: color),
+    labelMedium: labelMedium.copyWith(color: color.withValues(alpha: 0.7)),
+    labelSmall: labelSmall.copyWith(color: color.withValues(alpha: 0.5)),
+  );
 }

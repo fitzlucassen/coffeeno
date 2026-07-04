@@ -77,8 +77,9 @@ class MainShell extends ConsumerWidget {
                     context.push(AppRoutes.scan);
                     return;
                   }
-                  final latest = await ref
-                      .read(remainingFreeScansProvider.future);
+                  final latest = await ref.read(
+                    remainingFreeScansProvider.future,
+                  );
                   if (!context.mounted) return;
                   if (latest > 0) {
                     context.push(AppRoutes.scan);

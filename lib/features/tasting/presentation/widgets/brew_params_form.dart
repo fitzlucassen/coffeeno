@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
 import 'package:coffeeno/core/constants/app_constants.dart';
+import 'package:coffeeno/core/utils/enum_labels.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 
 /// A reusable form section for capturing brew parameters.
@@ -59,10 +60,7 @@ class BrewParamsForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.brewMethod,
-          style: theme.textTheme.titleMedium,
-        ),
+        Text(l10n.brewMethod, style: theme.textTheme.titleMedium),
         const SizedBox(height: 16),
 
         // Brew method — keyed on the value so the FormField rebuilds when
@@ -76,10 +74,15 @@ class BrewParamsForm extends StatelessWidget {
             prefixIcon: const Icon(Icons.coffee_maker_rounded),
           ),
           items: BrewMethod.values
-              .map((m) => DropdownMenuItem(value: m, child: Text(m.label)))
+              .map(
+                (m) => DropdownMenuItem(
+                  value: m,
+                  child: Text(m.displayLabel(l10n)),
+                ),
+              )
               .toList(),
           onChanged: onBrewMethodChanged,
-          validator: (v) => v == null ? 'Required' : null,
+          validator: (v) => v == null ? l10n.fieldRequired : null,
         ),
         const SizedBox(height: 16),
 
@@ -92,10 +95,15 @@ class BrewParamsForm extends StatelessWidget {
             prefixIcon: const Icon(Icons.grain_rounded),
           ),
           items: GrindSize.values
-              .map((g) => DropdownMenuItem(value: g, child: Text(g.label)))
+              .map(
+                (g) => DropdownMenuItem(
+                  value: g,
+                  child: Text(g.displayLabel(l10n)),
+                ),
+              )
               .toList(),
           onChanged: onGrindSizeChanged,
-          validator: (v) => v == null ? 'Required' : null,
+          validator: (v) => v == null ? l10n.fieldRequired : null,
         ),
         const SizedBox(height: 16),
 
@@ -107,13 +115,14 @@ class BrewParamsForm extends StatelessWidget {
                 controller: doseController,
                 label: l10n.dose,
                 prefixIcon: Icons.scale_rounded,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 textInputAction: TextInputAction.next,
                 onChanged: (_) => onDoseOrWaterChanged(),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Required';
-                  if (double.tryParse(v) == null) return 'Invalid';
+                  if (v == null || v.isEmpty) return l10n.fieldRequired;
+                  if (double.tryParse(v) == null) return l10n.fieldInvalid;
                   return null;
                 },
               ),
@@ -124,13 +133,14 @@ class BrewParamsForm extends StatelessWidget {
                 controller: waterController,
                 label: l10n.waterAmount,
                 prefixIcon: Icons.water_drop_rounded,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 textInputAction: TextInputAction.next,
                 onChanged: (_) => onDoseOrWaterChanged(),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Required';
-                  if (double.tryParse(v) == null) return 'Invalid';
+                  if (v == null || v.isEmpty) return l10n.fieldRequired;
+                  if (double.tryParse(v) == null) return l10n.fieldInvalid;
                   return null;
                 },
               ),
@@ -164,17 +174,18 @@ class BrewParamsForm extends StatelessWidget {
               child: DropdownButtonFormField<int>(
                 key: ValueKey('brewMinutes-${_clampMinutes(brewTimeMinutes)}'),
                 initialValue: _clampMinutes(brewTimeMinutes),
-                decoration: const InputDecoration(
-                  labelText: 'Min',
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                decoration: InputDecoration(
+                  labelText: l10n.minutesAbbrev,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                 ),
                 items: List.generate(
                   16,
                   (i) => DropdownMenuItem(value: i, child: Text('$i')),
                 ),
-                onChanged: (v) =>
-                    onBrewTimeChanged(v ?? 0, brewTimeSeconds),
+                onChanged: (v) => onBrewTimeChanged(v ?? 0, brewTimeSeconds),
               ),
             ),
             Padding(
@@ -191,10 +202,12 @@ class BrewParamsForm extends StatelessWidget {
               child: DropdownButtonFormField<int>(
                 key: ValueKey('brewSeconds-${_snapToFive(brewTimeSeconds)}'),
                 initialValue: _snapToFive(brewTimeSeconds),
-                decoration: const InputDecoration(
-                  labelText: 'Sec',
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                decoration: InputDecoration(
+                  labelText: l10n.secondsAbbrev,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                 ),
                 items: List.generate(
                   12,
@@ -203,8 +216,7 @@ class BrewParamsForm extends StatelessWidget {
                     child: Text((i * 5).toString().padLeft(2, '0')),
                   ),
                 ),
-                onChanged: (v) =>
-                    onBrewTimeChanged(brewTimeMinutes, v ?? 0),
+                onChanged: (v) => onBrewTimeChanged(brewTimeMinutes, v ?? 0),
               ),
             ),
           ],

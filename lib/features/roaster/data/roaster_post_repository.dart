@@ -4,7 +4,7 @@ import '../domain/roaster_post.dart';
 
 class RoasterPostRepository {
   RoasterPostRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -54,8 +54,7 @@ class RoasterPostRepository {
       );
       final snap = await _collection
           .where('roasterId', whereIn: batch)
-          .where('expiresAt',
-              isGreaterThan: Timestamp.fromDate(cutoff))
+          .where('expiresAt', isGreaterThan: Timestamp.fromDate(cutoff))
           .orderBy('expiresAt', descending: true)
           .limit(limit)
           .get();

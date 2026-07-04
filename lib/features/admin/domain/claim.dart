@@ -8,21 +8,21 @@ enum ClaimEntityType {
   farm;
 
   String get wireName => switch (this) {
-        ClaimEntityType.roaster => 'roaster',
-        ClaimEntityType.farm => 'farm',
-      };
+    ClaimEntityType.roaster => 'roaster',
+    ClaimEntityType.farm => 'farm',
+  };
 
   /// The Firestore collection storing this entity type.
   String get collection => switch (this) {
-        ClaimEntityType.roaster => 'roasters',
-        ClaimEntityType.farm => 'farms',
-      };
+    ClaimEntityType.roaster => 'roasters',
+    ClaimEntityType.farm => 'farms',
+  };
 
   /// The role granted to the claimer when a claim of this type is approved.
   UserRole get grantedRole => switch (this) {
-        ClaimEntityType.roaster => UserRole.roaster,
-        ClaimEntityType.farm => UserRole.farmer,
-      };
+    ClaimEntityType.roaster => UserRole.roaster,
+    ClaimEntityType.farm => UserRole.farmer,
+  };
 
   static ClaimEntityType? fromWire(String? value) {
     for (final t in ClaimEntityType.values) {
@@ -77,7 +77,8 @@ class Claim {
     return Claim(
       id: doc.id,
       userId: data['userId'] as String? ?? '',
-      entityType: ClaimEntityType.fromWire(data['entityType'] as String?) ??
+      entityType:
+          ClaimEntityType.fromWire(data['entityType'] as String?) ??
           ClaimEntityType.roaster,
       entityId: data['entityId'] as String? ?? '',
       entityName: data['entityName'] as String? ?? '',
@@ -85,8 +86,7 @@ class Claim {
       message: data['message'] as String?,
       reviewedBy: data['reviewedBy'] as String?,
       reviewedAt: (data['reviewedAt'] as Timestamp?)?.toDate(),
-      createdAt:
-          (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
@@ -99,8 +99,7 @@ class Claim {
       'status': status.wireName,
       'message': message,
       'reviewedBy': reviewedBy,
-      'reviewedAt':
-          reviewedAt != null ? Timestamp.fromDate(reviewedAt!) : null,
+      'reviewedAt': reviewedAt != null ? Timestamp.fromDate(reviewedAt!) : null,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

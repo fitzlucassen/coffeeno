@@ -57,11 +57,12 @@ class FarmProfileScreen extends ConsumerWidget {
                                     )
                                   : Container(
                                       color: colorScheme.secondaryContainer,
-                                      child: Icon(Icons.agriculture_rounded,
-                                          size: 40,
-                                          color: colorScheme
-                                              .onSecondaryContainer
-                                              .withValues(alpha: 0.5)),
+                                      child: Icon(
+                                        Icons.agriculture_rounded,
+                                        size: 40,
+                                        color: colorScheme.onSecondaryContainer
+                                            .withValues(alpha: 0.5),
+                                      ),
                                     ),
                             ),
                           ),
@@ -73,28 +74,31 @@ class FarmProfileScreen extends ConsumerWidget {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: Text(farm.name,
-                                          style:
-                                              theme.textTheme.headlineSmall),
+                                      child: Text(
+                                        farm.name,
+                                        style: theme.textTheme.headlineSmall,
+                                      ),
                                     ),
                                     if (farm.claimStatus == 'approved')
                                       Chip(
                                         label: Text(l10n.approvedClaim),
-                                        avatar: Icon(Icons.verified,
-                                            size: 16,
-                                            color: colorScheme.primary),
+                                        avatar: Icon(
+                                          Icons.verified,
+                                          size: 16,
+                                          color: colorScheme.primary,
+                                        ),
                                         visualDensity: VisualDensity.compact,
                                       ),
                                   ],
                                 ),
-                                if (farm.country != null ||
-                                    farm.region != null)
+                                if (farm.country != null || farm.region != null)
                                   Text(
                                     [farm.region, farm.country]
                                         .where((s) => s != null && s.isNotEmpty)
                                         .join(', '),
                                     style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: colorScheme.onSurfaceVariant),
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
                               ],
                             ),
@@ -106,15 +110,16 @@ class FarmProfileScreen extends ConsumerWidget {
                       // Description
                       if (farm.description != null) ...[
                         AppCard(
-                          child: Text(farm.description!,
-                              style: theme.textTheme.bodyMedium),
+                          child: Text(
+                            farm.description!,
+                            style: theme.textTheme.bodyMedium,
+                          ),
                         ),
                         const SizedBox(height: 16),
                       ],
 
                       // Farmer + altitude info
-                      if (farm.farmerName != null ||
-                          farm.altitude != null) ...[
+                      if (farm.farmerName != null || farm.altitude != null) ...[
                         AppCard(
                           child: Column(
                             children: [
@@ -141,27 +146,33 @@ class FarmProfileScreen extends ConsumerWidget {
                       // Website
                       if (farm.url != null) ...[
                         GestureDetector(
-                          onTap: () => launchUrl(Uri.parse(farm.url!),
-                              mode: LaunchMode.externalApplication),
+                          onTap: () => launchUrl(
+                            Uri.parse(farm.url!),
+                            mode: LaunchMode.externalApplication,
+                          ),
                           child: AppCard(
                             child: Row(
                               children: [
-                                Icon(Icons.language,
-                                    size: 20, color: colorScheme.primary),
+                                Icon(
+                                  Icons.language,
+                                  size: 20,
+                                  color: colorScheme.primary,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     l10n.visitWebsite,
-                                    style:
-                                        theme.textTheme.bodyMedium?.copyWith(
+                                    style: theme.textTheme.bodyMedium?.copyWith(
                                       color: colorScheme.primary,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
                                 ),
-                                Icon(Icons.open_in_new,
-                                    size: 16,
-                                    color: colorScheme.onSurfaceVariant),
+                                Icon(
+                                  Icons.open_in_new,
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                               ],
                             ),
                           ),
@@ -170,59 +181,69 @@ class FarmProfileScreen extends ConsumerWidget {
                       ],
 
                       // Claim / Edit actions
-                      Builder(builder: (context) {
-                        final currentUser =
-                            ref.watch(currentUserProvider).value;
-                        if (currentUser == null) return const SizedBox.shrink();
+                      Builder(
+                        builder: (context) {
+                          final currentUser = ref
+                              .watch(currentUserProvider)
+                              .value;
+                          if (currentUser == null) {
+                            return const SizedBox.shrink();
+                          }
 
-                        final isOwner =
-                            farm.claimedBy == currentUser.uid;
-                        final isAdmin = currentUser.isAdmin;
+                          final isOwner = farm.claimedBy == currentUser.uid;
+                          final isAdmin = currentUser.isAdmin;
 
-                        if (isOwner || isAdmin) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: OutlinedButton.icon(
-                              onPressed: () =>
-                                  context.push('/farm/$farmId/edit'),
-                              icon: const Icon(Icons.edit, size: 18),
-                              label: Text(l10n.editProfileInfo),
-                            ),
-                          );
-                        }
-
-                        if (farm.claimStatus == 'pending') {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Chip(
-                              label: Text(l10n.pendingClaim),
-                              avatar: Icon(Icons.hourglass_top,
-                                  size: 16,
-                                  color: colorScheme.onSurfaceVariant),
-                            ),
-                          );
-                        }
-
-                        if (farm.claimedBy == null) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: OutlinedButton.icon(
-                              onPressed: () => context.push(
-                                '/claim/farm/$farmId?name=${Uri.encodeComponent(farm.name)}',
+                          if (isOwner || isAdmin) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: OutlinedButton.icon(
+                                onPressed: () =>
+                                    context.push('/farm/$farmId/edit'),
+                                icon: const Icon(Icons.edit, size: 18),
+                                label: Text(l10n.editProfileInfo),
                               ),
-                              icon: const Icon(Icons.verified_outlined,
-                                  size: 18),
-                              label: Text(l10n.claimProfile),
-                            ),
-                          );
-                        }
+                            );
+                          }
 
-                        return const SizedBox.shrink();
-                      }),
+                          if (farm.claimStatus == 'pending') {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Chip(
+                                label: Text(l10n.pendingClaim),
+                                avatar: Icon(
+                                  Icons.hourglass_top,
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            );
+                          }
+
+                          if (farm.claimedBy == null) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: OutlinedButton.icon(
+                                onPressed: () => context.push(
+                                  '/claim/farm/$farmId?name=${Uri.encodeComponent(farm.name)}',
+                                ),
+                                icon: const Icon(
+                                  Icons.verified_outlined,
+                                  size: 18,
+                                ),
+                                label: Text(l10n.claimProfile),
+                              ),
+                            );
+                          }
+
+                          return const SizedBox.shrink();
+                        },
+                      ),
 
                       // Coffees section
-                      Text(l10n.coffeesFromFarm(farm.name),
-                          style: theme.textTheme.titleMedium),
+                      Text(
+                        l10n.coffeesFromFarm(farm.name),
+                        style: theme.textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 12),
                     ],
                   ),
@@ -235,45 +256,47 @@ class FarmProfileScreen extends ConsumerWidget {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SliverToBoxAdapter(
-                        child: Center(child: CircularProgressIndicator()));
+                      child: Center(child: CircularProgressIndicator()),
+                    );
                   }
                   final coffees = snapshot.data ?? [];
                   if (coffees.isEmpty) {
                     return SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Text(l10n.noCoffeesFromOrigin,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant)),
+                        child: Text(
+                          l10n.noCoffeesFromOrigin,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ),
                     );
                   }
                   return SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final coffee = coffees[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 4),
-                          child: Card(
-                            child: ListTile(
-                              onTap: () =>
-                                  context.push('/coffee/${coffee.id}'),
-                              leading: CircleAvatar(
-                                backgroundColor:
-                                    colorScheme.primaryContainer,
-                                child: Icon(Icons.coffee_rounded,
-                                    color:
-                                        colorScheme.onPrimaryContainer),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final coffee = coffees[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 4,
+                        ),
+                        child: Card(
+                          child: ListTile(
+                            onTap: () => context.push('/coffee/${coffee.id}'),
+                            leading: CircleAvatar(
+                              backgroundColor: colorScheme.primaryContainer,
+                              child: Icon(
+                                Icons.coffee_rounded,
+                                color: colorScheme.onPrimaryContainer,
                               ),
-                              title: Text(coffee.name),
-                              subtitle: Text(coffee.roaster),
                             ),
+                            title: Text(coffee.name),
+                            subtitle: Text(coffee.roaster),
                           ),
-                        );
-                      },
-                      childCount: coffees.length,
-                    ),
+                        ),
+                      );
+                    }, childCount: coffees.length),
                   );
                 },
               ),
@@ -311,11 +334,14 @@ class _InfoRow extends StatelessWidget {
           Text(label, style: theme.textTheme.bodySmall),
           const SizedBox(width: 8),
           Flexible(
-            child: Text(value,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w500),
-                textAlign: TextAlign.end,
-                overflow: TextOverflow.ellipsis),
+            child: Text(
+              value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),

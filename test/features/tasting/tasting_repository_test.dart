@@ -8,29 +8,28 @@ Tasting _tasting({
   String coffeeId = 'c',
   double overallRating = 4.0,
   DateTime? tastingDate,
-}) =>
-    Tasting(
-      id: '',
-      userId: userId,
-      coffeeId: coffeeId,
-      coffeeName: 'name',
-      roasterName: 'r',
-      brewMethod: 'V60',
-      grindSize: 'medium',
-      doseGrams: 15,
-      waterMl: 250,
-      ratio: '1:16.7',
-      brewTimeSec: 180,
-      aroma: 4,
-      flavor: 4,
-      acidity: 3,
-      body: 4,
-      sweetness: 4,
-      aftertaste: 3,
-      overallRating: overallRating,
-      tastingDate: tastingDate ?? DateTime(2026, 4, 1),
-      createdAt: tastingDate ?? DateTime(2026, 4, 1),
-    );
+}) => Tasting(
+  id: '',
+  userId: userId,
+  coffeeId: coffeeId,
+  coffeeName: 'name',
+  roasterName: 'r',
+  brewMethod: 'V60',
+  grindSize: 'medium',
+  doseGrams: 15,
+  waterMl: 250,
+  ratio: '1:16.7',
+  brewTimeSec: 180,
+  aroma: 4,
+  flavor: 4,
+  acidity: 3,
+  body: 4,
+  sweetness: 4,
+  aftertaste: 3,
+  overallRating: overallRating,
+  tastingDate: tastingDate ?? DateTime(2026, 4, 1),
+  createdAt: tastingDate ?? DateTime(2026, 4, 1),
+);
 
 void main() {
   late FakeFirebaseFirestore firestore;
@@ -55,28 +54,28 @@ void main() {
     expect(coffee.data()!['avgRating'], closeTo(4.5, 0.0001));
   });
 
-  test('deleteTasting decrements rating count and recomputes average',
-      () async {
-    await firestore.collection('coffees').doc('c').set({
-      'avgRating': 4.5,
-      'ratingsCount': 2,
-    });
-    final tastingId =
-        await repo.addTasting(_tasting(overallRating: 4.5));
-    // After add: ratingsCount=3, avgRating = (4.5*2 + 4.5)/3 = 4.5
-    await repo.deleteTasting(tastingId);
+  test(
+    'deleteTasting decrements rating count and recomputes average',
+    () async {
+      await firestore.collection('coffees').doc('c').set({
+        'avgRating': 4.5,
+        'ratingsCount': 2,
+      });
+      final tastingId = await repo.addTasting(_tasting(overallRating: 4.5));
+      // After add: ratingsCount=3, avgRating = (4.5*2 + 4.5)/3 = 4.5
+      await repo.deleteTasting(tastingId);
 
-    final coffee = await firestore.collection('coffees').doc('c').get();
-    expect(coffee.data()!['ratingsCount'], 2);
-    expect(coffee.data()!['avgRating'], closeTo(4.5, 0.0001));
-  });
+      final coffee = await firestore.collection('coffees').doc('c').get();
+      expect(coffee.data()!['ratingsCount'], 2);
+      expect(coffee.data()!['avgRating'], closeTo(4.5, 0.0001));
+    },
+  );
 
   test('deleteTasting is safe when the tasting does not exist', () async {
     await expectLater(repo.deleteTasting('missing'), completes);
   });
 
-  test('countForUserInMonth counts only the current calendar month',
-      () async {
+  test('countForUserInMonth counts only the current calendar month', () async {
     await firestore.collection('coffees').doc('c').set({
       'avgRating': 0.0,
       'ratingsCount': 0,
@@ -88,8 +87,10 @@ void main() {
 
     expect(await repo.countForUserInMonth('u', now: DateTime(2026, 3, 31)), 2);
     expect(await repo.countForUserInMonth('u', now: DateTime(2026, 2, 15)), 1);
-    expect(await repo.countForUserInMonth('ghost', now: DateTime(2026, 3, 1)),
-        0);
+    expect(
+      await repo.countForUserInMonth('ghost', now: DateTime(2026, 3, 1)),
+      0,
+    );
   });
 
   test('getTastingsForCoffee streams tastings for a single coffee', () async {

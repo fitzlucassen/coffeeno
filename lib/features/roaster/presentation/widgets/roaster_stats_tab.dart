@@ -35,15 +35,15 @@ class _RoasterStatsTabState extends ConsumerState<RoasterStatsTab> {
       final file = File('${dir.path}/coffeeno-${widget.roasterId}.csv');
       await file.writeAsString(csv);
 
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'text/csv')],
-        subject: l10n.exportCsvShareText,
-      );
+      await Share.shareXFiles([
+        XFile(file.path, mimeType: 'text/csv'),
+      ], subject: l10n.exportCsvShareText);
     } catch (e) {
+      debugPrint('[COFFEENO] CSV export failed: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.error)));
       }
     } finally {
       if (mounted) setState(() => _isExporting = false);
@@ -87,11 +87,17 @@ class _RoasterStatsTabState extends ConsumerState<RoasterStatsTab> {
           SegmentedButton<StatsPeriod>(
             segments: [
               ButtonSegment(
-                  value: StatsPeriod.last30Days, label: Text(l10n.period30d)),
+                value: StatsPeriod.last30Days,
+                label: Text(l10n.period30d),
+              ),
               ButtonSegment(
-                  value: StatsPeriod.last3Months, label: Text(l10n.period3m)),
+                value: StatsPeriod.last3Months,
+                label: Text(l10n.period3m),
+              ),
               ButtonSegment(
-                  value: StatsPeriod.last12Months, label: Text(l10n.period12m)),
+                value: StatsPeriod.last12Months,
+                label: Text(l10n.period12m),
+              ),
             ],
             selected: {_period},
             onSelectionChanged: (s) => setState(() => _period = s.first),
@@ -152,45 +158,49 @@ class _StatsGrid extends StatelessWidget {
         Row(
           children: [
             Expanded(
-                child: _StatCard(
-              icon: Icons.coffee_rounded,
-              label: l10n.totalCoffees,
-              value: stats.totalCoffees.toString(),
-              color: colorScheme.primary,
-            )),
+              child: _StatCard(
+                icon: Icons.coffee_rounded,
+                label: l10n.totalCoffees,
+                value: stats.totalCoffees.toString(),
+                color: colorScheme.primary,
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
-                child: _StatCard(
-              icon: Icons.rate_review_rounded,
-              label: l10n.totalTastings,
-              value: stats.totalTastings.toString(),
-              color: colorScheme.tertiary,
-            )),
+              child: _StatCard(
+                icon: Icons.rate_review_rounded,
+                label: l10n.totalTastings,
+                value: stats.totalTastings.toString(),
+                color: colorScheme.tertiary,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
-                child: _StatCard(
-              icon: Icons.star_rounded,
-              label: l10n.avgScore,
-              value: stats.ratingsCount > 0
-                  ? stats.avgRating.toStringAsFixed(1)
-                  : '-',
-              color: colorScheme.secondary,
-              subtitle: stats.ratingsCount > 0
-                  ? l10n.ratingsCount(stats.ratingsCount)
-                  : null,
-            )),
+              child: _StatCard(
+                icon: Icons.star_rounded,
+                label: l10n.avgScore,
+                value: stats.ratingsCount > 0
+                    ? stats.avgRating.toStringAsFixed(1)
+                    : '-',
+                color: colorScheme.secondary,
+                subtitle: stats.ratingsCount > 0
+                    ? l10n.ratingsCount(stats.ratingsCount)
+                    : null,
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
-                child: _StatCard(
-              icon: Icons.trending_up_rounded,
-              label: l10n.recentTastings30d,
-              value: stats.recentTastings.toString(),
-              color: colorScheme.error,
-            )),
+              child: _StatCard(
+                icon: Icons.trending_up_rounded,
+                label: l10n.recentTastings30d,
+                value: stats.recentTastings.toString(),
+                color: colorScheme.error,
+              ),
+            ),
           ],
         ),
       ],
@@ -222,20 +232,28 @@ class _StatCard extends StatelessWidget {
         children: [
           Icon(icon, size: 24, color: color),
           const SizedBox(height: 12),
-          Text(value,
-              style: theme.textTheme.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            value,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(label,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
           if (subtitle != null) ...[
             const SizedBox(height: 2),
-            Text(subtitle!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 11,
-                )),
+            Text(
+              subtitle!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 11,
+              ),
+            ),
           ],
         ],
       ),
@@ -260,47 +278,63 @@ class _TopCoffees extends StatelessWidget {
       children: [
         Text(l10n.topCoffeesByRating, style: theme.textTheme.titleMedium),
         const SizedBox(height: 12),
-        ...stats.topCoffees.map((coffee) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: AppCard(
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: colorScheme.primaryContainer,
-                      child: Icon(Icons.coffee_rounded,
-                          size: 20,
-                          color: colorScheme.onPrimaryContainer),
+        ...stats.topCoffees.map(
+          (coffee) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: AppCard(
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: colorScheme.primaryContainer,
+                    child: Icon(
+                      Icons.coffee_rounded,
+                      size: 20,
+                      color: colorScheme.onPrimaryContainer,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(coffee.name,
-                              style: theme.textTheme.bodyLarge
-                                  ?.copyWith(fontWeight: FontWeight.w600)),
-                          Text(l10n.tastingsCount(coffee.tastingsCount),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant)),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.star_rounded,
-                            size: 18, color: colorScheme.secondary),
-                        const SizedBox(width: 4),
-                        Text(coffee.avgRating.toStringAsFixed(1),
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w600)),
+                        Text(
+                          coffee.name,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          l10n.tastingsCount(coffee.tastingsCount),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.star_rounded,
+                        size: 18,
+                        color: colorScheme.secondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        coffee.avgRating.toStringAsFixed(1),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            )),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -379,9 +413,9 @@ class _LegendRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        );
+    final textStyle = Theme.of(
+      context,
+    ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant);
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Row(

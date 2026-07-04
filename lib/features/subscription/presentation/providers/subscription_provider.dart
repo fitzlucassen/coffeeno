@@ -1,7 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/subscription_repository.dart';
 import '../../domain/subscription_status.dart';
 
@@ -11,10 +11,14 @@ final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
 
 /// Unified subscription stream — single source of truth. Emits a
 /// [SubscriptionStatus] combining Pro and Roaster Pro entitlements.
-final subscriptionStatusProvider =
-    StreamProvider<SubscriptionStatus>((ref) async* {
+///
+/// Keyed on [authStateProvider] so it re-runs on login/logout rather than
+/// reading a one-shot `FirebaseAuth.instance.currentUser`.
+final subscriptionStatusProvider = StreamProvider<SubscriptionStatus>((
+  ref,
+) async* {
   final repo = ref.watch(subscriptionRepositoryProvider);
-  final uid = FirebaseAuth.instance.currentUser?.uid;
+  final uid = ref.watch(authStateProvider).value?.uid;
 
   if (uid == null) {
     yield const SubscriptionStatus();

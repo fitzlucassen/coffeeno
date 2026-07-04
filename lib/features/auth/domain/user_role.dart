@@ -12,11 +12,11 @@ enum UserRole {
   /// Firestore-serialized form. Keep values stable — changing them requires a
   /// data migration.
   String get wireName => switch (this) {
-        UserRole.user => 'user',
-        UserRole.roaster => 'roaster',
-        UserRole.farmer => 'farmer',
-        UserRole.admin => 'admin',
-      };
+    UserRole.user => 'user',
+    UserRole.roaster => 'roaster',
+    UserRole.farmer => 'farmer',
+    UserRole.admin => 'admin',
+  };
 
   static UserRole? fromWire(String? value) {
     if (value == null) return null;
@@ -32,10 +32,7 @@ enum UserRole {
 ///
 /// Unknown values are ignored. If nothing parses, falls back to
 /// `{UserRole.user}` so downstream code never has to handle an empty set.
-Set<UserRole> parseRoles({
-  Object? rolesField,
-  Object? legacyRoleField,
-}) {
+Set<UserRole> parseRoles({Object? rolesField, Object? legacyRoleField}) {
   final result = <UserRole>{};
   if (rolesField is List) {
     for (final entry in rolesField) {

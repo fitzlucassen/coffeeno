@@ -34,25 +34,21 @@ class ScanState {
     this.status = ScanStatus.idle,
     this.result,
     this.errorMessage,
-    this.imagePath,
   });
 
   final ScanStatus status;
   final ScanResult? result;
   final String? errorMessage;
-  final String? imagePath;
 
   ScanState copyWith({
     ScanStatus? status,
     ScanResult? result,
     String? errorMessage,
-    String? imagePath,
   }) {
     return ScanState(
       status: status ?? this.status,
       result: result ?? this.result,
       errorMessage: errorMessage ?? this.errorMessage,
-      imagePath: imagePath ?? this.imagePath,
     );
   }
 }
@@ -63,7 +59,7 @@ class ScanStateNotifier extends Notifier<ScanState> {
 
   Future<void> processImage(String imagePath) async {
     try {
-      state = ScanState(status: ScanStatus.processingOcr, imagePath: imagePath);
+      state = const ScanState(status: ScanStatus.processingOcr);
 
       final repository = ref.read(scannerRepositoryProvider);
       final ocrText = await repository.processImage(imagePath);
@@ -71,7 +67,8 @@ class ScanStateNotifier extends Notifier<ScanState> {
       if (ocrText.trim().isEmpty) {
         state = const ScanState(
           status: ScanStatus.error,
-          errorMessage: 'No text found in the image. Try again with a clearer photo.',
+          errorMessage:
+              'No text found in the image. Try again with a clearer photo.',
         );
         return;
       }
@@ -87,17 +84,9 @@ class ScanStateNotifier extends Notifier<ScanState> {
         imageBytes: imageBytes,
       );
 
-      state = ScanState(
-        status: ScanStatus.done,
-        result: result,
-        imagePath: imagePath,
-      );
+      state = ScanState(status: ScanStatus.done, result: result);
     } catch (e) {
-      state = ScanState(
-        status: ScanStatus.error,
-        errorMessage: e.toString(),
-        imagePath: imagePath,
-      );
+      state = ScanState(status: ScanStatus.error, errorMessage: e.toString());
     }
   }
 
@@ -106,5 +95,6 @@ class ScanStateNotifier extends Notifier<ScanState> {
   }
 }
 
-final scanStateProvider =
-    NotifierProvider<ScanStateNotifier, ScanState>(ScanStateNotifier.new);
+final scanStateProvider = NotifierProvider<ScanStateNotifier, ScanState>(
+  ScanStateNotifier.new,
+);

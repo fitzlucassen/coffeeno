@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Follow {
-  const Follow({
-    required this.userId,
-    required this.followedAt,
-  });
+  const Follow({required this.userId, required this.followedAt});
 
   final String userId;
   final DateTime followedAt;
@@ -18,8 +15,6 @@ class Follow {
   }
 
   Map<String, dynamic> toFirestore() {
-    return {
-      'followedAt': Timestamp.fromDate(followedAt),
-    };
+    return {'followedAt': Timestamp.fromDate(followedAt)};
   }
 }

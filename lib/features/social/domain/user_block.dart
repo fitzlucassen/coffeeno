@@ -11,10 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 ///
 /// Writing both docs atomically is the caller's responsibility.
 class UserBlock {
-  const UserBlock({
-    required this.uid,
-    required this.createdAt,
-  });
+  const UserBlock({required this.uid, required this.createdAt});
 
   /// The other party's UID (interpretation depends on which subcollection
   /// it was read from).
@@ -30,6 +27,6 @@ class UserBlock {
   }
 
   Map<String, dynamic> toFirestore() => {
-        'createdAt': Timestamp.fromDate(createdAt),
-      };
+    'createdAt': Timestamp.fromDate(createdAt),
+  };
 }

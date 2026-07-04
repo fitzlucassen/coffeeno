@@ -1669,6 +1669,432 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You haven\'t blocked anyone.'**
   String get noBlockedUsers;
+
+  /// Validation: empty email
+  ///
+  /// In en, this message translates to:
+  /// **'Email is required'**
+  String get validationEmailRequired;
+
+  /// Validation: malformed email
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email'**
+  String get validationEmailInvalid;
+
+  /// Validation: empty password
+  ///
+  /// In en, this message translates to:
+  /// **'Password is required'**
+  String get validationPasswordRequired;
+
+  /// Validation: short password
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get validationPasswordTooShort;
+
+  /// Validation: a required field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required'**
+  String validationFieldRequired(String field);
+
+  /// Validation: empty username
+  ///
+  /// In en, this message translates to:
+  /// **'Username is required'**
+  String get validationUsernameRequired;
+
+  /// Validation: short username
+  ///
+  /// In en, this message translates to:
+  /// **'Username must be at least 3 characters'**
+  String get validationUsernameTooShort;
+
+  /// Validation: invalid username chars
+  ///
+  /// In en, this message translates to:
+  /// **'Only letters, numbers, and underscores'**
+  String get validationUsernameInvalid;
+
+  /// Auth error: bad credentials
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password.'**
+  String get authErrorInvalidCredentials;
+
+  /// Auth error: disabled account
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been disabled.'**
+  String get authErrorUserDisabled;
+
+  /// Auth error: rate limited
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please try again later.'**
+  String get authErrorTooManyRequests;
+
+  /// Auth error: email already registered
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists for that email.'**
+  String get authErrorEmailInUse;
+
+  /// Auth error: weak password
+  ///
+  /// In en, this message translates to:
+  /// **'That password is too weak.'**
+  String get authErrorWeakPassword;
+
+  /// Auth error: fallback
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred. Please try again.'**
+  String get authErrorGeneric;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'V60'**
+  String get brewMethodV60;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'Espresso'**
+  String get brewMethodEspresso;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'AeroPress'**
+  String get brewMethodAeropress;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'French Press'**
+  String get brewMethodFrenchPress;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'Chemex'**
+  String get brewMethodChemex;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'Moka Pot'**
+  String get brewMethodMokaPot;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'Cold Brew'**
+  String get brewMethodColdBrew;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'Siphon'**
+  String get brewMethodSiphon;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'Turkish Coffee'**
+  String get brewMethodTurkish;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'Pour Over (Other)'**
+  String get brewMethodPourOver;
+
+  /// Brew method label
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get brewMethodOther;
+
+  /// Grind size label
+  ///
+  /// In en, this message translates to:
+  /// **'Extra Fine'**
+  String get grindExtraFine;
+
+  /// Grind size label
+  ///
+  /// In en, this message translates to:
+  /// **'Fine'**
+  String get grindFine;
+
+  /// Grind size label
+  ///
+  /// In en, this message translates to:
+  /// **'Medium-Fine'**
+  String get grindMediumFine;
+
+  /// Grind size label
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get grindMedium;
+
+  /// Grind size label
+  ///
+  /// In en, this message translates to:
+  /// **'Medium-Coarse'**
+  String get grindMediumCoarse;
+
+  /// Grind size label
+  ///
+  /// In en, this message translates to:
+  /// **'Coarse'**
+  String get grindCoarse;
+
+  /// Grind size label
+  ///
+  /// In en, this message translates to:
+  /// **'Extra Coarse'**
+  String get grindExtraCoarse;
+
+  /// Processing method label
+  ///
+  /// In en, this message translates to:
+  /// **'Washed'**
+  String get processWashed;
+
+  /// Processing method label
+  ///
+  /// In en, this message translates to:
+  /// **'Natural'**
+  String get processNatural;
+
+  /// Processing method label
+  ///
+  /// In en, this message translates to:
+  /// **'Honey'**
+  String get processHoney;
+
+  /// Processing method label
+  ///
+  /// In en, this message translates to:
+  /// **'Anaerobic'**
+  String get processAnaerobic;
+
+  /// Processing method label
+  ///
+  /// In en, this message translates to:
+  /// **'Wet Hulled'**
+  String get processWetHulled;
+
+  /// Processing method label
+  ///
+  /// In en, this message translates to:
+  /// **'Experimental'**
+  String get processExperimental;
+
+  /// Processing method label
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get processOther;
+
+  /// Roast level label
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get roastLight;
+
+  /// Roast level label
+  ///
+  /// In en, this message translates to:
+  /// **'Medium-Light'**
+  String get roastMediumLight;
+
+  /// Roast level label
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get roastMedium;
+
+  /// Roast level label
+  ///
+  /// In en, this message translates to:
+  /// **'Medium-Dark'**
+  String get roastMediumDark;
+
+  /// Roast level label
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get roastDark;
+
+  /// Flavor family label
+  ///
+  /// In en, this message translates to:
+  /// **'Fruity'**
+  String get flavorFruity;
+
+  /// Flavor family label
+  ///
+  /// In en, this message translates to:
+  /// **'Sour/Fermented'**
+  String get flavorSourFermented;
+
+  /// Flavor family label
+  ///
+  /// In en, this message translates to:
+  /// **'Green/Vegetative'**
+  String get flavorGreenVegetative;
+
+  /// Flavor family label
+  ///
+  /// In en, this message translates to:
+  /// **'Roasted'**
+  String get flavorRoasted;
+
+  /// Flavor family label
+  ///
+  /// In en, this message translates to:
+  /// **'Spices'**
+  String get flavorSpices;
+
+  /// Flavor family label
+  ///
+  /// In en, this message translates to:
+  /// **'Nutty/Cocoa'**
+  String get flavorNuttyCocoa;
+
+  /// Flavor family label
+  ///
+  /// In en, this message translates to:
+  /// **'Sweet'**
+  String get flavorSweet;
+
+  /// Flavor family label
+  ///
+  /// In en, this message translates to:
+  /// **'Floral'**
+  String get flavorFloral;
+
+  /// Flavor family label
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get flavorOther;
+
+  /// Generic empty state message
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get emptyStateGeneric;
+
+  /// Custom flavor note input hint
+  ///
+  /// In en, this message translates to:
+  /// **'Add your own'**
+  String get customFlavorHint;
+
+  /// Fallback coffee name when missing
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Coffee'**
+  String get unknownCoffee;
+
+  /// Remove photo action
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get removePhoto;
+
+  /// Change photo action
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get changePhoto;
+
+  /// Add photo action
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get addPhoto;
+
+  /// Short required-field validation message
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get fieldRequired;
+
+  /// Short invalid-value validation message
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid'**
+  String get fieldInvalid;
+
+  /// Abbreviated minutes label on brew time picker
+  ///
+  /// In en, this message translates to:
+  /// **'Min'**
+  String get minutesAbbrev;
+
+  /// Abbreviated seconds label on brew time picker
+  ///
+  /// In en, this message translates to:
+  /// **'Sec'**
+  String get secondsAbbrev;
+
+  /// Sort option: newest first
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get sortNewest;
+
+  /// Sort option: alphabetical
+  ///
+  /// In en, this message translates to:
+  /// **'A-Z'**
+  String get sortAlphabetical;
+
+  /// Description field label
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// Website URL field label
+  ///
+  /// In en, this message translates to:
+  /// **'Website URL'**
+  String get websiteUrl;
+
+  /// City field label
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// Freshness reminder notification title
+  ///
+  /// In en, this message translates to:
+  /// **'Time to brew!'**
+  String get freshnessNotificationTitle;
+
+  /// Freshness reminder body when the roaster is known
+  ///
+  /// In en, this message translates to:
+  /// **'Your {coffee} from {roaster} is leaving peak freshness — brew it soon!'**
+  String freshnessNotificationBody(String coffee, String roaster);
+
+  /// Freshness reminder body when the roaster is unknown
+  ///
+  /// In en, this message translates to:
+  /// **'Your {coffee} is leaving peak freshness — brew it soon!'**
+  String freshnessNotificationBodyNoRoaster(String coffee);
 }
 
 class _AppLocalizationsDelegate

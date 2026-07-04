@@ -45,10 +45,8 @@ class Roaster {
       claimedBy: data['claimedBy'] as String?,
       claimStatus: data['claimStatus'] as String?,
       source: data['source'] as String? ?? 'ai',
-      createdAt:
-          (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      updatedAt:
-          (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 

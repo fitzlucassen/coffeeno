@@ -1,13 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'package:coffeeno/core/widgets/app_card.dart';
-import 'package:coffeeno/features/coffee/domain/coffee.dart';
-import 'package:coffeeno/features/coffee/presentation/providers/coffee_provider.dart';
+import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
+import 'package:coffeeno/features/stats/domain/tasting_stats.dart';
 import 'package:coffeeno/features/stats/presentation/providers/stats_provider.dart';
-import 'package:coffeeno/features/tasting/domain/tasting.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
 /// Stats & Insights screen showing the user's coffee tasting statistics.
@@ -21,7 +19,7 @@ class StatsScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final userId = FirebaseAuth.instance.currentUser?.uid;
+    final userId = ref.watch(authStateProvider).value?.uid;
 
     if (userId == null) {
       return Scaffold(
@@ -37,30 +35,18 @@ class StatsScreen extends ConsumerWidget {
       );
     }
 
-    final coffeesAsync = ref.watch(userCoffeesProvider(userId));
-    final tastingsAsync = ref.watch(userAllTastingsProvider(userId));
+    final statsAsync = ref.watch(statsProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.insights)),
-      body: coffeesAsync.when(
+      body: statsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => _ErrorView(
           colorScheme: colorScheme,
           textTheme: textTheme,
           message: l10n.error,
         ),
-        data: (coffees) => tastingsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _ErrorView(
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-            message: l10n.error,
-          ),
-          data: (tastings) => _StatsBody(
-            coffees: coffees,
-            tastings: tastings,
-          ),
-        ),
+        data: (stats) => _StatsBody(stats: stats),
       ),
     );
   }
@@ -85,16 +71,9 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: colorScheme.error,
-            ),
+            Icon(Icons.error_outline, size: 48, color: colorScheme.error),
             const SizedBox(height: 12),
-            Text(
-              message,
-              style: textTheme.titleMedium,
-            ),
+            Text(message, style: textTheme.titleMedium),
           ],
         ),
       ),
@@ -103,13 +82,9 @@ class _ErrorView extends StatelessWidget {
 }
 
 class _StatsBody extends StatelessWidget {
-  const _StatsBody({
-    required this.coffees,
-    required this.tastings,
-  });
+  const _StatsBody({required this.stats});
 
-  final List<Coffee> coffees;
-  final List<Tasting> tastings;
+  final TastingStats stats;
 
   @override
   Widget build(BuildContext context) {
@@ -123,9 +98,9 @@ class _StatsBody extends StatelessWidget {
       children: [
         // --- Summary cards row ---
         _SummaryRow(
-          coffeeCount: coffees.length,
-          tastingCount: tastings.length,
-          avgScore: _computeAvgScore(tastings),
+          coffeeCount: stats.totalCoffees,
+          tastingCount: stats.totalTastings,
+          avgScore: stats.avgScore,
         ),
         const SizedBox(height: 20),
 
@@ -134,11 +109,7 @@ class _StatsBody extends StatelessWidget {
         const SizedBox(height: 8),
         AppCard(
           child: _HorizontalBarList(
-            entries: _topEntries(
-              coffees
-                  .where((c) => c.originCountry.isNotEmpty)
-                  .map((c) => c.originCountry),
-            ),
+            entries: stats.topOrigins,
             barColor: colorScheme.primary,
             textTheme: textTheme,
           ),
@@ -150,13 +121,7 @@ class _StatsBody extends StatelessWidget {
         const SizedBox(height: 8),
         AppCard(
           child: _HorizontalBarList(
-            entries: _topEntries(
-              coffees
-                  .where((c) =>
-                      c.processingMethod != null &&
-                      c.processingMethod!.isNotEmpty)
-                  .map((c) => c.processingMethod!),
-            ),
+            entries: stats.topProcessing,
             barColor: colorScheme.primary,
             textTheme: textTheme,
           ),
@@ -168,7 +133,7 @@ class _StatsBody extends StatelessWidget {
         const SizedBox(height: 8),
         AppCard(
           child: _FlavorProfileSection(
-            tastings: tastings,
+            profile: stats.flavorProfile,
             colorScheme: colorScheme,
             textTheme: textTheme,
           ),
@@ -180,7 +145,7 @@ class _StatsBody extends StatelessWidget {
         const SizedBox(height: 8),
         AppCard(
           child: _TastingTimelineSection(
-            tastings: tastings.take(10).toList(),
+            entries: stats.timeline,
             colorScheme: colorScheme,
             textTheme: textTheme,
           ),
@@ -188,24 +153,6 @@ class _StatsBody extends StatelessWidget {
         const SizedBox(height: 24),
       ],
     );
-  }
-
-  double _computeAvgScore(List<Tasting> tastings) {
-    if (tastings.isEmpty) return 0;
-    final sum =
-        tastings.fold<double>(0, (prev, t) => prev + t.overallRating);
-    return sum / tastings.length;
-  }
-
-  /// Returns the top 5 entries by frequency from the given values.
-  List<MapEntry<String, int>> _topEntries(Iterable<String> values) {
-    final counts = <String, int>{};
-    for (final v in values) {
-      counts[v] = (counts[v] ?? 0) + 1;
-    }
-    final sorted = counts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    return sorted.take(5).toList();
   }
 }
 
@@ -325,9 +272,9 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
     );
   }
 }
@@ -343,7 +290,7 @@ class _HorizontalBarList extends StatelessWidget {
     required this.textTheme,
   });
 
-  final List<MapEntry<String, int>> entries;
+  final List<StatCount> entries;
   final Color barColor;
   final TextTheme textTheme;
 
@@ -361,11 +308,11 @@ class _HorizontalBarList extends StatelessWidget {
       );
     }
 
-    final maxCount = entries.first.value;
+    final maxCount = entries.first.count;
 
     return Column(
       children: entries.map((entry) {
-        final fraction = maxCount > 0 ? entry.value / maxCount : 0.0;
+        final fraction = maxCount > 0 ? entry.count / maxCount : 0.0;
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
@@ -373,7 +320,7 @@ class _HorizontalBarList extends StatelessWidget {
               SizedBox(
                 width: 100,
                 child: Text(
-                  entry.key,
+                  entry.label,
                   style: textTheme.bodySmall,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -398,7 +345,7 @@ class _HorizontalBarList extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                entry.value.toString(),
+                entry.count.toString(),
                 style: textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -417,12 +364,12 @@ class _HorizontalBarList extends StatelessWidget {
 
 class _FlavorProfileSection extends StatelessWidget {
   const _FlavorProfileSection({
-    required this.tastings,
+    required this.profile,
     required this.colorScheme,
     required this.textTheme,
   });
 
-  final List<Tasting> tastings;
+  final FlavorProfile? profile;
   final ColorScheme colorScheme;
   final TextTheme textTheme;
 
@@ -430,7 +377,8 @@ class _FlavorProfileSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    if (tastings.isEmpty) {
+    final profile = this.profile;
+    if (profile == null) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Text(
@@ -442,27 +390,13 @@ class _FlavorProfileSection extends StatelessWidget {
       );
     }
 
-    final count = tastings.length;
-    final avgAroma =
-        tastings.fold<int>(0, (s, t) => s + t.aroma) / count;
-    final avgFlavor =
-        tastings.fold<int>(0, (s, t) => s + t.flavor) / count;
-    final avgAcidity =
-        tastings.fold<int>(0, (s, t) => s + t.acidity) / count;
-    final avgBody =
-        tastings.fold<int>(0, (s, t) => s + t.body) / count;
-    final avgSweetness =
-        tastings.fold<int>(0, (s, t) => s + t.sweetness) / count;
-    final avgAftertaste =
-        tastings.fold<int>(0, (s, t) => s + t.aftertaste) / count;
-
     final dimensions = <String, double>{
-      l10n.aroma: avgAroma,
-      l10n.flavor: avgFlavor,
-      l10n.acidity: avgAcidity,
-      l10n.body: avgBody,
-      l10n.sweetness: avgSweetness,
-      l10n.aftertaste: avgAftertaste,
+      l10n.aroma: profile.aroma,
+      l10n.flavor: profile.flavor,
+      l10n.acidity: profile.acidity,
+      l10n.body: profile.body,
+      l10n.sweetness: profile.sweetness,
+      l10n.aftertaste: profile.aftertaste,
     };
 
     return Column(
@@ -473,17 +407,13 @@ class _FlavorProfileSection extends StatelessWidget {
             children: [
               SizedBox(
                 width: 90,
-                child: Text(
-                  entry.key,
-                  style: textTheme.bodySmall,
-                ),
+                child: Text(entry.key, style: textTheme.bodySmall),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: LinearProgressIndicator(
                   value: entry.value / 5,
-                  backgroundColor:
-                      colorScheme.surfaceContainerHighest,
+                  backgroundColor: colorScheme.surfaceContainerHighest,
                   color: colorScheme.primary,
                   minHeight: 8,
                   borderRadius: BorderRadius.circular(4),
@@ -514,18 +444,18 @@ class _FlavorProfileSection extends StatelessWidget {
 
 class _TastingTimelineSection extends StatelessWidget {
   const _TastingTimelineSection({
-    required this.tastings,
+    required this.entries,
     required this.colorScheme,
     required this.textTheme,
   });
 
-  final List<Tasting> tastings;
+  final List<TimelineEntry> entries;
   final ColorScheme colorScheme;
   final TextTheme textTheme;
 
   @override
   Widget build(BuildContext context) {
-    if (tastings.isEmpty) {
+    if (entries.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Text(
@@ -540,23 +470,19 @@ class _TastingTimelineSection extends StatelessWidget {
     final dateFormat = DateFormat.yMMMd();
 
     return Column(
-      children: tastings.map((tasting) {
+      children: entries.map((entry) {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
             children: [
-              Icon(
-                Icons.circle,
-                size: 8,
-                color: colorScheme.primary,
-              ),
+              Icon(Icons.circle, size: 8, color: colorScheme.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      tasting.coffeeName,
+                      entry.coffeeName,
                       style: textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
@@ -564,7 +490,7 @@ class _TastingTimelineSection extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      dateFormat.format(tasting.tastingDate),
+                      dateFormat.format(entry.tastingDate),
                       style: textTheme.labelSmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -574,14 +500,16 @@ class _TastingTimelineSection extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  tasting.overallRating.toStringAsFixed(1),
+                  entry.overallRating.toStringAsFixed(1),
                   style: textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: colorScheme.onPrimaryContainer,

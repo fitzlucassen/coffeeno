@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -17,6 +18,7 @@ import '../widgets/tasting_share_card.dart';
 /// shared using [SharePlus].
 Future<void> shareTasting(BuildContext context, Tasting tasting) async {
   final cardKey = GlobalKey();
+  final l10n = AppLocalizations.of(context);
 
   // Insert an off-screen overlay so the widget can be laid out and painted
   // without being visible to the user.
@@ -27,7 +29,7 @@ Future<void> shareTasting(BuildContext context, Tasting tasting) async {
       top: -700,
       child: RepaintBoundary(
         key: cardKey,
-        child: TastingShareCard(tasting: tasting),
+        child: TastingShareCard(tasting: tasting, l10n: l10n),
       ),
     ),
   );
@@ -37,8 +39,8 @@ Future<void> shareTasting(BuildContext context, Tasting tasting) async {
     // Wait for the overlay entry to be laid out and painted.
     await Future<void>.delayed(const Duration(milliseconds: 150));
 
-    final boundary = cardKey.currentContext?.findRenderObject()
-        as RenderRepaintBoundary?;
+    final boundary =
+        cardKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) return;
 
     // Capture at 3x for a crisp share image.
@@ -52,7 +54,8 @@ Future<void> shareTasting(BuildContext context, Tasting tasting) async {
 
     await Share.shareXFiles(
       [XFile(file.path)],
-      text: '${tasting.coffeeName} by ${tasting.roasterName}'
+      text:
+          '${tasting.coffeeName} by ${tasting.roasterName}'
           ' - ${tasting.overallRating.toStringAsFixed(1)}/5',
     );
 

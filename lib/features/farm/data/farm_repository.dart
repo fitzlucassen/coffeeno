@@ -4,7 +4,7 @@ import '../domain/farm.dart';
 
 class FarmRepository {
   FarmRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -34,8 +34,10 @@ class FarmRepository {
   }
 
   Future<Farm?> findByName(String name, {String? country}) async {
-    var query = _collection.where('nameLower',
-        isEqualTo: name.toLowerCase().trim());
+    var query = _collection.where(
+      'nameLower',
+      isEqualTo: name.toLowerCase().trim(),
+    );
     if (country != null && country.isNotEmpty) {
       query = query.where('country', isEqualTo: country);
     }
@@ -49,7 +51,9 @@ class FarmRepository {
         .orderBy('name')
         .limit(limit)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Farm.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Farm.fromFirestore(doc)).toList(),
+        );
   }
 }

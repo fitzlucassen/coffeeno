@@ -53,6 +53,22 @@
       "collectionGroup": "coffees",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "originCountry", "order": "ASCENDING" },
+        { "fieldPath": "ratingsCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "coffees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roasterId", "order": "ASCENDING" },
+        { "fieldPath": "ratingsCount", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "coffees",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "roasterId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]

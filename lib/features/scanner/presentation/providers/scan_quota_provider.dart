@@ -1,6 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/scan_quota_repository.dart';
 
 final scanQuotaRepositoryProvider = Provider<ScanQuotaRepository>((ref) {
@@ -11,7 +11,7 @@ final scanQuotaRepositoryProvider = Provider<ScanQuotaRepository>((ref) {
 /// [kFreeMonthlyScanQuota] when signed out so the caller can still render
 /// the full quota in the UI.
 final remainingFreeScansProvider = FutureProvider<int>((ref) async {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
+  final uid = ref.watch(authStateProvider).value?.uid;
   if (uid == null) return kFreeMonthlyScanQuota;
   return ref.watch(scanQuotaRepositoryProvider).remainingFreeScans(uid);
 });

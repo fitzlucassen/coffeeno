@@ -46,7 +46,7 @@ class UserSearchResult {
 
 class SocialRepository {
   SocialRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -66,16 +66,14 @@ class SocialRepository {
     final now = FieldValue.serverTimestamp();
 
     // Write to current user's following subcollection.
-    batch.set(
-      _users.doc(userId).collection('following').doc(targetId),
-      {'followedAt': now},
-    );
+    batch.set(_users.doc(userId).collection('following').doc(targetId), {
+      'followedAt': now,
+    });
 
     // Write to target user's followers subcollection.
-    batch.set(
-      _users.doc(targetId).collection('followers').doc(userId),
-      {'followedAt': now},
-    );
+    batch.set(_users.doc(targetId).collection('followers').doc(userId), {
+      'followedAt': now,
+    });
 
     // Increment counts on both user documents.
     batch.update(_users.doc(userId), {
@@ -152,10 +150,11 @@ class SocialRepository {
     if (query.trim().isEmpty) return [];
 
     final lowerQuery = query.toLowerCase();
-    // Use the high-Unicode sentinel as the prefix upper bound (same pattern as
-    // the other repositories). Incrementing the last code unit by hand breaks
-    // on surrogate pairs / high code points and can throw or mis-bound.
-    final upperBound = '$lowerQuery';
+    // Prefix upper bound: append the high-Unicode sentinel U+F8FF (written as
+    // an explicit \u{f8ff} escape so it's visible in source — a raw literal
+    // char reads like a bug). Incrementing the last code unit by hand instead
+    // would break on surrogate pairs / high code points.
+    final upperBound = '$lowerQuery\u{f8ff}';
 
     // Search by usernameLower field first.
     final usernameResults = await _users
@@ -188,13 +187,6 @@ class SocialRepository {
     final doc = await _users.doc(userId).get();
     if (!doc.exists) return null;
     return UserSearchResult.fromFirestore(doc);
-  }
-
-  /// Streams a user profile for real-time updates.
-  Stream<UserSearchResult?> getUserProfileStream(String userId) {
-    return _users.doc(userId).snapshots().map(
-          (doc) => doc.exists ? UserSearchResult.fromFirestore(doc) : null,
-        );
   }
 
   /// Fetches user tastings ordered by creation date.

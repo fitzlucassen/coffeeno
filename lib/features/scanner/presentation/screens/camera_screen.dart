@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../../../subscription/presentation/widgets/premium_gate.dart';
@@ -62,7 +62,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
     ref.listen<ScanState>(scanStateProvider, (prev, next) {
       if (next.status == ScanStatus.done && next.result != null) {
         if (!isPremium) {
-          final uid = FirebaseAuth.instance.currentUser?.uid;
+          final uid = ref.read(authStateProvider).value?.uid;
           if (uid != null) {
             ref
                 .read(scanQuotaRepositoryProvider)
@@ -126,18 +126,10 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
         return _buildIdleView(context, l10n, colors);
 
       case ScanStatus.processingOcr:
-        return _buildLoadingView(
-          context,
-          l10n.scanning,
-          colors,
-        );
+        return _buildLoadingView(context, l10n.scanning, colors);
 
       case ScanStatus.extractingWithAi:
-        return _buildLoadingView(
-          context,
-          l10n.extractingInfo,
-          colors,
-        );
+        return _buildLoadingView(context, l10n.extractingInfo, colors);
 
       case ScanStatus.done:
         // Brief flash before navigation occurs.
@@ -181,9 +173,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
             const SizedBox(height: 12),
             Text(
               l10n.scanHint,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             if (!ref.watch(isPremiumProvider)) ...[
@@ -253,11 +245,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 64,
-              color: colors.error,
-            ),
+            Icon(Icons.error_outline_rounded, size: 64, color: colors.error),
             const SizedBox(height: 24),
             Text(
               l10n.error,
@@ -267,9 +255,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
             const SizedBox(height: 8),
             Text(
               scanState.errorMessage ?? '',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
               textAlign: TextAlign.center,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,

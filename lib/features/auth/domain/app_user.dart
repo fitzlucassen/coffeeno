@@ -67,7 +67,8 @@ class AppUser {
       (roasterProUntil == null || roasterProUntil!.isAfter(DateTime.now()));
 
   bool get _premiumTierActive =>
-      premium && (premiumUntil == null || premiumUntil!.isAfter(DateTime.now()));
+      premium &&
+      (premiumUntil == null || premiumUntil!.isAfter(DateTime.now()));
 
   /// Roaster Pro is a superset of Pro: holding either entitlement grants
   /// premium features.
@@ -120,8 +121,9 @@ class AppUser {
       'tastingsCount': tastingsCount,
       'roles': rolesToWire(roles),
       'premium': premium,
-      'premiumUntil':
-          premiumUntil != null ? Timestamp.fromDate(premiumUntil!) : null,
+      'premiumUntil': premiumUntil != null
+          ? Timestamp.fromDate(premiumUntil!)
+          : null,
       'roasterPro': roasterPro,
       'roasterProUntil': roasterProUntil != null
           ? Timestamp.fromDate(roasterProUntil!)
@@ -212,28 +214,28 @@ class AppUser {
 
   @override
   int get hashCode => Object.hashAll([
-        uid,
-        email,
-        displayName,
-        username,
-        avatarUrl,
-        bio,
-        country,
-        followersCount,
-        followingCount,
-        tastingsCount,
-        Object.hashAllUnordered(roles),
-        premium,
-        premiumUntil,
-        roasterPro,
-        roasterProUntil,
-        hasSeenOnboarding,
-        Object.hashAll(preferredBrewMethods),
-        Object.hashAll(preferredRoastLevels),
-        Object.hashAll(favoriteFlavors),
-        points,
-        createdAt,
-      ]);
+    uid,
+    email,
+    displayName,
+    username,
+    avatarUrl,
+    bio,
+    country,
+    followersCount,
+    followingCount,
+    tastingsCount,
+    Object.hashAllUnordered(roles),
+    premium,
+    premiumUntil,
+    roasterPro,
+    roasterProUntil,
+    hasSeenOnboarding,
+    Object.hashAll(preferredBrewMethods),
+    Object.hashAll(preferredRoastLevels),
+    Object.hashAll(favoriteFlavors),
+    points,
+    createdAt,
+  ]);
 
   @override
   String toString() => 'AppUser(uid: $uid, email: $email, username: $username)';

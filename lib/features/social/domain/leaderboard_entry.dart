@@ -21,12 +21,15 @@ class LeaderboardEntry {
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) {
     final data = doc.data()!;
+    // Null-tolerant casts (like Coffee.fromFirestore): a single legacy/partial
+    // doc missing `name` or `avgRating` must not throw and take down the whole
+    // leaderboard/origin stream — it just renders with empty/zero fallbacks.
     return LeaderboardEntry(
       coffeeId: doc.id,
-      coffeeName: data['name'] as String,
+      coffeeName: data['name'] as String? ?? '',
       roasterName: (data['roasterName'] ?? data['roaster'] ?? '') as String,
       photoUrl: data['photoUrl'] as String?,
-      avgRating: (data['avgRating'] as num).toDouble(),
+      avgRating: (data['avgRating'] as num?)?.toDouble() ?? 0.0,
       ratingsCount: (data['ratingsCount'] as num?)?.toInt() ?? 0,
     );
   }

@@ -1,8 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/block_provider.dart';
 import '../providers/social_provider.dart';
 import '../widgets/user_avatar.dart';
@@ -16,7 +16,7 @@ class BlockedUsersScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final blockedIds = ref.watch(outgoingBlocksProvider).value ?? const {};
-    final actor = FirebaseAuth.instance.currentUser?.uid;
+    final actor = ref.watch(authStateProvider).value?.uid;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.blockedUsers)),
@@ -37,8 +37,8 @@ class BlockedUsersScreen extends ConsumerWidget {
                     onUnblock: actor == null
                         ? null
                         : () => ref
-                            .read(blockRepositoryProvider)
-                            .unblock(actor: actor, target: uid),
+                              .read(blockRepositoryProvider)
+                              .unblock(actor: actor, target: uid),
                     l10n: l10n,
                   ),
               ],
@@ -63,9 +63,7 @@ class _BlockedUserTile extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider(uid));
 
     return profileAsync.when(
-      loading: () => const ListTile(
-        title: LinearProgressIndicator(),
-      ),
+      loading: () => const ListTile(title: LinearProgressIndicator()),
       error: (_, _) => ListTile(title: Text(uid)),
       data: (user) => ListTile(
         leading: UserAvatar(

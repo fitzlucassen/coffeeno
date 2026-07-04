@@ -1,13 +1,10 @@
-import 'dart:io';
-
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 
+import '../../../../core/services/photo_upload_service.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
@@ -77,14 +74,12 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
     if (_pendingPhotoPath == null) return _photoUrl;
     setState(() => _uploadingPhoto = true);
     try {
-      final fileName = '${const Uuid().v4()}.jpg';
-      final ref = FirebaseStorage.instance
-          .ref('roasters/${widget.roasterId}/$fileName');
-      await ref.putFile(
-        File(_pendingPhotoPath!),
-        SettableMetadata(contentType: 'image/jpeg'),
-      );
-      return await ref.getDownloadURL();
+      return await ref
+          .read(photoUploadServiceProvider)
+          .uploadJpeg(
+            pathPrefix: 'roasters/${widget.roasterId}',
+            localPath: _pendingPhotoPath!,
+          );
     } finally {
       if (mounted) setState(() => _uploadingPhoto = false);
     }
@@ -141,9 +136,7 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
     final roasterAsync = ref.watch(roasterDetailProvider(widget.roasterId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.editProfileInfo),
-      ),
+      appBar: AppBar(title: Text(l10n.editProfileInfo)),
       body: roasterAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text(l10n.error)),
@@ -176,12 +169,12 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
                       prefixIcon: Icons.store_outlined,
                       textInputAction: TextInputAction.next,
                       validator: (value) =>
-                          Validators.required(value, l10n.coffeeName),
+                          Validators.required(value, l10n, l10n.coffeeName),
                     ),
                     const SizedBox(height: 16),
                     AppTextField(
                       controller: _descriptionController,
-                      label: 'Description',
+                      label: l10n.description,
                       prefixIcon: Icons.notes_outlined,
                       textInputAction: TextInputAction.next,
                       maxLines: 3,
@@ -189,7 +182,7 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
                     const SizedBox(height: 16),
                     AppTextField(
                       controller: _urlController,
-                      label: 'Website URL',
+                      label: l10n.websiteUrl,
                       prefixIcon: Icons.link_outlined,
                       keyboardType: TextInputType.url,
                       textInputAction: TextInputAction.next,
@@ -204,14 +197,14 @@ class _EditRoasterScreenState extends ConsumerState<EditRoasterScreen> {
                     const SizedBox(height: 16),
                     AppTextField(
                       controller: _cityController,
-                      label: 'City',
+                      label: l10n.city,
                       prefixIcon: Icons.location_city_outlined,
                       textInputAction: TextInputAction.next,
                     ),
                     const SizedBox(height: 16),
                     AppTextField(
                       controller: _keyPeopleController,
-                      label: 'Key People',
+                      label: l10n.keyPeople,
                       prefixIcon: Icons.people_outline,
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _save(roaster),

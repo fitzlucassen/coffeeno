@@ -15,8 +15,7 @@ void main() {
       createdAt: DateTime(2026, 1, 1),
       updatedAt: DateTime(2026, 1, 2),
     );
-    final ref =
-        await firestore.collection('farms').add(farm.toFirestore());
+    final ref = await firestore.collection('farms').add(farm.toFirestore());
     final round = Farm.fromFirestore(await ref.get());
 
     expect(round.name, 'Finca La Esperanza');

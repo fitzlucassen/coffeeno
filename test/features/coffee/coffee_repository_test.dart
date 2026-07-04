@@ -13,19 +13,18 @@ Coffee _coffee({
   double avgRating = 0,
   int ratingsCount = 0,
   DateTime? createdAt,
-}) =>
-    Coffee(
-      id: '',
-      uid: uid,
-      roaster: roaster,
-      name: name,
-      originCountry: originCountry,
-      roasterId: roasterId,
-      farmId: farmId,
-      avgRating: avgRating,
-      ratingsCount: ratingsCount,
-      createdAt: createdAt ?? DateTime(2026, 1, 1),
-    );
+}) => Coffee(
+  id: '',
+  uid: uid,
+  roaster: roaster,
+  name: name,
+  originCountry: originCountry,
+  roasterId: roasterId,
+  farmId: farmId,
+  avgRating: avgRating,
+  ratingsCount: ratingsCount,
+  createdAt: createdAt ?? DateTime(2026, 1, 1),
+);
 
 void main() {
   late FakeFirebaseFirestore firestore;
@@ -63,8 +62,10 @@ void main() {
 
     await repo.deleteCoffee(coffeeId);
 
-    expect((await firestore.collection('coffees').doc(coffeeId).get()).exists,
-        isFalse);
+    expect(
+      (await firestore.collection('coffees').doc(coffeeId).get()).exists,
+      isFalse,
+    );
     final remaining = await firestore.collection('tastings').get();
     expect(remaining.docs.length, 1);
     expect(remaining.docs.first.data()['coffeeId'], 'other');
@@ -108,44 +109,49 @@ void main() {
     expect(list.length, 1);
   });
 
-  test('getCommunityAverageRating averages only rated coffees for a pair',
-      () async {
-    await repo.addCoffee(_coffee(
-      roaster: 'ACME',
-      name: 'Honduras',
-      avgRating: 4.0,
-    ));
-    await repo.addCoffee(_coffee(
-      roaster: 'acme', // case-insensitive match
-      name: 'HONDURAS',
-      avgRating: 5.0,
-    ));
-    await repo.addCoffee(_coffee(
-      roaster: 'acme',
-      name: 'honduras',
-      avgRating: 0, // unrated — ignored
-    ));
+  test(
+    'getCommunityAverageRating averages only rated coffees for a pair',
+    () async {
+      await repo.addCoffee(
+        _coffee(roaster: 'ACME', name: 'Honduras', avgRating: 4.0),
+      );
+      await repo.addCoffee(
+        _coffee(
+          roaster: 'acme', // case-insensitive match
+          name: 'HONDURAS',
+          avgRating: 5.0,
+        ),
+      );
+      await repo.addCoffee(
+        _coffee(
+          roaster: 'acme',
+          name: 'honduras',
+          avgRating: 0, // unrated — ignored
+        ),
+      );
 
-    final result = await repo.getCommunityAverageRating('ACME', 'Honduras');
-    expect(result, isNotNull);
-    expect(result!.count, 2);
-    expect(result.average, closeTo(4.5, 0.0001));
-  });
+      final result = await repo.getCommunityAverageRating('ACME', 'Honduras');
+      expect(result, isNotNull);
+      expect(result!.count, 2);
+      expect(result.average, closeTo(4.5, 0.0001));
+    },
+  );
 
-  test('getCommunityAverageRating returns null when nothing matches',
-      () async {
+  test('getCommunityAverageRating returns null when nothing matches', () async {
     final result = await repo.getCommunityAverageRating('ghost', 'none');
     expect(result, isNull);
   });
 
   group('findCanonicalMatchForUser', () {
     test('matches an existing coffee by roaster + name + origin', () async {
-      await repo.addCoffee(_coffee(
-        uid: 'me',
-        roaster: 'Blue Bottle',
-        name: 'Bella Donovan',
-        originCountry: 'Ethiopia',
-      ));
+      await repo.addCoffee(
+        _coffee(
+          uid: 'me',
+          roaster: 'Blue Bottle',
+          name: 'Bella Donovan',
+          originCountry: 'Ethiopia',
+        ),
+      );
 
       // Case/accent variations of the same coffee should still match.
       final match = await repo.findCanonicalMatchForUser(
@@ -159,12 +165,14 @@ void main() {
     });
 
     test('does not match another user\'s coffee', () async {
-      await repo.addCoffee(_coffee(
-        uid: 'other',
-        roaster: 'Blue Bottle',
-        name: 'Bella Donovan',
-        originCountry: 'Ethiopia',
-      ));
+      await repo.addCoffee(
+        _coffee(
+          uid: 'other',
+          roaster: 'Blue Bottle',
+          name: 'Bella Donovan',
+          originCountry: 'Ethiopia',
+        ),
+      );
 
       final match = await repo.findCanonicalMatchForUser(
         userId: 'me',
@@ -176,12 +184,14 @@ void main() {
     });
 
     test('does not match when origin differs', () async {
-      await repo.addCoffee(_coffee(
-        uid: 'me',
-        roaster: 'R',
-        name: 'Blend',
-        originCountry: 'Ethiopia',
-      ));
+      await repo.addCoffee(
+        _coffee(
+          uid: 'me',
+          roaster: 'R',
+          name: 'Blend',
+          originCountry: 'Ethiopia',
+        ),
+      );
 
       final match = await repo.findCanonicalMatchForUser(
         userId: 'me',
@@ -193,21 +203,25 @@ void main() {
     });
 
     test('returns the most recently added match', () async {
-      await repo.addCoffee(_coffee(
-        uid: 'me',
-        roaster: 'R',
-        name: 'N',
-        originCountry: 'Ethiopia',
-        createdAt: DateTime(2026, 1, 1),
-      ));
-      await repo.addCoffee(_coffee(
-        uid: 'me',
-        roaster: 'R',
-        name: 'N',
-        originCountry: 'Ethiopia',
-        avgRating: 4.2,
-        createdAt: DateTime(2026, 5, 1),
-      ));
+      await repo.addCoffee(
+        _coffee(
+          uid: 'me',
+          roaster: 'R',
+          name: 'N',
+          originCountry: 'Ethiopia',
+          createdAt: DateTime(2026, 1, 1),
+        ),
+      );
+      await repo.addCoffee(
+        _coffee(
+          uid: 'me',
+          roaster: 'R',
+          name: 'N',
+          originCountry: 'Ethiopia',
+          avgRating: 4.2,
+          createdAt: DateTime(2026, 5, 1),
+        ),
+      );
 
       final match = await repo.findCanonicalMatchForUser(
         userId: 'me',
@@ -222,16 +236,25 @@ void main() {
 
   group('communityOwnerCount', () {
     test('counts distinct owners of the same canonical coffee', () async {
-      await repo.addCoffee(_coffee(
-          uid: 'a', roaster: 'R', name: 'N', originCountry: 'Ethiopia'));
-      await repo.addCoffee(_coffee(
-          uid: 'b', roaster: 'R', name: 'N', originCountry: 'Ethiopia'));
+      await repo.addCoffee(
+        _coffee(uid: 'a', roaster: 'R', name: 'N', originCountry: 'Ethiopia'),
+      );
+      await repo.addCoffee(
+        _coffee(uid: 'b', roaster: 'R', name: 'N', originCountry: 'Ethiopia'),
+      );
       // Same user, second bag — still one owner.
-      await repo.addCoffee(_coffee(
-          uid: 'a', roaster: 'R', name: 'N', originCountry: 'Ethiopia'));
+      await repo.addCoffee(
+        _coffee(uid: 'a', roaster: 'R', name: 'N', originCountry: 'Ethiopia'),
+      );
       // Different coffee — excluded.
-      await repo.addCoffee(_coffee(
-          uid: 'c', roaster: 'R', name: 'Other', originCountry: 'Ethiopia'));
+      await repo.addCoffee(
+        _coffee(
+          uid: 'c',
+          roaster: 'R',
+          name: 'Other',
+          originCountry: 'Ethiopia',
+        ),
+      );
 
       final count = await repo.communityOwnerCount(
         roaster: 'R',

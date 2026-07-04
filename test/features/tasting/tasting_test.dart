@@ -4,36 +4,37 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Tasting _base() => Tasting(
-      id: '',
-      userId: 'u1',
-      coffeeId: 'c1',
-      coffeeName: 'Sidama',
-      roasterName: 'Blue Bottle',
-      brewMethod: 'V60',
-      grindSize: 'medium',
-      doseGrams: 15,
-      waterMl: 250,
-      ratio: '1:16.7',
-      brewTimeSec: 180,
-      aroma: 4,
-      flavor: 4,
-      acidity: 3,
-      body: 4,
-      sweetness: 4,
-      aftertaste: 3,
-      overallRating: 4.2,
-      flavorNotes: const ['berry'],
-      tastingDate: DateTime(2026, 4, 1),
-      createdAt: DateTime(2026, 4, 1, 12),
-    );
+  id: '',
+  userId: 'u1',
+  coffeeId: 'c1',
+  coffeeName: 'Sidama',
+  roasterName: 'Blue Bottle',
+  brewMethod: 'V60',
+  grindSize: 'medium',
+  doseGrams: 15,
+  waterMl: 250,
+  ratio: '1:16.7',
+  brewTimeSec: 180,
+  aroma: 4,
+  flavor: 4,
+  acidity: 3,
+  body: 4,
+  sweetness: 4,
+  aftertaste: 3,
+  overallRating: 4.2,
+  flavorNotes: const ['berry'],
+  tastingDate: DateTime(2026, 4, 1),
+  createdAt: DateTime(2026, 4, 1, 12),
+);
 
 void main() {
   test('Tasting round-trips through Firestore', () async {
     final firestore = FakeFirebaseFirestore();
     final tasting = _base();
 
-    final ref =
-        await firestore.collection('tastings').add(tasting.toFirestore());
+    final ref = await firestore
+        .collection('tastings')
+        .add(tasting.toFirestore());
     final round = Tasting.fromFirestore(await ref.get());
 
     expect(round.coffeeName, 'Sidama');

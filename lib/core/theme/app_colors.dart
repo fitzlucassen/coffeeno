@@ -14,6 +14,9 @@ abstract final class AppColors {
   static const terracottaLight = Color(0xFFE8956E);
   static const terracottaMuted = Color(0xFFF5C4A8);
 
+  /// Warm light-theme hairline border / outline-variant color.
+  static const border = Color(0xFFE8DDD0);
+
   // ── Dark theme (warm dark) ──
   static const darkBg = Color(0xFF1A1410);
   static const darkSurface = Color(0xFF2A2118);

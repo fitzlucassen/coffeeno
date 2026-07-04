@@ -1,9 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:coffeeno/core/constants/app_constants.dart';
+import 'package:coffeeno/core/utils/enum_labels.dart';
 import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/core/theme/app_colors.dart';
 import 'package:coffeeno/core/widgets/app_button.dart';
@@ -46,33 +46,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   List<_OnboardingPage> _pages(AppLocalizations l10n) => [
-        _OnboardingPage(
-          icon: Icons.document_scanner_outlined,
-          title: l10n.onboardingScanTitle,
-          body: l10n.onboardingScanBody,
-        ),
-        _OnboardingPage(
-          icon: Icons.coffee_outlined,
-          title: l10n.onboardingTasteTitle,
-          body: l10n.onboardingTasteBody,
-        ),
-        _OnboardingPage(
-          icon: Icons.people_outline,
-          title: l10n.onboardingDiscoverTitle,
-          body: l10n.onboardingDiscoverBody,
-        ),
-        _OnboardingPage(
-          icon: Icons.public_outlined,
-          title: l10n.onboardingMapTitle,
-          body: l10n.onboardingMapBody,
-        ),
-      ];
+    _OnboardingPage(
+      icon: Icons.document_scanner_outlined,
+      title: l10n.onboardingScanTitle,
+      body: l10n.onboardingScanBody,
+    ),
+    _OnboardingPage(
+      icon: Icons.coffee_outlined,
+      title: l10n.onboardingTasteTitle,
+      body: l10n.onboardingTasteBody,
+    ),
+    _OnboardingPage(
+      icon: Icons.people_outline,
+      title: l10n.onboardingDiscoverTitle,
+      body: l10n.onboardingDiscoverBody,
+    ),
+    _OnboardingPage(
+      icon: Icons.public_outlined,
+      title: l10n.onboardingMapTitle,
+      body: l10n.onboardingMapBody,
+    ),
+  ];
 
   Future<void> _finish() async {
     if (_finishing) return;
     setState(() => _finishing = true);
 
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = ref.read(authStateProvider).value?.uid;
     if (uid != null) {
       try {
         // Persist onboarding completion plus any captured preferences. Empty
@@ -198,9 +198,7 @@ class _OnboardingPageView extends StatelessWidget {
             child: Icon(
               page.icon,
               size: 64,
-              color: isDark
-                  ? AppColors.terracottaLight
-                  : AppColors.terracotta,
+              color: isDark ? AppColors.terracottaLight : AppColors.terracotta,
             ),
           ),
           const SizedBox(height: 40),
@@ -273,21 +271,30 @@ class _PreferencesPageView extends StatelessWidget {
         const SizedBox(height: 28),
         PreferenceChips(
           label: l10n.onboardingPrefsBrewMethods,
-          options: [for (final m in BrewMethod.values) m.label],
+          options: [
+            for (final m in BrewMethod.values)
+              PreferenceOption(value: m.key, display: m.displayLabel(l10n)),
+          ],
           selected: brewMethods,
           onToggle: onToggleBrew,
         ),
         const SizedBox(height: 24),
         PreferenceChips(
           label: l10n.onboardingPrefsRoastLevels,
-          options: [for (final r in RoastLevel.values) r.label],
+          options: [
+            for (final r in RoastLevel.values)
+              PreferenceOption(value: r.key, display: r.displayLabel(l10n)),
+          ],
           selected: roastLevels,
           onToggle: onToggleRoast,
         ),
         const SizedBox(height: 24),
         PreferenceChips(
           label: l10n.onboardingPrefsFlavors,
-          options: AppConstants.flavorFamilies,
+          options: [
+            for (final f in FlavorFamily.values)
+              PreferenceOption(value: f.key, display: f.displayLabel(l10n)),
+          ],
           selected: flavors,
           onToggle: onToggleFlavor,
         ),
@@ -298,11 +305,7 @@ class _PreferencesPageView extends StatelessWidget {
 }
 
 class _Dots extends StatelessWidget {
-  const _Dots({
-    required this.count,
-    required this.index,
-    required this.theme,
-  });
+  const _Dots({required this.count, required this.index, required this.theme});
 
   final int count;
   final int index;

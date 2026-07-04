@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
+import 'package:coffeeno/core/constants/app_constants.dart';
+import 'package:coffeeno/core/utils/enum_labels.dart';
 import '../../domain/coffee.dart';
 
 /// Displays a coffee's metadata in a clean two-column grid with icons.
@@ -55,13 +57,15 @@ class CoffeeMetadataSection extends StatelessWidget {
         _MetadataEntry(
           icon: Icons.water_drop_rounded,
           label: l10n.processingMethod,
-          value: coffee.processingMethod!,
+          value: ProcessingMethod.fromStored(
+            coffee.processingMethod,
+          ).displayLabel(l10n),
         ),
       if (coffee.roastLevel != null)
         _MetadataEntry(
           icon: Icons.local_fire_department_rounded,
           label: l10n.roastLevel,
-          value: coffee.roastLevel!,
+          value: RoastLevel.fromStored(coffee.roastLevel).displayLabel(l10n),
         ),
       if (coffee.roastDate != null)
         _MetadataEntry(
@@ -108,11 +112,7 @@ class CoffeeMetadataSection extends StatelessWidget {
             final entry = entries[index];
             return Row(
               children: [
-                Icon(
-                  entry.icon,
-                  size: 20,
-                  color: theme.colorScheme.primary,
-                ),
+                Icon(entry.icon, size: 20, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Column(

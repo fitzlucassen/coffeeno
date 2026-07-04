@@ -21,8 +21,7 @@ class SubscriptionStatus {
 
   /// True iff the user currently has access to Pro features — either via the
   /// Pro entitlement or via the Roaster Pro entitlement (which implies Pro).
-  bool get isPremium =>
-      tier == SubscriptionTier.premium || roasterPro;
+  bool get isPremium => tier == SubscriptionTier.premium || roasterPro;
 
   bool get isRoasterPro => roasterPro;
 

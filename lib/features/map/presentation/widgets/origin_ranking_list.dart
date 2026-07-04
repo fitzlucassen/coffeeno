@@ -7,11 +7,7 @@ import 'package:coffeeno/features/social/presentation/widgets/leaderboard_tile.d
 /// A ranked list of coffees for a given origin, reusable in both
 /// [OriginDetailScreen] and other contexts.
 class OriginRankingList extends StatelessWidget {
-  const OriginRankingList({
-    super.key,
-    required this.entries,
-    this.onTap,
-  });
+  const OriginRankingList({super.key, required this.entries, this.onTap});
 
   final List<LeaderboardEntry> entries;
   final void Function(LeaderboardEntry entry)? onTap;

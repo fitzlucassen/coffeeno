@@ -92,8 +92,10 @@ class _ScanFieldTileState extends State<ScanFieldTile> {
                 decoration: InputDecoration(
                   labelText: widget.label,
                   isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                 ),
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _commitEdit(),

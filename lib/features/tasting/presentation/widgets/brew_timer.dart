@@ -99,7 +99,11 @@ class _BrewTimerState extends State<BrewTimer> {
       children: [
         Row(
           children: [
-            Icon(Icons.timer_outlined, size: 20, color: theme.colorScheme.primary),
+            Icon(
+              Icons.timer_outlined,
+              size: 20,
+              color: theme.colorScheme.primary,
+            ),
             const SizedBox(width: 8),
             Text(l10n.brewGuideTitle, style: theme.textTheme.titleSmall),
           ],
@@ -141,8 +145,11 @@ class _BrewTimerState extends State<BrewTimer> {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.check_circle,
-                    size: 16, color: theme.colorScheme.primary),
+                Icon(
+                  Icons.check_circle,
+                  size: 16,
+                  color: theme.colorScheme.primary,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   l10n.brewGuideTargetReached,

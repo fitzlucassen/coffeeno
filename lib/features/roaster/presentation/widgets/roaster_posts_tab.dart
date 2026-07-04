@@ -32,13 +32,17 @@ class RoasterPostsTab extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.campaign_outlined,
-                          size: 48, color: colorScheme.onSurfaceVariant),
+                      Icon(
+                        Icons.campaign_outlined,
+                        size: 48,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         l10n.noPostsYet,
-                        style: theme.textTheme.bodyMedium
-                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -75,7 +79,10 @@ class RoasterPostsTab extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, WidgetRef ref, RoasterPost post) async {
+    BuildContext context,
+    WidgetRef ref,
+    RoasterPost post,
+  ) async {
     final l10n = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
@@ -128,9 +135,12 @@ class _PostTile extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(post.title,
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600)),
+                    child: Text(
+                      post.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 20),
@@ -144,8 +154,9 @@ class _PostTile extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     l10n.feedAboutCoffee(post.coffeeName!),
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: colorScheme.primary),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.primary,
+                    ),
                   ),
                 ),
               const SizedBox(height: 8),

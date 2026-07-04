@@ -25,8 +25,7 @@ class CoffeeCard extends StatelessWidget {
         children: [
           // Photo / placeholder
           ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(16)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: SizedBox(
               height: 100,
               width: double.infinity,
@@ -80,7 +79,7 @@ class CoffeeCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (coffee.freshnessLabel != null) ...[
+                  if (coffee.freshnessStage != null) ...[
                     const SizedBox(height: 6),
                     _FreshnessBadge(coffee: coffee),
                   ] else if (coffee.flavorNotes.isNotEmpty) ...[
@@ -96,8 +95,9 @@ class CoffeeCard extends StatelessWidget {
                               (note) => Chip(
                                 label: Text(note),
                                 visualDensity: VisualDensity.compact,
-                                labelPadding:
-                                    const EdgeInsets.symmetric(horizontal: 2),
+                                labelPadding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,
                                 labelStyle: theme.textTheme.labelSmall,
@@ -124,27 +124,27 @@ class _FreshnessBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final label = coffee.freshnessLabel;
-    if (label == null) return const SizedBox.shrink();
+    final stage = coffee.freshnessStage;
+    if (stage == null) return const SizedBox.shrink();
 
     final Color bgColor;
     final Color fgColor;
     final String localizedLabel;
 
-    switch (label) {
-      case 'Resting':
+    switch (stage) {
+      case FreshnessStage.resting:
         bgColor = Colors.grey.shade200;
         fgColor = Colors.grey.shade700;
         localizedLabel = l10n.resting;
-      case 'Peak freshness':
+      case FreshnessStage.peak:
         bgColor = Colors.green.shade100;
         fgColor = Colors.green.shade800;
         localizedLabel = l10n.peakFreshness;
-      case 'Use soon':
+      case FreshnessStage.useSoon:
         bgColor = Colors.amber.shade100;
         fgColor = Colors.amber.shade900;
         localizedLabel = l10n.useSoon;
-      default: // Past peak
+      case FreshnessStage.pastPeak:
         bgColor = Colors.red.shade100;
         fgColor = Colors.red.shade800;
         localizedLabel = l10n.pastPeak;
@@ -159,9 +159,9 @@ class _FreshnessBadge extends StatelessWidget {
       child: Text(
         localizedLabel,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: fgColor,
-              fontWeight: FontWeight.w600,
-            ),
+          color: fgColor,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

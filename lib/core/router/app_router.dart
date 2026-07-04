@@ -86,11 +86,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authStateProvider);
       final currentUser = ref.read(currentUserProvider);
       final isLoggedIn = authState.value != null;
-      final isAuthRoute = state.matchedLocation == AppRoutes.welcome ||
+      final isAuthRoute =
+          state.matchedLocation == AppRoutes.welcome ||
           state.matchedLocation == AppRoutes.signIn ||
           state.matchedLocation == AppRoutes.signUp;
-      final isProfileSetup =
-          state.matchedLocation == AppRoutes.profileSetup;
+      final isProfileSetup = state.matchedLocation == AppRoutes.profileSetup;
       final isOnboarding = state.matchedLocation == AppRoutes.onboarding;
 
       if (!isLoggedIn && !isAuthRoute) return AppRoutes.welcome;
@@ -152,33 +152,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: AppRoutes.feed,
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: FeedScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: FeedScreen()),
           ),
           GoRoute(
             path: AppRoutes.explore,
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: ExploreScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ExploreScreen()),
           ),
           GoRoute(
             path: AppRoutes.library,
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: CoffeeLibraryScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: CoffeeLibraryScreen()),
           ),
           GoRoute(
             path: AppRoutes.map,
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: CoffeeMapScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: CoffeeMapScreen()),
           ),
           GoRoute(
             path: AppRoutes.profile,
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: UserProfileScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: UserProfileScreen()),
           ),
         ],
       ),
@@ -192,21 +187,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.coffeeDetail,
-        builder: (context, state) => CoffeeDetailScreen(
-          coffeeId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            CoffeeDetailScreen(coffeeId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.addTasting,
-        builder: (context, state) => AddTastingScreen(
-          coffeeId: state.pathParameters['coffeeId']!,
-        ),
+        builder: (context, state) =>
+            AddTastingScreen(coffeeId: state.pathParameters['coffeeId']!),
       ),
       GoRoute(
         path: AppRoutes.tastingDetail,
-        builder: (context, state) => TastingDetailScreen(
-          tastingId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            TastingDetailScreen(tastingId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.scan,
@@ -218,9 +210,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.userProfile,
-        builder: (context, state) => UserProfileScreen(
-          userId: state.pathParameters['id'],
-        ),
+        builder: (context, state) =>
+            UserProfileScreen(userId: state.pathParameters['id']),
       ),
       GoRoute(
         path: AppRoutes.followers,
@@ -250,9 +241,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.originDetail,
-        builder: (context, state) => OriginDetailScreen(
-          country: state.pathParameters['country']!,
-        ),
+        builder: (context, state) =>
+            OriginDetailScreen(country: state.pathParameters['country']!),
       ),
       GoRoute(
         path: AppRoutes.stats,
@@ -260,39 +250,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.roasterDashboard,
-        builder: (context, state) => RoasterDashboardScreen(
-          roasterId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            RoasterDashboardScreen(roasterId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.roasterProfile,
-        builder: (context, state) => RoasterProfileScreen(
-          roasterId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            RoasterProfileScreen(roasterId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.farmProfile,
-        builder: (context, state) => FarmProfileScreen(
-          farmId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            FarmProfileScreen(farmId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.composeRoasterPost,
-        builder: (context, state) => ComposeRoasterPostScreen(
-          roasterId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            ComposeRoasterPostScreen(roasterId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.editRoaster,
-        builder: (context, state) => EditRoasterScreen(
-          roasterId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            EditRoasterScreen(roasterId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.editFarm,
-        builder: (context, state) => EditFarmScreen(
-          farmId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            EditFarmScreen(farmId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.paywall,

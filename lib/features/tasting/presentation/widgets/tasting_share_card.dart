@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:coffeeno/l10n/app_localizations.dart';
 
+import 'package:coffeeno/core/utils/enum_labels.dart';
 import 'package:coffeeno/features/tasting/domain/tasting.dart';
 
 /// A visually appealing card widget designed for sharing a tasting as an image.
@@ -7,9 +9,18 @@ import 'package:coffeeno/features/tasting/domain/tasting.dart';
 /// Sized at 400x520 pixels. Uses the app's warm color palette
 /// (cream, espresso, terracotta) and the Plus Jakarta Sans font.
 class TastingShareCard extends StatelessWidget {
-  const TastingShareCard({super.key, required this.tasting});
+  const TastingShareCard({
+    super.key,
+    required this.tasting,
+    required this.l10n,
+  });
 
   final Tasting tasting;
+
+  /// Passed in explicitly because this card is rendered off-screen via an
+  /// overlay for image capture, where an inherited localizations lookup on the
+  /// card's own context isn't reliable.
+  final AppLocalizations l10n;
 
   static const _cream = Color(0xFFFFF8F0);
   static const _espresso = Color(0xFF3C2415);
@@ -32,9 +43,7 @@ class TastingShareCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: _cream,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: _espressoMuted.withValues(alpha: 0.15),
-            ),
+            border: Border.all(color: _espressoMuted.withValues(alpha: 0.15)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
           child: Column(
@@ -114,7 +123,7 @@ class TastingShareCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        tasting.brewMethod,
+                        brewMethodLabelFromStored(tasting.brewMethod, l10n),
                         style: const TextStyle(
                           fontFamily: 'PlusJakartaSans',
                           fontSize: 13,
@@ -191,13 +200,14 @@ class TastingShareCard extends StatelessWidget {
   }
 
   Widget _buildFlavorScores() {
+    final labels = tastingAxisLabels(l10n);
     final scores = [
-      ('Aroma', tasting.aroma),
-      ('Flavor', tasting.flavor),
-      ('Acidity', tasting.acidity),
-      ('Body', tasting.body),
-      ('Sweet', tasting.sweetness),
-      ('Finish', tasting.aftertaste),
+      (labels[0], tasting.aroma),
+      (labels[1], tasting.flavor),
+      (labels[2], tasting.acidity),
+      (labels[3], tasting.body),
+      (labels[4], tasting.sweetness),
+      (labels[5], tasting.aftertaste),
     ];
 
     return Wrap(
@@ -223,9 +233,7 @@ class TastingShareCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              Expanded(
-                child: _ScoreBar(value: value, maxValue: 5),
-              ),
+              Expanded(child: _ScoreBar(value: value, maxValue: 5)),
               const SizedBox(width: 6),
               Text(
                 '$value',

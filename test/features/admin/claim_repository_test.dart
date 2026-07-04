@@ -48,34 +48,43 @@ void main() {
     expect(doc.data()!['entityType'], 'roaster');
   });
 
-  test('approveClaim adds the roaster role without clobbering existing roles',
-      () async {
-    await seedUser(firestore, uid: 'alice', overrides: {
-      'roles': ['user'],
-    });
-
-    final claimId = await seedClaim(
-      userId: 'alice',
-      type: ClaimEntityType.roaster,
-      entityId: 'r1',
-    );
-    await repo.approveClaim(claimId, 'admin1');
-
-    final userDoc = await firestore.collection('users').doc('alice').get();
-    final roles = (userDoc.data()!['roles'] as List).cast<String>();
-    expect(roles, containsAll(<String>['user', 'roaster']));
-
-    final claimDoc = await firestore.collection('claims').doc(claimId).get();
-    expect(claimDoc.data()!['status'], 'approved');
-    expect(claimDoc.data()!['reviewedBy'], 'admin1');
-  });
-
   test(
-      'approving a second claim for a different entity type keeps both roles '
+    'approveClaim adds the roaster role without clobbering existing roles',
+    () async {
+      await seedUser(
+        firestore,
+        uid: 'alice',
+        overrides: {
+          'roles': ['user'],
+        },
+      );
+
+      final claimId = await seedClaim(
+        userId: 'alice',
+        type: ClaimEntityType.roaster,
+        entityId: 'r1',
+      );
+      await repo.approveClaim(claimId, 'admin1');
+
+      final userDoc = await firestore.collection('users').doc('alice').get();
+      final roles = (userDoc.data()!['roles'] as List).cast<String>();
+      expect(roles, containsAll(<String>['user', 'roaster']));
+
+      final claimDoc = await firestore.collection('claims').doc(claimId).get();
+      expect(claimDoc.data()!['status'], 'approved');
+      expect(claimDoc.data()!['reviewedBy'], 'admin1');
+    },
+  );
+
+  test('approving a second claim for a different entity type keeps both roles '
       '— the reported bug #2 regression test', () async {
-    await seedUser(firestore, uid: 'alice', overrides: {
-      'roles': ['user'],
-    });
+    await seedUser(
+      firestore,
+      uid: 'alice',
+      overrides: {
+        'roles': ['user'],
+      },
+    );
 
     final roasterClaim = await seedClaim(
       userId: 'alice',
@@ -105,32 +114,35 @@ void main() {
     expect(user.isFarmer, isTrue);
   });
 
-  test('rejectClaim marks the claim rejected without touching the user',
-      () async {
-    await seedUser(firestore, uid: 'alice', overrides: {
-      'roles': ['user'],
-    });
+  test(
+    'rejectClaim marks the claim rejected without touching the user',
+    () async {
+      await seedUser(
+        firestore,
+        uid: 'alice',
+        overrides: {
+          'roles': ['user'],
+        },
+      );
 
-    final claimId = await seedClaim(
-      userId: 'alice',
-      type: ClaimEntityType.roaster,
-      entityId: 'r1',
-    );
-    await repo.rejectClaim(claimId, 'admin1');
+      final claimId = await seedClaim(
+        userId: 'alice',
+        type: ClaimEntityType.roaster,
+        entityId: 'r1',
+      );
+      await repo.rejectClaim(claimId, 'admin1');
 
-    final userDoc = await firestore.collection('users').doc('alice').get();
-    final roles = (userDoc.data()!['roles'] as List).cast<String>();
-    expect(roles, ['user']);
+      final userDoc = await firestore.collection('users').doc('alice').get();
+      final roles = (userDoc.data()!['roles'] as List).cast<String>();
+      expect(roles, ['user']);
 
-    final claimDoc = await firestore.collection('claims').doc(claimId).get();
-    expect(claimDoc.data()!['status'], 'rejected');
-  });
+      final claimDoc = await firestore.collection('claims').doc(claimId).get();
+      expect(claimDoc.data()!['status'], 'rejected');
+    },
+  );
 
   test('approveClaim is a no-op when the claim does not exist', () async {
-    await expectLater(
-      repo.approveClaim('missing', 'admin1'),
-      completes,
-    );
+    await expectLater(repo.approveClaim('missing', 'admin1'), completes);
   });
 
   test('getPendingClaims streams only pending claims', () async {
@@ -158,11 +170,7 @@ void main() {
       type: ClaimEntityType.roaster,
       entityId: 'r1',
     );
-    await seedClaim(
-      userId: 'bob',
-      type: ClaimEntityType.farm,
-      entityId: 'f1',
-    );
+    await seedClaim(userId: 'bob', type: ClaimEntityType.farm, entityId: 'f1');
 
     final aliceClaims = await repo.getUserClaims('alice').first;
     expect(aliceClaims.length, 1);

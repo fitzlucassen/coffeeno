@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
@@ -51,7 +50,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final uid = ref.read(authStateProvider).value?.uid;
       if (uid == null) return;
 
       final userRepo = ref.read(userRepositoryProvider);
@@ -96,9 +95,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.editProfile),
-      ),
+      appBar: AppBar(title: Text(l10n.editProfile)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -113,7 +110,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   prefixIcon: Icons.person_outline,
                   textInputAction: TextInputAction.next,
                   validator: (value) =>
-                      Validators.required(value, l10n.displayName),
+                      Validators.required(value, l10n, l10n.displayName),
                 ),
                 const SizedBox(height: 16),
                 AppTextField(
@@ -121,7 +118,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   label: l10n.username,
                   prefixIcon: Icons.alternate_email,
                   textInputAction: TextInputAction.next,
-                  validator: Validators.username,
+                  validator: (value) => Validators.username(value, l10n),
                 ),
                 const SizedBox(height: 16),
                 AppTextField(

@@ -4,7 +4,7 @@ import '../domain/claim.dart';
 
 class ClaimRepository {
   ClaimRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -21,8 +21,10 @@ class ClaimRepository {
         .where('status', isEqualTo: ClaimStatus.pending.wireName)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Claim.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Claim.fromFirestore(doc)).toList(),
+        );
   }
 
   Stream<List<Claim>> getUserClaims(String userId) {
@@ -30,8 +32,10 @@ class ClaimRepository {
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Claim.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Claim.fromFirestore(doc)).toList(),
+        );
   }
 
   /// Approves a pending claim. Writes all changes atomically:

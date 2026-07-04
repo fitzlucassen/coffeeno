@@ -57,8 +57,7 @@ class _LikeButtonState extends ConsumerState<LikeButton>
     _controller.forward(from: 0);
 
     final newLiked = !currentlyLiked;
-    final newCount =
-        widget.likesCount + (newLiked ? 1 : -1);
+    final newCount = widget.likesCount + (newLiked ? 1 : -1);
 
     setState(() {
       _optimisticLiked = newLiked;
@@ -81,9 +80,7 @@ class _LikeButtonState extends ConsumerState<LikeButton>
       }
       // Invalidate to refresh the liked state from Firestore.
       ref.invalidate(
-        tastingLikedProvider(
-          (tastingId: widget.tastingId, userId: userId),
-        ),
+        tastingLikedProvider((tastingId: widget.tastingId, userId: userId)),
       );
       // Clear the optimistic overrides on success so the authoritative values
       // (the refreshed provider + the streamed likesCount from the parent)
@@ -115,9 +112,7 @@ class _LikeButtonState extends ConsumerState<LikeButton>
 
     final userId = currentUser.uid;
     final likedAsync = ref.watch(
-      tastingLikedProvider(
-        (tastingId: widget.tastingId, userId: userId),
-      ),
+      tastingLikedProvider((tastingId: widget.tastingId, userId: userId)),
     );
 
     final isLiked = _optimisticLiked ?? likedAsync.value ?? false;
@@ -137,15 +132,17 @@ class _LikeButtonState extends ConsumerState<LikeButton>
               child: Icon(
                 isLiked ? Icons.favorite : Icons.favorite_border,
                 size: 22,
-                color: isLiked ? colorScheme.error : colorScheme.onSurfaceVariant,
+                color: isLiked
+                    ? colorScheme.error
+                    : colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: 4),
             Text(
               '$count',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

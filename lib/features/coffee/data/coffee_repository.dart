@@ -4,7 +4,7 @@ import '../domain/coffee.dart' show Coffee, normalizeText, coffeeCanonicalKey;
 
 class CoffeeRepository {
   CoffeeRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -94,8 +94,10 @@ class CoffeeRepository {
         .orderBy('createdAt', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList(),
+        );
   }
 
   /// Finds an existing coffee in [userId]'s library matching the canonical
@@ -137,8 +139,9 @@ class CoffeeRepository {
       name: name,
       originCountry: originCountry,
     );
-    final snapshot =
-        await _collection.where('canonicalKey', isEqualTo: key).get();
+    final snapshot = await _collection
+        .where('canonicalKey', isEqualTo: key)
+        .get();
     final owners = snapshot.docs
         .map((d) => d.data()['uid'] as String?)
         .whereType<String>()
@@ -189,15 +192,19 @@ class CoffeeRepository {
     }).toList();
   }
 
-  Stream<List<Coffee>> getCoffeesForRoaster(String roasterId,
-      {int limit = 30}) {
+  Stream<List<Coffee>> getCoffeesForRoaster(
+    String roasterId, {
+    int limit = 30,
+  }) {
     return _collection
         .where('roasterId', isEqualTo: roasterId)
         .orderBy('createdAt', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList(),
+        );
   }
 
   Stream<List<Coffee>> getCoffeesForFarm(String farmId, {int limit = 30}) {
@@ -206,15 +213,19 @@ class CoffeeRepository {
         .orderBy('createdAt', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList(),
+        );
   }
 
   /// Returns the total number of coffees owned by [userId]. Used for
   /// free-tier gating (e.g. max coffees per account).
   Future<int> countForUser(String userId) async {
-    final snapshot =
-        await _collection.where('uid', isEqualTo: userId).count().get();
+    final snapshot = await _collection
+        .where('uid', isEqualTo: userId)
+        .count()
+        .get();
     return snapshot.count ?? 0;
   }
 
@@ -224,8 +235,10 @@ class CoffeeRepository {
         .orderBy('avgRating', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Coffee.fromFirestore(doc)).toList(),
+        );
   }
 
   /// Returns the community average rating and user count for coffees

@@ -39,8 +39,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '496747365744',
     projectId: 'coffeeno',
     storageBucket: 'coffeeno.firebasestorage.app',
-    iosClientId: '496747365744-2hjqvr4p9cplv0n05iffjvjktf90cqq4.apps.googleusercontent.com',
+    iosClientId:
+        '496747365744-2hjqvr4p9cplv0n05iffjvjktf90cqq4.apps.googleusercontent.com',
     iosBundleId: 'com.coffeeno.coffeeno',
   );
-
 }

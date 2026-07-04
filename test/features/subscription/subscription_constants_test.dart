@@ -5,17 +5,16 @@ void main() {
   group('Subscription constants', () {
     test('primary entitlement ID is in the alias list', () {
       expect(kPremiumEntitlementAliases, contains(kPremiumEntitlementId));
-      expect(
-        kRoasterProEntitlementAliases,
-        contains(kRoasterProEntitlementId),
-      );
+      expect(kRoasterProEntitlementAliases, contains(kRoasterProEntitlementId));
     });
 
-    test('alias lists are non-empty — renaming requires at least one entry',
-        () {
-      expect(kPremiumEntitlementAliases, isNotEmpty);
-      expect(kRoasterProEntitlementAliases, isNotEmpty);
-    });
+    test(
+      'alias lists are non-empty — renaming requires at least one entry',
+      () {
+        expect(kPremiumEntitlementAliases, isNotEmpty);
+        expect(kRoasterProEntitlementAliases, isNotEmpty);
+      },
+    );
 
     test('pro and roaster-pro alias lists are disjoint', () {
       final premium = kPremiumEntitlementAliases.toSet();

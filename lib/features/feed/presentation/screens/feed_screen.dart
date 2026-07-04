@@ -39,10 +39,7 @@ class FeedScreen extends ConsumerWidget {
       body: feedAsync.when(
         data: (items) {
           if (items.isEmpty) {
-            return _EmptyFeed(
-              colorScheme: colorScheme,
-              textTheme: textTheme,
-            );
+            return _EmptyFeed(colorScheme: colorScheme, textTheme: textTheme);
           }
 
           return RefreshIndicator(
@@ -54,10 +51,12 @@ class FeedScreen extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final entry = items[index];
                 return switch (entry) {
-                  TastingFeedEntry(:final tasting) =>
-                    FeedTastingCard(item: tasting),
-                  RoasterPostFeedEntry(:final post) =>
-                    FeedRoasterPostCard(post: post),
+                  TastingFeedEntry(:final tasting) => FeedTastingCard(
+                    item: tasting,
+                  ),
+                  RoasterPostFeedEntry(:final post) => FeedRoasterPostCard(
+                    post: post,
+                  ),
                 };
               },
             ),
@@ -70,16 +69,9 @@ class FeedScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: colorScheme.error,
-                ),
+                Icon(Icons.error_outline, size: 48, color: colorScheme.error),
                 const SizedBox(height: 12),
-                Text(
-                  l10n.error,
-                  style: textTheme.titleMedium,
-                ),
+                Text(l10n.error, style: textTheme.titleMedium),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   onPressed: () => ref.invalidate(mergedFeedProvider),
@@ -96,10 +88,7 @@ class FeedScreen extends ConsumerWidget {
 }
 
 class _EmptyFeed extends StatelessWidget {
-  const _EmptyFeed({
-    required this.colorScheme,
-    required this.textTheme,
-  });
+  const _EmptyFeed({required this.colorScheme, required this.textTheme});
 
   final ColorScheme colorScheme;
   final TextTheme textTheme;

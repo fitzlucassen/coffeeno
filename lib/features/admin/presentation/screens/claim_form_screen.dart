@@ -1,9 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/claim.dart';
 import '../providers/admin_provider.dart';
 
@@ -34,7 +34,7 @@ class _ClaimFormScreenState extends ConsumerState<ClaimFormScreen> {
   }
 
   Future<void> _submit() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = ref.read(authStateProvider).value?.uid;
     if (uid == null) return;
 
     setState(() => _submitting = true);
@@ -62,15 +62,16 @@ class _ClaimFormScreenState extends ConsumerState<ClaimFormScreen> {
 
       if (mounted) {
         final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.claimSubmitted)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.claimSubmitted)));
         context.pop();
       }
     } catch (e) {
+      debugPrint('[COFFEENO] Submit claim failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     } finally {

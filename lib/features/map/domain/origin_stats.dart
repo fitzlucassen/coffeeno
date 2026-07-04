@@ -17,7 +17,7 @@ class OriginStats {
 
   /// Known coffee-producing countries with their approximate center coordinates.
   static const Map<String, ({String code, double lat, double lng})>
-      knownOrigins = {
+  knownOrigins = {
     'ethiopia': (code: 'ET', lat: 9.145, lng: 40.489),
     'colombia': (code: 'CO', lat: 4.571, lng: -74.297),
     'brazil': (code: 'BR', lat: -14.235, lng: -51.925),

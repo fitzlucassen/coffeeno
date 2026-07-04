@@ -21,11 +21,9 @@ const _revenueCatApiKey = String.fromEnvironment(
 /// dev without `--dart-define=REVENUECAT_API_KEY=…`), falls back to reading
 /// mirrored state from the user's Firestore document.
 class SubscriptionRepository {
-  SubscriptionRepository({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  SubscriptionRepository({FirebaseFirestore? firestore, FirebaseAuth? auth})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -42,9 +40,7 @@ class SubscriptionRepository {
       return;
     }
 
-    await Purchases.configure(
-      PurchasesConfiguration(_revenueCatApiKey),
-    );
+    await Purchases.configure(PurchasesConfiguration(_revenueCatApiKey));
     _initialized = true;
   }
 
@@ -87,18 +83,15 @@ class SubscriptionRepository {
     SubscriptionStatus revenueCatStatus = const SubscriptionStatus();
     StreamSubscription<SubscriptionStatus>? devOverrideSub;
 
-    void emitMerged() {
-      controller.add(revenueCatStatus);
-    }
-
     void handleRevenueCat(CustomerInfo info) {
       revenueCatStatus = _buildStatus(info);
       _syncToFirestore(revenueCatStatus);
 
+      // In debug the Firestore listener below owns emissions (so it can merge
+      // in console-set override flags); in release RevenueCat is authoritative.
       if (!kDebugMode) {
         controller.add(revenueCatStatus);
       }
-      // In debug, the Firestore listener below will emit a merged value.
     }
 
     if (kDebugMode) {
@@ -109,7 +102,9 @@ class SubscriptionRepository {
 
     Purchases.getCustomerInfo().then(handleRevenueCat).catchError((Object e) {
       debugPrint('RevenueCat getCustomerInfo error: $e');
-      emitMerged();
+      // Only need to nudge the stream in release; in debug the Firestore
+      // listener already emits (and will merge once RevenueCat resolves).
+      if (!kDebugMode) controller.add(revenueCatStatus);
     });
 
     Purchases.addCustomerInfoUpdateListener(handleRevenueCat);
@@ -129,7 +124,8 @@ class SubscriptionRepository {
     SubscriptionStatus rc,
     SubscriptionStatus fs,
   ) {
-    final hasPremium = rc.tier == SubscriptionTier.premium ||
+    final hasPremium =
+        rc.tier == SubscriptionTier.premium ||
         fs.tier == SubscriptionTier.premium;
     final hasRoasterPro = rc.roasterPro || fs.roasterPro;
 
@@ -142,10 +138,14 @@ class SubscriptionRepository {
   }
 
   SubscriptionStatus _buildStatus(CustomerInfo info) {
-    final premiumEntitlement =
-        _firstActiveEntitlement(info, kPremiumEntitlementAliases);
-    final roasterProEntitlement =
-        _firstActiveEntitlement(info, kRoasterProEntitlementAliases);
+    final premiumEntitlement = _firstActiveEntitlement(
+      info,
+      kPremiumEntitlementAliases,
+    );
+    final roasterProEntitlement = _firstActiveEntitlement(
+      info,
+      kRoasterProEntitlementAliases,
+    );
 
     final premiumUntil = _parseExpiration(premiumEntitlement);
     final roasterProUntil = _parseExpiration(roasterProEntitlement);
@@ -159,8 +159,7 @@ class SubscriptionRepository {
     );
 
     return SubscriptionStatus(
-      tier:
-          hasPremium ? SubscriptionTier.premium : SubscriptionTier.free,
+      tier: hasPremium ? SubscriptionTier.premium : SubscriptionTier.free,
       premiumUntil: premiumUntil,
       roasterPro: hasRoasterPro,
       roasterProUntil: roasterProUntil,
@@ -196,18 +195,16 @@ class SubscriptionRepository {
       final premiumFlag = data['premium'] as bool? ?? false;
       final premiumUntil = (data['premiumUntil'] as Timestamp?)?.toDate();
       final roasterProFlag = data['roasterPro'] as bool? ?? false;
-      final roasterProUntil =
-          (data['roasterProUntil'] as Timestamp?)?.toDate();
+      final roasterProUntil = (data['roasterProUntil'] as Timestamp?)?.toDate();
 
-      final premiumActive = premiumFlag &&
-          (premiumUntil == null || premiumUntil.isAfter(now));
-      final roasterProActive = roasterProFlag &&
+      final premiumActive =
+          premiumFlag && (premiumUntil == null || premiumUntil.isAfter(now));
+      final roasterProActive =
+          roasterProFlag &&
           (roasterProUntil == null || roasterProUntil.isAfter(now));
 
       return SubscriptionStatus(
-        tier: premiumActive
-            ? SubscriptionTier.premium
-            : SubscriptionTier.free,
+        tier: premiumActive ? SubscriptionTier.premium : SubscriptionTier.free,
         premiumUntil: premiumUntil,
         roasterPro: roasterProActive,
         roasterProUntil: roasterProUntil,
@@ -262,7 +259,9 @@ class SubscriptionRepository {
 
       final result = await Purchases.purchase(PurchaseParams.package(package));
       if (_isEitherEntitlementActive(
-          result.customerInfo, kPremiumEntitlementAliases)) {
+        result.customerInfo,
+        kPremiumEntitlementAliases,
+      )) {
         return true;
       }
 
@@ -298,7 +297,9 @@ class SubscriptionRepository {
 
       final result = await Purchases.purchase(PurchaseParams.package(package));
       return _isEitherEntitlementActive(
-          result.customerInfo, kRoasterProEntitlementAliases);
+        result.customerInfo,
+        kRoasterProEntitlementAliases,
+      );
     } on PlatformException catch (e) {
       if (PurchasesErrorHelper.getErrorCode(e) ==
           PurchasesErrorCode.purchaseCancelledError) {

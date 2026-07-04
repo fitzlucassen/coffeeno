@@ -10,7 +10,7 @@ const int kFreeMonthlyScanQuota = 3;
 /// stored [scanMonthKey] no longer matches the current month.
 class ScanQuotaRepository {
   ScanQuotaRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -52,11 +52,10 @@ class ScanQuotaRepository {
       final current = (data['scansThisMonth'] as num?)?.toInt() ?? 0;
 
       final next = storedKey == currentKey ? current + 1 : 1;
-      tx.set(
-        ref,
-        {'scansThisMonth': next, 'scanMonthKey': currentKey},
-        SetOptions(merge: true),
-      );
+      tx.set(ref, {
+        'scansThisMonth': next,
+        'scanMonthKey': currentKey,
+      }, SetOptions(merge: true));
     });
   }
 

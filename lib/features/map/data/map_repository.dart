@@ -5,7 +5,7 @@ import '../../social/domain/leaderboard_entry.dart';
 
 class MapRepository {
   MapRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -21,35 +21,44 @@ class MapRepository {
     // out missing/empty origins per-document below. A server-side
     // `isNotEqualTo: ''` filter would *also* drop docs where the field is
     // absent entirely (legacy/partial coffees), silently undercounting.
-    final base =
-        uid == null ? _coffees : _coffees.where('uid', isEqualTo: uid);
+    final base = uid == null ? _coffees : _coffees.where('uid', isEqualTo: uid);
     return base.snapshots().map((snapshot) {
-      final grouped = <String, List<double>>{};
+      final grouped = <String, _OriginAccumulator>{};
 
       for (final doc in snapshot.docs) {
         final data = doc.data();
         final country = data['originCountry'] as String?;
         if (country == null || country.isEmpty) continue;
 
-        final rating = (data['avgRating'] as num?)?.toDouble() ?? 0;
-        grouped.putIfAbsent(country, () => []).add(rating);
+        final acc = grouped.putIfAbsent(country, _OriginAccumulator.new);
+        acc.coffeeCount++;
+
+        // Only rated coffees contribute to the average, otherwise a never-rated
+        // coffee (avgRating 0) would drag the origin's score toward zero. This
+        // mirrors RoasterStatsRepository, which also averages over rated docs.
+        final ratingsCount = (data['ratingsCount'] as num?)?.toInt() ?? 0;
+        if (ratingsCount > 0) {
+          acc.ratedCount++;
+          acc.ratingSum += (data['avgRating'] as num?)?.toDouble() ?? 0;
+        }
       }
 
       return grouped.entries.map((entry) {
-        final ratings = entry.value;
-        final avgRating = ratings.isEmpty
+        final acc = entry.value;
+        final avgRating = acc.ratedCount == 0
             ? 0.0
-            : ratings.reduce((a, b) => a + b) / ratings.length;
+            : acc.ratingSum / acc.ratedCount;
 
         return OriginStats.fromAggregation(
           country: entry.key,
-          coffeeCount: ratings.length,
+          coffeeCount: acc.coffeeCount,
           avgRating: avgRating,
         );
-      }).toList()
-        ..sort((a, b) => b.coffeeCount.compareTo(a.coffeeCount));
+      }).toList()..sort((a, b) => b.coffeeCount.compareTo(a.coffeeCount));
     });
   }
+
+  // (Origin aggregation helper lives at the bottom of this file.)
 
   /// Queries coffees by a specific country, ordered by avgRating DESC.
   Stream<List<LeaderboardEntry>> getCoffeesByOrigin(String country) {
@@ -63,4 +72,13 @@ class MapRepository {
               .toList(),
         );
   }
+}
+
+/// Mutable per-country tally used while folding the coffee snapshot into
+/// [OriginStats]. Tracks the total coffee count separately from the rated
+/// subset so the average is computed only over coffees that have ratings.
+class _OriginAccumulator {
+  int coffeeCount = 0;
+  int ratedCount = 0;
+  double ratingSum = 0;
 }

@@ -4,6 +4,7 @@ import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'package:coffeeno/core/utils/enum_labels.dart';
 import 'package:coffeeno/core/widgets/app_card.dart';
 import '../../../tasting/domain/tasting.dart';
 import '../providers/roaster_stats_provider.dart';
@@ -37,8 +38,9 @@ class RoasterTastingsTab extends ConsumerWidget {
                 Center(
                   child: Text(
                     l10n.noTastingsYet,
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ],
@@ -48,10 +50,8 @@ class RoasterTastingsTab extends ConsumerWidget {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: tastings.length,
-            itemBuilder: (context, i) => _TastingListTile(
-              tasting: tastings[i],
-              l10n: l10n,
-            ),
+            itemBuilder: (context, i) =>
+                _TastingListTile(tasting: tastings[i], l10n: l10n),
           );
         },
       ),
@@ -87,37 +87,49 @@ class _TastingListTile extends StatelessWidget {
                     Expanded(
                       child: Text(
                         tasting.coffeeName,
-                        style: theme.textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    Icon(Icons.star_rounded,
-                        size: 16, color: colorScheme.secondary),
+                    Icon(
+                      Icons.star_rounded,
+                      size: 16,
+                      color: colorScheme.secondary,
+                    ),
                     const SizedBox(width: 2),
-                    Text(tasting.overallRating.toStringAsFixed(1),
-                        style: theme.textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w600)),
+                    Text(
+                      tasting.overallRating.toStringAsFixed(1),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(
-                      tasting.authorName ?? '',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant),
+                    // Author + relative time share the flexible left side and
+                    // truncate together so a long author name can't push the
+                    // brew info off-screen (right overflow).
+                    Flexible(
+                      child: Text(
+                        '${tasting.authorName ?? ''} '
+                        '· ${timeago.format(tasting.createdAt)}',
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '· ${timeago.format(tasting.createdAt)}',
+                      '${brewMethodLabelFromStored(tasting.brewMethod, l10n)} '
+                      '· ${grindSizeLabelFromStored(tasting.grindSize, l10n)}',
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${tasting.brewMethod} · ${tasting.grindSize}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -128,13 +140,14 @@ class _TastingListTile extends StatelessWidget {
                     runSpacing: 4,
                     children: tasting.flavorNotes
                         .take(6)
-                        .map((n) => Chip(
-                              label: Text(n,
-                                  style: theme.textTheme.bodySmall),
-                              visualDensity: VisualDensity.compact,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                            ))
+                        .map(
+                          (n) => Chip(
+                            label: Text(n, style: theme.textTheme.bodySmall),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        )
                         .toList(),
                   ),
                 const SizedBox(height: 4),

@@ -854,4 +854,227 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noBlockedUsers => 'Vous n\'avez bloqué personne.';
+
+  @override
+  String get validationEmailRequired => 'L\'email est requis';
+
+  @override
+  String get validationEmailInvalid => 'Saisissez un email valide';
+
+  @override
+  String get validationPasswordRequired => 'Le mot de passe est requis';
+
+  @override
+  String get validationPasswordTooShort =>
+      'Le mot de passe doit contenir au moins 8 caractères';
+
+  @override
+  String validationFieldRequired(String field) {
+    return '$field est requis';
+  }
+
+  @override
+  String get validationUsernameRequired => 'Le nom d\'utilisateur est requis';
+
+  @override
+  String get validationUsernameTooShort =>
+      'Le nom d\'utilisateur doit contenir au moins 3 caractères';
+
+  @override
+  String get validationUsernameInvalid =>
+      'Uniquement lettres, chiffres et tirets bas';
+
+  @override
+  String get authErrorInvalidCredentials => 'Email ou mot de passe invalide.';
+
+  @override
+  String get authErrorUserDisabled => 'Ce compte a été désactivé.';
+
+  @override
+  String get authErrorTooManyRequests =>
+      'Trop de tentatives. Réessayez plus tard.';
+
+  @override
+  String get authErrorEmailInUse => 'Un compte existe déjà pour cet email.';
+
+  @override
+  String get authErrorWeakPassword => 'Ce mot de passe est trop faible.';
+
+  @override
+  String get authErrorGeneric => 'Une erreur est survenue. Veuillez réessayer.';
+
+  @override
+  String get brewMethodV60 => 'V60';
+
+  @override
+  String get brewMethodEspresso => 'Espresso';
+
+  @override
+  String get brewMethodAeropress => 'AeroPress';
+
+  @override
+  String get brewMethodFrenchPress => 'Cafetière à piston';
+
+  @override
+  String get brewMethodChemex => 'Chemex';
+
+  @override
+  String get brewMethodMokaPot => 'Cafetière moka';
+
+  @override
+  String get brewMethodColdBrew => 'Cold Brew';
+
+  @override
+  String get brewMethodSiphon => 'Siphon';
+
+  @override
+  String get brewMethodTurkish => 'Café turc';
+
+  @override
+  String get brewMethodPourOver => 'Filtre (autre)';
+
+  @override
+  String get brewMethodOther => 'Autre';
+
+  @override
+  String get grindExtraFine => 'Très fine';
+
+  @override
+  String get grindFine => 'Fine';
+
+  @override
+  String get grindMediumFine => 'Moyenne-fine';
+
+  @override
+  String get grindMedium => 'Moyenne';
+
+  @override
+  String get grindMediumCoarse => 'Moyenne-grossière';
+
+  @override
+  String get grindCoarse => 'Grossière';
+
+  @override
+  String get grindExtraCoarse => 'Très grossière';
+
+  @override
+  String get processWashed => 'Lavé';
+
+  @override
+  String get processNatural => 'Naturel';
+
+  @override
+  String get processHoney => 'Honey';
+
+  @override
+  String get processAnaerobic => 'Anaérobie';
+
+  @override
+  String get processWetHulled => 'Déparché humide';
+
+  @override
+  String get processExperimental => 'Expérimental';
+
+  @override
+  String get processOther => 'Autre';
+
+  @override
+  String get roastLight => 'Claire';
+
+  @override
+  String get roastMediumLight => 'Moyenne-claire';
+
+  @override
+  String get roastMedium => 'Moyenne';
+
+  @override
+  String get roastMediumDark => 'Moyenne-foncée';
+
+  @override
+  String get roastDark => 'Foncée';
+
+  @override
+  String get flavorFruity => 'Fruité';
+
+  @override
+  String get flavorSourFermented => 'Acide/Fermenté';
+
+  @override
+  String get flavorGreenVegetative => 'Végétal';
+
+  @override
+  String get flavorRoasted => 'Torréfié';
+
+  @override
+  String get flavorSpices => 'Épices';
+
+  @override
+  String get flavorNuttyCocoa => 'Noix/Cacao';
+
+  @override
+  String get flavorSweet => 'Sucré';
+
+  @override
+  String get flavorFloral => 'Floral';
+
+  @override
+  String get flavorOther => 'Autre';
+
+  @override
+  String get emptyStateGeneric => 'Rien à afficher pour le moment';
+
+  @override
+  String get customFlavorHint => 'Ajoutez le vôtre';
+
+  @override
+  String get unknownCoffee => 'Café inconnu';
+
+  @override
+  String get removePhoto => 'Retirer la photo';
+
+  @override
+  String get changePhoto => 'Changer la photo';
+
+  @override
+  String get addPhoto => 'Ajouter une photo';
+
+  @override
+  String get fieldRequired => 'Requis';
+
+  @override
+  String get fieldInvalid => 'Invalide';
+
+  @override
+  String get minutesAbbrev => 'Min';
+
+  @override
+  String get secondsAbbrev => 'Sec';
+
+  @override
+  String get sortNewest => 'Récents';
+
+  @override
+  String get sortAlphabetical => 'A-Z';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get websiteUrl => 'Site web';
+
+  @override
+  String get city => 'Ville';
+
+  @override
+  String get freshnessNotificationTitle => 'C\'est l\'heure de l\'infusion !';
+
+  @override
+  String freshnessNotificationBody(String coffee, String roaster) {
+    return 'Votre $coffee de $roaster quitte sa fraîcheur optimale — préparez-le bientôt !';
+  }
+
+  @override
+  String freshnessNotificationBodyNoRoaster(String coffee) {
+    return 'Votre $coffee quitte sa fraîcheur optimale — préparez-le bientôt !';
+  }
 }

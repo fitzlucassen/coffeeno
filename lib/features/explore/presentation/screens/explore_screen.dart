@@ -31,27 +31,19 @@ class ExploreScreen extends ConsumerWidget {
             _PopularNearMeSection(),
             _Section(
               title: l10n.exploreTrending,
-              child: _CoffeeHorizontalList(
-                provider: trendingCoffeesProvider,
-              ),
+              child: _CoffeeHorizontalList(provider: trendingCoffeesProvider),
             ),
             _Section(
               title: l10n.exploreRecentlyAdded,
-              child: _CoffeeHorizontalList(
-                provider: recentlyAddedProvider,
-              ),
+              child: _CoffeeHorizontalList(provider: recentlyAddedProvider),
             ),
             _Section(
               title: l10n.exploreTopRated,
-              child: _CoffeeHorizontalList(
-                provider: topRatedProvider,
-              ),
+              child: _CoffeeHorizontalList(provider: topRatedProvider),
             ),
             _Section(
               title: l10n.exploreNewRoasters,
-              child: _RoasterHorizontalList(
-                provider: newRoastersProvider,
-              ),
+              child: _RoasterHorizontalList(provider: newRoastersProvider),
             ),
           ],
         ),
@@ -72,10 +64,7 @@ class _Section extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
         ),
         child,
       ],
@@ -148,8 +137,9 @@ class _ExploreCoffeeCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
               child: SizedBox(
                 height: 80,
                 width: double.infinity,
@@ -157,8 +147,7 @@ class _ExploreCoffeeCard extends StatelessWidget {
                     ? CachedNetworkImage(
                         imageUrl: coffee.photoUrl!,
                         fit: BoxFit.cover,
-                        placeholder: (_, _) =>
-                            _CoffeePlaceholder(colorScheme),
+                        placeholder: (_, _) => _CoffeePlaceholder(colorScheme),
                         errorWidget: (_, _, _) =>
                             _CoffeePlaceholder(colorScheme),
                       )
@@ -281,11 +270,7 @@ class _ExploreRoasterCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.store_rounded,
-              color: colorScheme.primary,
-              size: 24,
-            ),
+            Icon(Icons.store_rounded, color: colorScheme.primary, size: 24),
             const SizedBox(height: 8),
             Text(
               roaster.name,
@@ -296,9 +281,7 @@ class _ExploreRoasterCard extends StatelessWidget {
             if (roaster.city != null || roaster.country != null) ...[
               const SizedBox(height: 2),
               Text(
-                [roaster.city, roaster.country]
-                    .whereType<String>()
-                    .join(', '),
+                [roaster.city, roaster.country].whereType<String>().join(', '),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

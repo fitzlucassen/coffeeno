@@ -4,7 +4,7 @@ import '../../social/domain/leaderboard_entry.dart';
 
 class LeaderboardRepository {
   LeaderboardRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -13,6 +13,13 @@ class LeaderboardRepository {
 
   /// Minimum number of ratings for the Bayesian prior weight.
   static const int _bayesianMinVotes = 3;
+
+  /// How many candidates to pull from Firestore before applying the Bayesian
+  /// sort client-side. The server can only order by a stored field, so we fetch
+  /// a wider popularity-ranked set and re-rank it here; this keeps a genuinely
+  /// popular coffee from being excluded just because its raw average sits below
+  /// a cluster of 1-vote 5.0s. Trimmed back to the requested limit afterwards.
+  static const int _candidateMultiplier = 4;
 
   /// Sorts entries using a Bayesian average so that coffees with very few
   /// ratings don't dominate the leaderboard.
@@ -28,12 +35,10 @@ class LeaderboardRepository {
       0,
       (acc, e) => acc + e.avgRating * e.ratingsCount,
     );
-    final totalRatings = entries.fold<int>(
-      0,
-      (acc, e) => acc + e.ratingsCount,
-    );
-    final double globalAvg =
-        totalRatings > 0 ? totalWeightedRating / totalRatings : 0;
+    final totalRatings = entries.fold<int>(0, (acc, e) => acc + e.ratingsCount);
+    final double globalAvg = totalRatings > 0
+        ? totalWeightedRating / totalRatings
+        : 0;
 
     final m = _bayesianMinVotes;
 
@@ -53,15 +58,18 @@ class LeaderboardRepository {
   Stream<List<LeaderboardEntry>> getGlobalLeaderboard({int limit = 50}) {
     return _coffees
         .where('ratingsCount', isGreaterThanOrEqualTo: 1)
-        .orderBy('avgRating', descending: true)
-        .limit(limit)
+        // Order by popularity (ratingsCount) rather than raw avgRating so the
+        // candidate window isn't dominated by thinly-rated 5.0s; the Bayesian
+        // sort below then produces the final ranking. See [_candidateMultiplier].
+        .orderBy('ratingsCount', descending: true)
+        .limit(limit * _candidateMultiplier)
         .snapshots()
         .map(
           (snapshot) => _applyBayesianSort(
             snapshot.docs
                 .map((doc) => LeaderboardEntry.fromFirestore(doc))
                 .toList(),
-          ),
+          ).take(limit).toList(),
         );
   }
 
@@ -74,15 +82,15 @@ class LeaderboardRepository {
     return _coffees
         .where('originCountry', isEqualTo: originCountry)
         .where('ratingsCount', isGreaterThanOrEqualTo: 1)
-        .orderBy('avgRating', descending: true)
-        .limit(limit)
+        .orderBy('ratingsCount', descending: true)
+        .limit(limit * _candidateMultiplier)
         .snapshots()
         .map(
           (snapshot) => _applyBayesianSort(
             snapshot.docs
                 .map((doc) => LeaderboardEntry.fromFirestore(doc))
                 .toList(),
-          ),
+          ).take(limit).toList(),
         );
   }
 }

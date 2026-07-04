@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
@@ -6,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:coffeeno/core/constants/app_constants.dart';
 import 'package:coffeeno/core/router/app_router.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../data/freshness_notification_service.dart';
 import '../providers/coffee_provider.dart';
 import '../providers/freshness_notification_provider.dart';
 import '../widgets/coffee_card.dart';
@@ -50,14 +51,20 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
           coffee.originCountry != _selectedCountry) {
         return false;
       }
-      // Roast level filter
+      // Roast level filter. Compare via the enum so both new (key) and legacy
+      // (English label) stored values match the selected option; a coffee with
+      // no roast level set never matches a specific filter.
       if (_selectedRoastLevel != null &&
-          coffee.roastLevel != _selectedRoastLevel!.label) {
+          (coffee.roastLevel == null ||
+              RoastLevel.fromStored(coffee.roastLevel) !=
+                  _selectedRoastLevel)) {
         return false;
       }
-      // Processing method filter
+      // Processing method filter (same key/label-tolerant comparison).
       if (_selectedProcessingMethod != null &&
-          coffee.processingMethod != _selectedProcessingMethod!.label) {
+          (coffee.processingMethod == null ||
+              ProcessingMethod.fromStored(coffee.processingMethod) !=
+                  _selectedProcessingMethod)) {
         return false;
       }
       return true;
@@ -71,7 +78,8 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
         filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       case CoffeeSortOption.name:
         filtered.sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
     }
 
     return filtered;
@@ -81,13 +89,11 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final userId = ref.watch(authStateProvider).value?.uid ?? '';
     final coffeesAsync = ref.watch(userCoffeesProvider(userId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.myCoffees),
-      ),
+      appBar: AppBar(title: Text(l10n.myCoffees)),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.addCoffee),
         tooltip: l10n.addCoffee,
@@ -96,12 +102,12 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
       body: coffeesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) {
-          debugPrint('Library error: $error');
+          debugPrint('[COFFEENO] Library error: $error');
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: SelectableText(
-                error.toString(),
+              child: Text(
+                l10n.error,
                 style: theme.textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -112,23 +118,29 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
           // Schedule freshness notifications for any coffee that needs one.
           if (!_freshnessSynced) {
             _freshnessSynced = true;
-            final notificationService =
-                ref.read(freshnessNotificationProvider);
+            final notificationTitle = l10n.freshnessNotificationTitle;
+            final notificationService = ref.read(freshnessNotificationProvider);
             notificationService.init().then((_) {
-              notificationService.rescheduleAll(coffees).catchError((e) {
-                debugPrint(
-                    '[COFFEENO] Freshness reschedule failed: $e');
-              });
+              notificationService
+                  .rescheduleAll(
+                    coffees,
+                    title: notificationTitle,
+                    body: (c) => freshnessNotificationBody(l10n, c),
+                  )
+                  .catchError((e) {
+                    debugPrint('[COFFEENO] Freshness reschedule failed: $e');
+                  });
             });
           }
 
           // Collect available countries for filter
-          final countries = coffees
-              .map((c) => c.originCountry)
-              .where((c) => c.isNotEmpty)
-              .toSet()
-              .toList()
-            ..sort();
+          final countries =
+              coffees
+                  .map((c) => c.originCountry)
+                  .where((c) => c.isNotEmpty)
+                  .toSet()
+                  .toList()
+                ..sort();
 
           final filtered = _filterAndSort(coffees);
 
@@ -136,8 +148,10 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
             children: [
               // Search bar
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -165,8 +179,7 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
                 selectedProcessingMethod: _selectedProcessingMethod,
                 selectedSort: _sortOption,
                 availableCountries: countries,
-                onCountryChanged: (v) =>
-                    setState(() => _selectedCountry = v),
+                onCountryChanged: (v) => setState(() => _selectedCountry = v),
                 onRoastLevelChanged: (v) =>
                     setState(() => _selectedRoastLevel = v),
                 onProcessingMethodChanged: (v) =>
@@ -179,21 +192,24 @@ class _CoffeeLibraryScreenState extends ConsumerState<CoffeeLibraryScreen> {
               Expanded(
                 child: filtered.isEmpty
                     ? _EmptyState(
-                        hasFilters: _searchQuery.isNotEmpty ||
+                        hasFilters:
+                            _searchQuery.isNotEmpty ||
                             _selectedCountry != null ||
                             _selectedRoastLevel != null ||
                             _selectedProcessingMethod != null,
                       )
                     : GridView.builder(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 8),
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.58,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.58,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
                         itemCount: filtered.length,
                         itemBuilder: (context, index) =>
                             CoffeeCard(coffee: filtered[index]),

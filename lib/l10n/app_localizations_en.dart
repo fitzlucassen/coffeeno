@@ -848,4 +848,227 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBlockedUsers => 'You haven\'t blocked anyone.';
+
+  @override
+  String get validationEmailRequired => 'Email is required';
+
+  @override
+  String get validationEmailInvalid => 'Enter a valid email';
+
+  @override
+  String get validationPasswordRequired => 'Password is required';
+
+  @override
+  String get validationPasswordTooShort =>
+      'Password must be at least 8 characters';
+
+  @override
+  String validationFieldRequired(String field) {
+    return '$field is required';
+  }
+
+  @override
+  String get validationUsernameRequired => 'Username is required';
+
+  @override
+  String get validationUsernameTooShort =>
+      'Username must be at least 3 characters';
+
+  @override
+  String get validationUsernameInvalid =>
+      'Only letters, numbers, and underscores';
+
+  @override
+  String get authErrorInvalidCredentials => 'Invalid email or password.';
+
+  @override
+  String get authErrorUserDisabled => 'This account has been disabled.';
+
+  @override
+  String get authErrorTooManyRequests =>
+      'Too many attempts. Please try again later.';
+
+  @override
+  String get authErrorEmailInUse => 'An account already exists for that email.';
+
+  @override
+  String get authErrorWeakPassword => 'That password is too weak.';
+
+  @override
+  String get authErrorGeneric => 'An error occurred. Please try again.';
+
+  @override
+  String get brewMethodV60 => 'V60';
+
+  @override
+  String get brewMethodEspresso => 'Espresso';
+
+  @override
+  String get brewMethodAeropress => 'AeroPress';
+
+  @override
+  String get brewMethodFrenchPress => 'French Press';
+
+  @override
+  String get brewMethodChemex => 'Chemex';
+
+  @override
+  String get brewMethodMokaPot => 'Moka Pot';
+
+  @override
+  String get brewMethodColdBrew => 'Cold Brew';
+
+  @override
+  String get brewMethodSiphon => 'Siphon';
+
+  @override
+  String get brewMethodTurkish => 'Turkish Coffee';
+
+  @override
+  String get brewMethodPourOver => 'Pour Over (Other)';
+
+  @override
+  String get brewMethodOther => 'Other';
+
+  @override
+  String get grindExtraFine => 'Extra Fine';
+
+  @override
+  String get grindFine => 'Fine';
+
+  @override
+  String get grindMediumFine => 'Medium-Fine';
+
+  @override
+  String get grindMedium => 'Medium';
+
+  @override
+  String get grindMediumCoarse => 'Medium-Coarse';
+
+  @override
+  String get grindCoarse => 'Coarse';
+
+  @override
+  String get grindExtraCoarse => 'Extra Coarse';
+
+  @override
+  String get processWashed => 'Washed';
+
+  @override
+  String get processNatural => 'Natural';
+
+  @override
+  String get processHoney => 'Honey';
+
+  @override
+  String get processAnaerobic => 'Anaerobic';
+
+  @override
+  String get processWetHulled => 'Wet Hulled';
+
+  @override
+  String get processExperimental => 'Experimental';
+
+  @override
+  String get processOther => 'Other';
+
+  @override
+  String get roastLight => 'Light';
+
+  @override
+  String get roastMediumLight => 'Medium-Light';
+
+  @override
+  String get roastMedium => 'Medium';
+
+  @override
+  String get roastMediumDark => 'Medium-Dark';
+
+  @override
+  String get roastDark => 'Dark';
+
+  @override
+  String get flavorFruity => 'Fruity';
+
+  @override
+  String get flavorSourFermented => 'Sour/Fermented';
+
+  @override
+  String get flavorGreenVegetative => 'Green/Vegetative';
+
+  @override
+  String get flavorRoasted => 'Roasted';
+
+  @override
+  String get flavorSpices => 'Spices';
+
+  @override
+  String get flavorNuttyCocoa => 'Nutty/Cocoa';
+
+  @override
+  String get flavorSweet => 'Sweet';
+
+  @override
+  String get flavorFloral => 'Floral';
+
+  @override
+  String get flavorOther => 'Other';
+
+  @override
+  String get emptyStateGeneric => 'Nothing here yet';
+
+  @override
+  String get customFlavorHint => 'Add your own';
+
+  @override
+  String get unknownCoffee => 'Unknown Coffee';
+
+  @override
+  String get removePhoto => 'Remove photo';
+
+  @override
+  String get changePhoto => 'Change photo';
+
+  @override
+  String get addPhoto => 'Add photo';
+
+  @override
+  String get fieldRequired => 'Required';
+
+  @override
+  String get fieldInvalid => 'Invalid';
+
+  @override
+  String get minutesAbbrev => 'Min';
+
+  @override
+  String get secondsAbbrev => 'Sec';
+
+  @override
+  String get sortNewest => 'Newest';
+
+  @override
+  String get sortAlphabetical => 'A-Z';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get websiteUrl => 'Website URL';
+
+  @override
+  String get city => 'City';
+
+  @override
+  String get freshnessNotificationTitle => 'Time to brew!';
+
+  @override
+  String freshnessNotificationBody(String coffee, String roaster) {
+    return 'Your $coffee from $roaster is leaving peak freshness — brew it soon!';
+  }
+
+  @override
+  String freshnessNotificationBodyNoRoaster(String coffee) {
+    return 'Your $coffee is leaving peak freshness — brew it soon!';
+  }
 }

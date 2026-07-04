@@ -57,11 +57,12 @@ class RoasterProfileScreen extends ConsumerWidget {
                                     )
                                   : Container(
                                       color: colorScheme.secondaryContainer,
-                                      child: Icon(Icons.store_rounded,
-                                          size: 40,
-                                          color: colorScheme
-                                              .onSecondaryContainer
-                                              .withValues(alpha: 0.5)),
+                                      child: Icon(
+                                        Icons.store_rounded,
+                                        size: 40,
+                                        color: colorScheme.onSecondaryContainer
+                                            .withValues(alpha: 0.5),
+                                      ),
                                     ),
                             ),
                           ),
@@ -73,16 +74,19 @@ class RoasterProfileScreen extends ConsumerWidget {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: Text(roaster.name,
-                                          style:
-                                              theme.textTheme.headlineSmall),
+                                      child: Text(
+                                        roaster.name,
+                                        style: theme.textTheme.headlineSmall,
+                                      ),
                                     ),
                                     if (roaster.claimStatus == 'approved')
                                       Chip(
                                         label: Text(l10n.approvedClaim),
-                                        avatar: Icon(Icons.verified,
-                                            size: 16,
-                                            color: colorScheme.primary),
+                                        avatar: Icon(
+                                          Icons.verified,
+                                          size: 16,
+                                          color: colorScheme.primary,
+                                        ),
                                         visualDensity: VisualDensity.compact,
                                       ),
                                   ],
@@ -94,7 +98,8 @@ class RoasterProfileScreen extends ConsumerWidget {
                                         .where((s) => s != null && s.isNotEmpty)
                                         .join(', '),
                                     style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: colorScheme.onSurfaceVariant),
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
                               ],
                             ),
@@ -106,8 +111,10 @@ class RoasterProfileScreen extends ConsumerWidget {
                       // Description
                       if (roaster.description != null) ...[
                         AppCard(
-                          child: Text(roaster.description!,
-                              style: theme.textTheme.bodyMedium),
+                          child: Text(
+                            roaster.description!,
+                            style: theme.textTheme.bodyMedium,
+                          ),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -115,18 +122,22 @@ class RoasterProfileScreen extends ConsumerWidget {
                       // Key people
                       if (roaster.keyPeople != null &&
                           roaster.keyPeople!.isNotEmpty) ...[
-                        Text(l10n.keyPeople,
-                            style: theme.textTheme.titleSmall),
+                        Text(l10n.keyPeople, style: theme.textTheme.titleSmall),
                         const SizedBox(height: 8),
                         AppCard(
                           child: Row(
                             children: [
-                              Icon(Icons.people_outline,
-                                  size: 20, color: colorScheme.primary),
+                              Icon(
+                                Icons.people_outline,
+                                size: 20,
+                                color: colorScheme.primary,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: Text(roaster.keyPeople!,
-                                    style: theme.textTheme.bodyMedium),
+                                child: Text(
+                                  roaster.keyPeople!,
+                                  style: theme.textTheme.bodyMedium,
+                                ),
                               ),
                             ],
                           ),
@@ -137,27 +148,33 @@ class RoasterProfileScreen extends ConsumerWidget {
                       // Website
                       if (roaster.url != null) ...[
                         GestureDetector(
-                          onTap: () => launchUrl(Uri.parse(roaster.url!),
-                              mode: LaunchMode.externalApplication),
+                          onTap: () => launchUrl(
+                            Uri.parse(roaster.url!),
+                            mode: LaunchMode.externalApplication,
+                          ),
                           child: AppCard(
                             child: Row(
                               children: [
-                                Icon(Icons.language,
-                                    size: 20, color: colorScheme.primary),
+                                Icon(
+                                  Icons.language,
+                                  size: 20,
+                                  color: colorScheme.primary,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     l10n.visitWebsite,
-                                    style:
-                                        theme.textTheme.bodyMedium?.copyWith(
+                                    style: theme.textTheme.bodyMedium?.copyWith(
                                       color: colorScheme.primary,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
                                 ),
-                                Icon(Icons.open_in_new,
-                                    size: 16,
-                                    color: colorScheme.onSurfaceVariant),
+                                Icon(
+                                  Icons.open_in_new,
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                               ],
                             ),
                           ),
@@ -166,73 +183,87 @@ class RoasterProfileScreen extends ConsumerWidget {
                       ],
 
                       // Claim / Edit actions
-                      Builder(builder: (context) {
-                        final currentUser =
-                            ref.watch(currentUserProvider).value;
-                        if (currentUser == null) return const SizedBox.shrink();
+                      Builder(
+                        builder: (context) {
+                          final currentUser = ref
+                              .watch(currentUserProvider)
+                              .value;
+                          if (currentUser == null) {
+                            return const SizedBox.shrink();
+                          }
 
-                        final isOwner =
-                            roaster.claimedBy == currentUser.uid;
-                        final isAdmin = currentUser.isAdmin;
+                          final isOwner = roaster.claimedBy == currentUser.uid;
+                          final isAdmin = currentUser.isAdmin;
 
-                        if (isOwner || isAdmin) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Wrap(
-                              spacing: 12,
-                              runSpacing: 8,
-                              children: [
-                                OutlinedButton.icon(
-                                  onPressed: () =>
-                                      context.push('/roaster/$roasterId/edit'),
-                                  icon: const Icon(Icons.edit, size: 18),
-                                  label: Text(l10n.editProfileInfo),
-                                ),
-                                if (isOwner)
-                                  FilledButton.icon(
+                          if (isOwner || isAdmin) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Wrap(
+                                spacing: 12,
+                                runSpacing: 8,
+                                children: [
+                                  OutlinedButton.icon(
                                     onPressed: () => context.push(
-                                        '/roaster/$roasterId/dashboard'),
-                                    icon: const Icon(
-                                        Icons.analytics_rounded, size: 18),
-                                    label: Text(l10n.roasterDashboard),
+                                      '/roaster/$roasterId/edit',
+                                    ),
+                                    icon: const Icon(Icons.edit, size: 18),
+                                    label: Text(l10n.editProfileInfo),
                                   ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        if (roaster.claimStatus == 'pending') {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Chip(
-                              label: Text(l10n.pendingClaim),
-                              avatar: Icon(Icons.hourglass_top,
-                                  size: 16,
-                                  color: colorScheme.onSurfaceVariant),
-                            ),
-                          );
-                        }
-
-                        if (roaster.claimedBy == null) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: OutlinedButton.icon(
-                              onPressed: () => context.push(
-                                '/claim/roaster/$roasterId?name=${Uri.encodeComponent(roaster.name)}',
+                                  if (isOwner)
+                                    FilledButton.icon(
+                                      onPressed: () => context.push(
+                                        '/roaster/$roasterId/dashboard',
+                                      ),
+                                      icon: const Icon(
+                                        Icons.analytics_rounded,
+                                        size: 18,
+                                      ),
+                                      label: Text(l10n.roasterDashboard),
+                                    ),
+                                ],
                               ),
-                              icon: const Icon(Icons.verified_outlined,
-                                  size: 18),
-                              label: Text(l10n.claimProfile),
-                            ),
-                          );
-                        }
+                            );
+                          }
 
-                        return const SizedBox.shrink();
-                      }),
+                          if (roaster.claimStatus == 'pending') {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Chip(
+                                label: Text(l10n.pendingClaim),
+                                avatar: Icon(
+                                  Icons.hourglass_top,
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            );
+                          }
+
+                          if (roaster.claimedBy == null) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: OutlinedButton.icon(
+                                onPressed: () => context.push(
+                                  '/claim/roaster/$roasterId?name=${Uri.encodeComponent(roaster.name)}',
+                                ),
+                                icon: const Icon(
+                                  Icons.verified_outlined,
+                                  size: 18,
+                                ),
+                                label: Text(l10n.claimProfile),
+                              ),
+                            );
+                          }
+
+                          return const SizedBox.shrink();
+                        },
+                      ),
 
                       // Coffees section title
-                      Text(l10n.coffeesFromRoaster(roaster.name),
-                          style: theme.textTheme.titleMedium),
+                      Text(
+                        l10n.coffeesFromRoaster(roaster.name),
+                        style: theme.textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 12),
                     ],
                   ),
@@ -245,45 +276,47 @@ class RoasterProfileScreen extends ConsumerWidget {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SliverToBoxAdapter(
-                        child: Center(child: CircularProgressIndicator()));
+                      child: Center(child: CircularProgressIndicator()),
+                    );
                   }
                   final coffees = snapshot.data ?? [];
                   if (coffees.isEmpty) {
                     return SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Text(l10n.noCoffeesFromOrigin,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant)),
+                        child: Text(
+                          l10n.noCoffeesFromOrigin,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ),
                     );
                   }
                   return SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final coffee = coffees[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 4),
-                          child: Card(
-                            child: ListTile(
-                              onTap: () =>
-                                  context.push('/coffee/${coffee.id}'),
-                              leading: CircleAvatar(
-                                backgroundColor:
-                                    colorScheme.primaryContainer,
-                                child: Icon(Icons.coffee_rounded,
-                                    color:
-                                        colorScheme.onPrimaryContainer),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final coffee = coffees[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 4,
+                        ),
+                        child: Card(
+                          child: ListTile(
+                            onTap: () => context.push('/coffee/${coffee.id}'),
+                            leading: CircleAvatar(
+                              backgroundColor: colorScheme.primaryContainer,
+                              child: Icon(
+                                Icons.coffee_rounded,
+                                color: colorScheme.onPrimaryContainer,
                               ),
-                              title: Text(coffee.name),
-                              subtitle: Text(coffee.originCountry),
                             ),
+                            title: Text(coffee.name),
+                            subtitle: Text(coffee.originCountry),
                           ),
-                        );
-                      },
-                      childCount: coffees.length,
-                    ),
+                        ),
+                      );
+                    }, childCount: coffees.length),
                   );
                 },
               ),

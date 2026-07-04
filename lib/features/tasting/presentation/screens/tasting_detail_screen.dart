@@ -5,13 +5,14 @@ import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import 'package:coffeeno/core/utils/enum_labels.dart';
 import 'package:coffeeno/core/widgets/app_card.dart';
 import 'package:coffeeno/core/widgets/coffee_score_badge.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
 import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../providers/tasting_provider.dart';
 import '../utils/share_tasting.dart';
-import '../widgets/flavor_wheel.dart';
+import '../widgets/score_radar_chart.dart';
 
 class TastingDetailScreen extends ConsumerWidget {
   const TastingDetailScreen({super.key, required this.tastingId});
@@ -33,7 +34,9 @@ class TastingDetailScreen extends ConsumerWidget {
           tastingAsync.whenOrNull(
                 data: (tasting) {
                   if (tasting == null) return null;
-                  if (!ref.watch(isPremiumProvider)) return const SizedBox.shrink();
+                  if (!ref.watch(isPremiumProvider)) {
+                    return const SizedBox.shrink();
+                  }
                   return IconButton(
                     icon: const Icon(Icons.share_outlined),
                     tooltip: l10n.shareTasting,
@@ -116,12 +119,18 @@ class TastingDetailScreen extends ConsumerWidget {
                       _ParamRow(
                         icon: Icons.coffee_maker_rounded,
                         label: l10n.brewMethod,
-                        value: tasting.brewMethod,
+                        value: brewMethodLabelFromStored(
+                          tasting.brewMethod,
+                          l10n,
+                        ),
                       ),
                       _ParamRow(
                         icon: Icons.grain_rounded,
                         label: l10n.grindSize,
-                        value: tasting.grindSize,
+                        value: grindSizeLabelFromStored(
+                          tasting.grindSize,
+                          l10n,
+                        ),
                       ),
                       _ParamRow(
                         icon: Icons.scale_rounded,
@@ -155,15 +164,16 @@ class TastingDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Flavor wheel
+                // Score radar chart
                 Center(
-                  child: FlavorWheel(
+                  child: ScoreRadarChart(
                     aroma: tasting.aroma,
                     flavor: tasting.flavor,
                     acidity: tasting.acidity,
                     body: tasting.body,
                     sweetness: tasting.sweetness,
                     aftertaste: tasting.aftertaste,
+                    labels: tastingAxisLabels(l10n),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -182,10 +192,7 @@ class TastingDetailScreen extends ConsumerWidget {
                         size: CoffeeScoreBadgeSize.large,
                       ),
                       const SizedBox(height: 8),
-                      StarRating(
-                        rating: tasting.overallRating,
-                        size: 32,
-                      ),
+                      StarRating(rating: tasting.overallRating, size: 32),
                     ],
                   ),
                 ),
@@ -216,8 +223,7 @@ class TastingDetailScreen extends ConsumerWidget {
                 ],
 
                 // Notes
-                if (tasting.notes != null &&
-                    tasting.notes!.isNotEmpty) ...[
+                if (tasting.notes != null && tasting.notes!.isNotEmpty) ...[
                   Text(l10n.notes, style: theme.textTheme.titleMedium),
                   const SizedBox(height: 8),
                   AppCard(

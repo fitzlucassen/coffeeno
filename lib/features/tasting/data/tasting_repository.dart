@@ -4,7 +4,7 @@ import '../domain/tasting.dart';
 
 class TastingRepository {
   TastingRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -41,17 +41,18 @@ class TastingRepository {
           ((currentAvg * currentCount) + tasting.overallRating) / newCount;
 
       txn.set(tastingRef, tasting.toFirestore());
-      txn.update(coffeeRef, {
+      // `set` with merge rather than `update`: `update` throws if the coffee
+      // doc is missing (e.g. an orphaned tasting on a deleted coffee), which
+      // would fail the whole transaction.
+      txn.set(coffeeRef, {
         'avgRating': newAvg,
         'ratingsCount': newCount,
-      });
+      }, SetOptions(merge: true));
       // Keep the profile-visible `tastingsCount` in sync. `set` with merge so
       // the write also succeeds on legacy user docs that never had the field.
-      txn.set(
-        userRef,
-        {'tastingsCount': FieldValue.increment(1)},
-        SetOptions(merge: true),
-      );
+      txn.set(userRef, {
+        'tastingsCount': FieldValue.increment(1),
+      }, SetOptions(merge: true));
     });
 
     return tastingRef.id;
@@ -85,25 +86,31 @@ class TastingRepository {
       final tasting = Tasting.fromFirestore(tastingDoc);
       final coffeeRef = _coffees.doc(tasting.coffeeId);
       final coffeeDoc = await txn.get(coffeeRef);
-      final coffeeData = coffeeDoc.data();
-
-      final currentCount = (coffeeData?['ratingsCount'] as int?) ?? 0;
-      final currentAvg = (coffeeData?['avgRating'] as num?)?.toDouble() ?? 0.0;
-
-      final newCount = (currentCount - 1).clamp(0, currentCount);
-      final newAvg = newCount > 0
-          ? ((currentAvg * currentCount) - tasting.overallRating) / newCount
-          : 0.0;
 
       txn.delete(tastingRef);
-      txn.update(coffeeRef, {
-        'avgRating': newAvg,
-        'ratingsCount': newCount,
-      });
-      txn.update(
-        _users.doc(tasting.userId),
-        {'tastingsCount': FieldValue.increment(-1)},
-      );
+
+      // Only adjust the coffee's stats if it still exists — the tasting may be
+      // an orphan whose parent coffee was already deleted, in which case
+      // `update` would throw and abort the delete.
+      if (coffeeDoc.exists) {
+        final coffeeData = coffeeDoc.data();
+        final currentCount = (coffeeData?['ratingsCount'] as int?) ?? 0;
+        final currentAvg =
+            (coffeeData?['avgRating'] as num?)?.toDouble() ?? 0.0;
+
+        final newCount = (currentCount - 1).clamp(0, currentCount);
+        final newAvg = newCount > 0
+            ? ((currentAvg * currentCount) - tasting.overallRating) / newCount
+            : 0.0;
+
+        txn.update(coffeeRef, {'avgRating': newAvg, 'ratingsCount': newCount});
+      }
+
+      // `set` with merge rather than `update` so a legacy user doc without the
+      // field (or a since-deleted user) doesn't abort the transaction.
+      txn.set(_users.doc(tasting.userId), {
+        'tastingsCount': FieldValue.increment(-1),
+      }, SetOptions(merge: true));
     });
   }
 
@@ -114,8 +121,10 @@ class TastingRepository {
         .where('coffeeId', isEqualTo: coffeeId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Tasting.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Tasting.fromFirestore(doc)).toList(),
+        );
   }
 
   /// Counts the number of tastings a user created **this calendar month**
@@ -123,15 +132,15 @@ class TastingRepository {
   Future<int> countForUserInMonth(String userId, {DateTime? now}) async {
     final reference = now ?? DateTime.now();
     final startOfMonth = DateTime(reference.year, reference.month, 1);
-    final startOfNextMonth =
-        DateTime(reference.year, reference.month + 1, 1);
+    final startOfNextMonth = DateTime(reference.year, reference.month + 1, 1);
 
     final snapshot = await _tastings
         .where('userId', isEqualTo: userId)
-        .where('tastingDate',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
-        .where('tastingDate',
-            isLessThan: Timestamp.fromDate(startOfNextMonth))
+        .where(
+          'tastingDate',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth),
+        )
+        .where('tastingDate', isLessThan: Timestamp.fromDate(startOfNextMonth))
         .count()
         .get();
     return snapshot.count ?? 0;
@@ -143,7 +152,9 @@ class TastingRepository {
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Tasting.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Tasting.fromFirestore(doc)).toList(),
+        );
   }
 }

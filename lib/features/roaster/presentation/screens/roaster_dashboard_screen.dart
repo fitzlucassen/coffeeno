@@ -21,8 +21,10 @@ class RoasterDashboardScreen extends ConsumerStatefulWidget {
 
 class _RoasterDashboardScreenState extends ConsumerState<RoasterDashboardScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController =
-      TabController(length: 3, vsync: this);
+  late final TabController _tabController = TabController(
+    length: 3,
+    vsync: this,
+  );
 
   @override
   void dispose() {

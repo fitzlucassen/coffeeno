@@ -5,12 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import 'package:coffeeno/core/router/app_router.dart';
 import '../providers/subscription_provider.dart';
+import 'premium_upsell_content.dart';
 
 class PremiumGate extends ConsumerWidget {
-  const PremiumGate({
-    super.key,
-    required this.child,
-  });
+  const PremiumGate({super.key, required this.child});
 
   final Widget child;
 
@@ -21,31 +19,13 @@ class PremiumGate extends ConsumerWidget {
     if (isPremium) return child;
 
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.workspace_premium_rounded,
-                size: 48, color: colorScheme.primary),
-            const SizedBox(height: 12),
-            Text(l10n.premiumRequired,
-                style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(l10n.premiumRequiredDesc,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: colorScheme.onSurfaceVariant),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () => context.push(AppRoutes.paywall),
-              child: Text(l10n.upgradeToPremium),
-            ),
-          ],
+        child: PremiumUpsellContent(
+          description: l10n.premiumRequiredDesc,
+          onUpgrade: () => context.push(AppRoutes.paywall),
         ),
       ),
     );

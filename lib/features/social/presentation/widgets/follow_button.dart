@@ -44,9 +44,12 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
           targetId: widget.targetUserId,
         );
       }
-      ref.invalidate(isFollowingProvider(
-        (userId: currentUserId, targetId: widget.targetUserId),
-      ));
+      ref.invalidate(
+        isFollowingProvider((
+          userId: currentUserId,
+          targetId: widget.targetUserId,
+        )),
+      );
     } catch (_) {
       // Silently fail; state will revert on next read.
     } finally {
@@ -65,9 +68,10 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
     if (currentUserId == widget.targetUserId) return const SizedBox.shrink();
 
     final isFollowingAsync = ref.watch(
-      isFollowingProvider(
-        (userId: currentUserId, targetId: widget.targetUserId),
-      ),
+      isFollowingProvider((
+        userId: currentUserId,
+        targetId: widget.targetUserId,
+      )),
     );
 
     final isFollowing = isFollowingAsync.value ?? false;
@@ -77,17 +81,18 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
       return SizedBox(
         height: 32,
         child: OutlinedButton(
-          onPressed:
-              _isLoading ? null : () => _toggle(isFollowing, currentUserId),
+          onPressed: _isLoading
+              ? null
+              : () => _toggle(isFollowing, currentUserId),
           style: OutlinedButton.styleFrom(
-            backgroundColor:
-                isFollowing ? Colors.transparent : colorScheme.primary,
-            foregroundColor:
-                isFollowing ? colorScheme.onSurface : colorScheme.onPrimary,
+            backgroundColor: isFollowing
+                ? Colors.transparent
+                : colorScheme.primary,
+            foregroundColor: isFollowing
+                ? colorScheme.onSurface
+                : colorScheme.onPrimary,
             side: BorderSide(
-              color: isFollowing
-                  ? colorScheme.outline
-                  : colorScheme.primary,
+              color: isFollowing ? colorScheme.outline : colorScheme.primary,
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             textStyle: Theme.of(context).textTheme.labelMedium,
@@ -98,22 +103,25 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(isFollowing
-                  ? AppLocalizations.of(context).unfollow
-                  : AppLocalizations.of(context).follow),
+              : Text(
+                  isFollowing
+                      ? AppLocalizations.of(context).unfollow
+                      : AppLocalizations.of(context).follow,
+                ),
         ),
       );
     }
 
     final l10n = AppLocalizations.of(context);
     return FilledButton.tonal(
-      onPressed:
-          _isLoading ? null : () => _toggle(isFollowing, currentUserId),
+      onPressed: _isLoading ? null : () => _toggle(isFollowing, currentUserId),
       style: FilledButton.styleFrom(
-        backgroundColor:
-            isFollowing ? colorScheme.surfaceContainerHighest : colorScheme.primary,
-        foregroundColor:
-            isFollowing ? colorScheme.onSurface : colorScheme.onPrimary,
+        backgroundColor: isFollowing
+            ? colorScheme.surfaceContainerHighest
+            : colorScheme.primary,
+        foregroundColor: isFollowing
+            ? colorScheme.onSurface
+            : colorScheme.onPrimary,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
       child: _isLoading

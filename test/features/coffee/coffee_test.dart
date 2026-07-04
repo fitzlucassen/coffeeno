@@ -48,26 +48,28 @@ void main() {
       expect(eth, isNot(col));
     });
 
-    test('Coffee.canonicalKey matches the standalone helper and is persisted',
-        () {
-      final coffee = Coffee(
-        id: '',
-        uid: 'u',
-        roaster: 'Blue Bottle',
-        name: 'Bella Donovan',
-        originCountry: 'Blend',
-        createdAt: DateTime(2026, 1, 1),
-      );
-      expect(
-        coffee.canonicalKey,
-        coffeeCanonicalKey(
+    test(
+      'Coffee.canonicalKey matches the standalone helper and is persisted',
+      () {
+        final coffee = Coffee(
+          id: '',
+          uid: 'u',
           roaster: 'Blue Bottle',
           name: 'Bella Donovan',
           originCountry: 'Blend',
-        ),
-      );
-      expect(coffee.toFirestore()['canonicalKey'], coffee.canonicalKey);
-    });
+          createdAt: DateTime(2026, 1, 1),
+        );
+        expect(
+          coffee.canonicalKey,
+          coffeeCanonicalKey(
+            roaster: 'Blue Bottle',
+            name: 'Bella Donovan',
+            originCountry: 'Blend',
+          ),
+        );
+        expect(coffee.toFirestore()['canonicalKey'], coffee.canonicalKey);
+      },
+    );
   });
 
   group('Coffee serialization', () {
@@ -92,8 +94,9 @@ void main() {
         createdAt: createdAt,
       );
 
-      final ref =
-          await firestore.collection('coffees').add(coffee.toFirestore());
+      final ref = await firestore
+          .collection('coffees')
+          .add(coffee.toFirestore());
       final round = Coffee.fromFirestore(await ref.get());
 
       expect(round.roaster, 'Blue Bottle');
@@ -103,21 +106,23 @@ void main() {
       expect(round.roastDate, roastDate);
     });
 
-    test('stores normalized roaster/name for case-insensitive search',
-        () async {
-      final coffee = Coffee(
-        id: '',
-        uid: 'u1',
-        roaster: 'Café  Rémy',
-        name: 'HOUSE Blend',
-        originCountry: 'Colombia',
-        createdAt: DateTime(2026, 3, 1),
-      );
+    test(
+      'stores normalized roaster/name for case-insensitive search',
+      () async {
+        final coffee = Coffee(
+          id: '',
+          uid: 'u1',
+          roaster: 'Café  Rémy',
+          name: 'HOUSE Blend',
+          originCountry: 'Colombia',
+          createdAt: DateTime(2026, 3, 1),
+        );
 
-      final map = coffee.toFirestore();
-      expect(map['roasterNormalized'], 'cafe  remy');
-      expect(map['nameNormalized'], 'house blend');
-    });
+        final map = coffee.toFirestore();
+        expect(map['roasterNormalized'], 'cafe  remy');
+        expect(map['nameNormalized'], 'house blend');
+      },
+    );
 
     test('defaults optional fields when absent', () async {
       final ref = await firestore.collection('coffees').add({
@@ -135,17 +140,17 @@ void main() {
     });
   });
 
-  group('Coffee.freshnessLabel', () {
+  group('Coffee.freshnessStage', () {
     Coffee withRoastDaysAgo(int days, {String? level}) => Coffee(
-          id: '',
-          uid: 'u',
-          roaster: 'r',
-          name: 'n',
-          originCountry: 'c',
-          roastDate: DateTime.now().subtract(Duration(days: days)),
-          roastLevel: level,
-          createdAt: DateTime.now(),
-        );
+      id: '',
+      uid: 'u',
+      roaster: 'r',
+      name: 'n',
+      originCountry: 'c',
+      roastDate: DateTime.now().subtract(Duration(days: days)),
+      roastLevel: level,
+      createdAt: DateTime.now(),
+    );
 
     test('returns null when roast date is unknown', () {
       final c = Coffee(
@@ -156,56 +161,61 @@ void main() {
         originCountry: 'c',
         createdAt: DateTime.now(),
       );
-      expect(c.freshnessLabel, isNull);
+      expect(c.freshnessStage, isNull);
       expect(c.daysSinceRoast, isNull);
     });
 
-    // The label is derived from peakEndDays (single source of truth shared with
+    // The stage is derived from peakEndDays (single source of truth shared with
     // the notification scheduler). For a medium/unknown roast peakEndDays = 18,
     // so: resting < 4 (18~/4), peak <= 18, use soon <= 32 (peakEnd + 14),
     // past peak afterwards.
     group('medium/unknown roast (peakEndDays = 18)', () {
       test('resting before the first quarter', () {
-        expect(withRoastDaysAgo(3).freshnessLabel, 'Resting');
+        expect(withRoastDaysAgo(3).freshnessStage, FreshnessStage.resting);
       });
 
       test('peak up to and including peakEndDays', () {
-        expect(withRoastDaysAgo(4).freshnessLabel, 'Peak freshness');
-        expect(withRoastDaysAgo(16).freshnessLabel, 'Peak freshness');
-        expect(withRoastDaysAgo(18).freshnessLabel, 'Peak freshness');
+        expect(withRoastDaysAgo(4).freshnessStage, FreshnessStage.peak);
+        expect(withRoastDaysAgo(16).freshnessStage, FreshnessStage.peak);
+        expect(withRoastDaysAgo(18).freshnessStage, FreshnessStage.peak);
       });
 
       test('use soon within the 14-day grace window past peak', () {
-        expect(withRoastDaysAgo(19).freshnessLabel, 'Use soon');
-        expect(withRoastDaysAgo(32).freshnessLabel, 'Use soon');
+        expect(withRoastDaysAgo(19).freshnessStage, FreshnessStage.useSoon);
+        expect(withRoastDaysAgo(32).freshnessStage, FreshnessStage.useSoon);
       });
 
       test('past peak after the grace window', () {
-        expect(withRoastDaysAgo(33).freshnessLabel, 'Past peak');
-        expect(withRoastDaysAgo(40).freshnessLabel, 'Past peak');
+        expect(withRoastDaysAgo(33).freshnessStage, FreshnessStage.pastPeak);
+        expect(withRoastDaysAgo(40).freshnessStage, FreshnessStage.pastPeak);
       });
     });
 
-    // The label must track the roast-level-dependent window, not a fixed one:
+    // The stage must track the roast-level-dependent window, not a fixed one:
     // a dark roast (peakEndDays = 14) leaves peak earlier than a light roast
     // (peakEndDays = 21) for the same number of days since roast.
-    test('tracks roast level: same day, different labels', () {
-      expect(withRoastDaysAgo(16, level: 'Dark').freshnessLabel, 'Use soon');
+    test('tracks roast level: same day, different stages', () {
       expect(
-          withRoastDaysAgo(16, level: 'Light').freshnessLabel, 'Peak freshness');
+        withRoastDaysAgo(16, level: 'Dark').freshnessStage,
+        FreshnessStage.useSoon,
+      );
+      expect(
+        withRoastDaysAgo(16, level: 'Light').freshnessStage,
+        FreshnessStage.peak,
+      );
     });
   });
 
   group('Coffee.peakEndDays', () {
     Coffee withLevel(String? level) => Coffee(
-          id: '',
-          uid: 'u',
-          roaster: 'r',
-          name: 'n',
-          originCountry: 'c',
-          roastLevel: level,
-          createdAt: DateTime.now(),
-        );
+      id: '',
+      uid: 'u',
+      roaster: 'r',
+      name: 'n',
+      originCountry: 'c',
+      roastLevel: level,
+      createdAt: DateTime.now(),
+    );
 
     test('light roast peaks later', () {
       expect(withLevel('Light').peakEndDays, 21);

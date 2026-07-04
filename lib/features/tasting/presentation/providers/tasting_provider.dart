@@ -9,22 +9,28 @@ final tastingRepositoryProvider = Provider<TastingRepository>((ref) {
 });
 
 /// Streams tastings for a specific coffee, keyed by [coffeeId].
-final coffeeTastingsProvider =
-    StreamProvider.family<List<Tasting>, String>((ref, coffeeId) {
+final coffeeTastingsProvider = StreamProvider.family<List<Tasting>, String>((
+  ref,
+  coffeeId,
+) {
   final repository = ref.watch(tastingRepositoryProvider);
   return repository.getTastingsForCoffee(coffeeId);
 });
 
 /// Streams a user's tastings, keyed by [userId].
-final userTastingsProvider =
-    StreamProvider.family<List<Tasting>, String>((ref, userId) {
+final userTastingsProvider = StreamProvider.family<List<Tasting>, String>((
+  ref,
+  userId,
+) {
   final repository = ref.watch(tastingRepositoryProvider);
   return repository.getUserTastings(userId);
 });
 
 /// Fetches a single tasting by its [tastingId].
-final tastingDetailProvider =
-    FutureProvider.family<Tasting?, String>((ref, tastingId) {
+final tastingDetailProvider = FutureProvider.family<Tasting?, String>((
+  ref,
+  tastingId,
+) {
   final repository = ref.watch(tastingRepositoryProvider);
   return repository.getTasting(tastingId);
 });

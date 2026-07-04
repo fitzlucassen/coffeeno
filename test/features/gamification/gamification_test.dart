@@ -63,8 +63,7 @@ void main() {
     });
 
     test('tiers are strictly ascending by threshold', () {
-      final thresholds =
-          ExpertTier.values.map((t) => t.threshold).toList();
+      final thresholds = ExpertTier.values.map((t) => t.threshold).toList();
       for (var i = 1; i < thresholds.length; i++) {
         expect(thresholds[i], greaterThan(thresholds[i - 1]));
       }

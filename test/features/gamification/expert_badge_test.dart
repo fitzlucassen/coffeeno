@@ -5,14 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _host(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: Center(child: child)),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: Scaffold(body: Center(child: child)),
+);
 
 void main() {
-  testWidgets('shows the tier title and points for a mid-tier user',
-      (tester) async {
+  testWidgets('shows the tier title and points for a mid-tier user', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(const ExpertBadge(points: 150)));
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
 
@@ -29,13 +30,20 @@ void main() {
     expect(find.byType(LinearProgressIndicator), findsNothing);
   });
 
-  testWidgets('expertTierTitle maps every tier without throwing',
-      (tester) async {
+  testWidgets('expertTierTitle maps every tier without throwing', (
+    tester,
+  ) async {
     late AppLocalizations l10n;
-    await tester.pumpWidget(_host(Builder(builder: (context) {
-      l10n = AppLocalizations.of(context);
-      return const SizedBox();
-    })));
+    await tester.pumpWidget(
+      _host(
+        Builder(
+          builder: (context) {
+            l10n = AppLocalizations.of(context);
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
 
     for (final tier in ExpertTier.values) {
       expect(expertTierTitle(l10n, tier), isNotEmpty);

@@ -13,21 +13,18 @@ void main() {
     repo = FeedRepository(firestore: firestore);
   });
 
-  test('deleteComment removes the doc and decrements commentsCount',
-      () async {
-    await firestore.collection('tastings').doc('t1').set({
-      'commentsCount': 2,
-    });
+  test('deleteComment removes the doc and decrements commentsCount', () async {
+    await firestore.collection('tastings').doc('t1').set({'commentsCount': 2});
     final commentRef = await firestore
         .collection('tastings')
         .doc('t1')
         .collection('comments')
         .add({
-      'authorId': 'u1',
-      'authorName': 'Alice',
-      'text': 'hi',
-      'createdAt': Timestamp.fromDate(DateTime(2026, 5, 1)),
-    });
+          'authorId': 'u1',
+          'authorName': 'Alice',
+          'text': 'hi',
+          'createdAt': Timestamp.fromDate(DateTime(2026, 5, 1)),
+        });
 
     await repo.deleteComment(tastingId: 't1', commentId: commentRef.id);
 
@@ -43,37 +40,39 @@ void main() {
     expect(comment.exists, isFalse);
   });
 
-  test('addComment then deleteComment leaves counter at starting value',
-      () async {
-    await firestore.collection('tastings').doc('t1').set({
-      'commentsCount': 0,
-    });
+  test(
+    'addComment then deleteComment leaves counter at starting value',
+    () async {
+      await firestore.collection('tastings').doc('t1').set({
+        'commentsCount': 0,
+      });
 
-    await repo.addComment(
-      tastingId: 't1',
-      comment: FeedComment(
-        id: '',
-        authorId: 'u1',
-        authorName: 'Alice',
-        text: 'hello',
-        createdAt: DateTime(2026, 5, 1),
-      ),
-    );
+      await repo.addComment(
+        tastingId: 't1',
+        comment: FeedComment(
+          id: '',
+          authorId: 'u1',
+          authorName: 'Alice',
+          text: 'hello',
+          createdAt: DateTime(2026, 5, 1),
+        ),
+      );
 
-    // Find the comment we just wrote.
-    final comments = await firestore
-        .collection('tastings')
-        .doc('t1')
-        .collection('comments')
-        .get();
-    expect(comments.docs.length, 1);
+      // Find the comment we just wrote.
+      final comments = await firestore
+          .collection('tastings')
+          .doc('t1')
+          .collection('comments')
+          .get();
+      expect(comments.docs.length, 1);
 
-    await repo.deleteComment(
-      tastingId: 't1',
-      commentId: comments.docs.single.id,
-    );
+      await repo.deleteComment(
+        tastingId: 't1',
+        commentId: comments.docs.single.id,
+      );
 
-    final tasting = await firestore.collection('tastings').doc('t1').get();
-    expect(tasting.data()!['commentsCount'], 0);
-  });
+      final tasting = await firestore.collection('tastings').doc('t1').get();
+      expect(tasting.data()!['commentsCount'], 0);
+    },
+  );
 }

@@ -43,15 +43,13 @@ void main() {
     test('defaults to {user} when nothing parses', () {
       expect(parseRoles(), {UserRole.user});
       expect(parseRoles(rolesField: <String>[]), {UserRole.user});
-      expect(
-        parseRoles(rolesField: ['bogus'], legacyRoleField: 'also-bogus'),
-        {UserRole.user},
-      );
+      expect(parseRoles(rolesField: ['bogus'], legacyRoleField: 'also-bogus'), {
+        UserRole.user,
+      });
     });
 
     test('de-duplicates repeated entries', () {
-      final roles =
-          parseRoles(rolesField: ['roaster', 'roaster', 'farmer']);
+      final roles = parseRoles(rolesField: ['roaster', 'roaster', 'farmer']);
       expect(roles, {UserRole.roaster, UserRole.farmer});
     });
   });

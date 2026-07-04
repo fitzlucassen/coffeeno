@@ -1,15 +1,23 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:coffeeno/features/tasting/domain/tasting.dart';
+import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
+import 'package:coffeeno/features/stats/data/stats_repository.dart';
+import 'package:coffeeno/features/stats/domain/tasting_stats.dart';
 
-/// Fetches all tastings for a given user, ordered by creation date descending.
-final userAllTastingsProvider =
-    FutureProvider.family<List<Tasting>, String>((ref, userId) async {
-  final snapshot = await FirebaseFirestore.instance
-      .collection('tastings')
-      .where('userId', isEqualTo: userId)
-      .orderBy('createdAt', descending: true)
-      .get();
-  return snapshot.docs.map((doc) => Tasting.fromFirestore(doc)).toList();
+/// Provides the singleton [StatsRepository].
+final statsRepositoryProvider = Provider<StatsRepository>((ref) {
+  return StatsRepository();
+});
+
+/// Streams the current user's precomputed [TastingStats].
+///
+/// Resolves the uid from the auth state (rather than `FirebaseAuth.instance`)
+/// so the presentation layer stays decoupled from Firebase. Emits
+/// [TastingStats.empty] when no user is signed in.
+final statsProvider = StreamProvider<TastingStats>((ref) {
+  final uid = ref.watch(authStateProvider).value?.uid;
+  if (uid == null) return Stream.value(TastingStats.empty);
+
+  final repository = ref.watch(statsRepositoryProvider);
+  return repository.watchStats(uid);
 });

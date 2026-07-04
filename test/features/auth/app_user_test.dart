@@ -109,22 +109,23 @@ void main() {
       DateTime? premiumUntil,
       bool roasterPro = false,
       DateTime? roasterProUntil,
-    }) =>
-        AppUser(
-          uid: 'u',
-          email: 'u@x',
-          displayName: 'u',
-          username: 'u',
-          roles: roles,
-          premium: premium,
-          premiumUntil: premiumUntil,
-          roasterPro: roasterPro,
-          roasterProUntil: roasterProUntil,
-          createdAt: DateTime(2026, 1, 1),
-        );
+    }) => AppUser(
+      uid: 'u',
+      email: 'u@x',
+      displayName: 'u',
+      username: 'u',
+      roles: roles,
+      premium: premium,
+      premiumUntil: premiumUntil,
+      roasterPro: roasterPro,
+      roasterProUntil: roasterProUntil,
+      createdAt: DateTime(2026, 1, 1),
+    );
 
     test('multi-role flags work independently', () {
-      final u = base(roles: {UserRole.roaster, UserRole.farmer, UserRole.admin});
+      final u = base(
+        roles: {UserRole.roaster, UserRole.farmer, UserRole.admin},
+      );
       expect(u.isRoaster, isTrue);
       expect(u.isFarmer, isTrue);
       expect(u.isAdmin, isTrue);
@@ -149,18 +150,12 @@ void main() {
     });
 
     test('expired premium is not active', () {
-      final u = base(
-        premium: true,
-        premiumUntil: DateTime(2020, 1, 1),
-      );
+      final u = base(premium: true, premiumUntil: DateTime(2020, 1, 1));
       expect(u.isPremiumActive, isFalse);
     });
 
     test('expired roaster pro does not grant premium', () {
-      final u = base(
-        roasterPro: true,
-        roasterProUntil: DateTime(2020, 1, 1),
-      );
+      final u = base(roasterPro: true, roasterProUntil: DateTime(2020, 1, 1));
       expect(u.isPremiumActive, isFalse);
       expect(u.isRoasterProActive, isFalse);
     });

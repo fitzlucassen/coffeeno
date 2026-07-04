@@ -6,10 +6,15 @@ import 'package:coffeeno/core/theme/app_colors.dart';
 
 /// A radar/spider chart that visually displays the six tasting scores.
 ///
-/// Each axis represents one of: Aroma, Flavor, Acidity, Body, Sweetness,
-/// Aftertaste.  Scores range from 0 to [maxScore] (default 5).
-class FlavorWheel extends StatelessWidget {
-  const FlavorWheel({
+/// Each axis represents one cupping dimension (Aroma, Flavor, Acidity, Body,
+/// Sweetness, Aftertaste). The axis [labels] are passed in (localized by the
+/// caller). Scores range from 0 to [maxScore] (default 5).
+///
+/// Named `ScoreRadarChart` rather than "FlavorWheel" to avoid confusion with
+/// the SCA flavor-selection wheel in [FlavorWheel] (flavor_wheel_painter.dart) —
+/// this widget is a score chart, not a flavor picker.
+class ScoreRadarChart extends StatelessWidget {
+  const ScoreRadarChart({
     super.key,
     required this.aroma,
     required this.flavor,
@@ -17,6 +22,7 @@ class FlavorWheel extends StatelessWidget {
     required this.body,
     required this.sweetness,
     required this.aftertaste,
+    required this.labels,
     this.maxScore = 5,
     this.size = 200,
   });
@@ -27,18 +33,19 @@ class FlavorWheel extends StatelessWidget {
   final int body;
   final int sweetness;
   final int aftertaste;
+
+  /// The six axis labels, in score order. Use `tastingAxisLabels(l10n)`.
+  final List<String> labels;
   final int maxScore;
   final double size;
 
-  List<int> get _scores => [aroma, flavor, acidity, body, sweetness, aftertaste];
-
-  static const _labels = [
-    'Aroma',
-    'Flavor',
-    'Acidity',
-    'Body',
-    'Sweetness',
-    'Aftertaste',
+  List<int> get _scores => [
+    aroma,
+    flavor,
+    acidity,
+    body,
+    sweetness,
+    aftertaste,
   ];
 
   @override
@@ -49,10 +56,10 @@ class FlavorWheel extends StatelessWidget {
       width: size,
       height: size,
       child: CustomPaint(
-        painter: _FlavorWheelPainter(
+        painter: _ScoreRadarPainter(
           scores: _scores,
           maxScore: maxScore,
-          labels: _labels,
+          labels: labels,
           fillColor: AppColors.terracotta.withValues(alpha: 0.25),
           strokeColor: AppColors.terracotta,
           gridColor: theme.colorScheme.outlineVariant,
@@ -64,8 +71,8 @@ class FlavorWheel extends StatelessWidget {
   }
 }
 
-class _FlavorWheelPainter extends CustomPainter {
-  _FlavorWheelPainter({
+class _ScoreRadarPainter extends CustomPainter {
+  _ScoreRadarPainter({
     required this.scores,
     required this.maxScore,
     required this.labels,
@@ -202,7 +209,7 @@ class _FlavorWheelPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _FlavorWheelPainter oldDelegate) {
+  bool shouldRepaint(covariant _ScoreRadarPainter oldDelegate) {
     return oldDelegate.scores != scores ||
         oldDelegate.fillColor != fillColor ||
         oldDelegate.strokeColor != strokeColor;

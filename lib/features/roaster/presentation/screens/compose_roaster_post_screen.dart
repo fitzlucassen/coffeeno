@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
@@ -9,12 +8,15 @@ import 'package:coffeeno/core/widgets/app_button.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import '../../../coffee/domain/coffee.dart';
 import '../../../coffee/presentation/providers/coffee_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/roaster_post.dart';
 import '../providers/roaster_post_provider.dart';
 import '../providers/roaster_provider.dart';
 
-final _roasterCoffeesProvider =
-    FutureProvider.family<List<Coffee>, String>((ref, roasterId) {
+final _roasterCoffeesProvider = FutureProvider.family<List<Coffee>, String>((
+  ref,
+  roasterId,
+) {
   final repo = ref.watch(coffeeRepositoryProvider);
   return repo.getCoffeesForRoaster(roasterId).first;
 });
@@ -50,7 +52,7 @@ class _ComposeRoasterPostScreenState
 
   Future<void> _submit(List<Coffee> coffees) async {
     if (!_formKey.currentState!.validate()) return;
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = ref.read(authStateProvider).value?.uid;
     if (uid == null) return;
 
     final roaster = ref.read(roasterDetailProvider(widget.roasterId)).value;
@@ -59,8 +61,10 @@ class _ComposeRoasterPostScreenState
     setState(() => _submitting = true);
     try {
       final linked = _selectedCoffeeId != null
-          ? coffees.firstWhere((c) => c.id == _selectedCoffeeId,
-              orElse: () => coffees.first)
+          ? coffees.firstWhere(
+              (c) => c.id == _selectedCoffeeId,
+              orElse: () => coffees.first,
+            )
           : null;
 
       final now = DateTime.now();
@@ -77,8 +81,9 @@ class _ComposeRoasterPostScreenState
         ctaLabel: _ctaLabelCtrl.text.trim().isEmpty
             ? null
             : _ctaLabelCtrl.text.trim(),
-        ctaUrl:
-            _ctaUrlCtrl.text.trim().isEmpty ? null : _ctaUrlCtrl.text.trim(),
+        ctaUrl: _ctaUrlCtrl.text.trim().isEmpty
+            ? null
+            : _ctaUrlCtrl.text.trim(),
         createdAt: now,
         expiresAt: now.add(RoasterPost.defaultLifetime),
       );
@@ -87,15 +92,16 @@ class _ComposeRoasterPostScreenState
 
       if (mounted) {
         final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.postPublished)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.postPublished)));
         context.pop();
       }
     } catch (e) {
+      debugPrint('[COFFEENO] Publish post failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     } finally {
@@ -126,7 +132,7 @@ class _ComposeRoasterPostScreenState
                     label: l10n.postTitleLabel,
                     textInputAction: TextInputAction.next,
                     validator: (v) =>
-                        Validators.required(v, l10n.postTitleLabel),
+                        Validators.required(v, l10n, l10n.postTitleLabel),
                   ),
                   const SizedBox(height: 16),
                   AppTextField(
@@ -134,7 +140,7 @@ class _ComposeRoasterPostScreenState
                     label: l10n.postBodyLabel,
                     maxLines: 5,
                     validator: (v) =>
-                        Validators.required(v, l10n.postBodyLabel),
+                        Validators.required(v, l10n, l10n.postBodyLabel),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String?>(
@@ -148,10 +154,12 @@ class _ComposeRoasterPostScreenState
                         value: null,
                         child: Text(l10n.postNoLinkedCoffee),
                       ),
-                      ...coffees.map((c) => DropdownMenuItem<String?>(
-                            value: c.id,
-                            child: Text(c.name),
-                          )),
+                      ...coffees.map(
+                        (c) => DropdownMenuItem<String?>(
+                          value: c.id,
+                          child: Text(c.name),
+                        ),
+                      ),
                     ],
                     onChanged: (v) => setState(() => _selectedCoffeeId = v),
                   ),

@@ -59,23 +59,29 @@ void main() {
   test('getActivePostsForRoasters filters out expired posts', () async {
     final now = DateTime(2026, 5, 10);
     // Active
-    await repo.createPost(_post(
-      roasterId: 'r1',
-      createdAt: DateTime(2026, 5, 5),
-      expiresAt: DateTime(2026, 6, 5),
-    ));
+    await repo.createPost(
+      _post(
+        roasterId: 'r1',
+        createdAt: DateTime(2026, 5, 5),
+        expiresAt: DateTime(2026, 6, 5),
+      ),
+    );
     // Expired
-    await repo.createPost(_post(
-      roasterId: 'r1',
-      createdAt: DateTime(2026, 3, 1),
-      expiresAt: DateTime(2026, 4, 1),
-    ));
+    await repo.createPost(
+      _post(
+        roasterId: 'r1',
+        createdAt: DateTime(2026, 3, 1),
+        expiresAt: DateTime(2026, 4, 1),
+      ),
+    );
     // Different roaster
-    await repo.createPost(_post(
-      roasterId: 'r2',
-      createdAt: DateTime(2026, 5, 5),
-      expiresAt: DateTime(2026, 6, 5),
-    ));
+    await repo.createPost(
+      _post(
+        roasterId: 'r2',
+        createdAt: DateTime(2026, 5, 5),
+        expiresAt: DateTime(2026, 6, 5),
+      ),
+    );
 
     final posts = await repo.getActivePostsForRoasters(['r1'], now: now);
     expect(posts.length, 1);
@@ -86,8 +92,7 @@ void main() {
     expect(posts.first.isExpiredAt(now), isFalse);
   });
 
-  test('getActivePostsForRoasters returns empty when input is empty',
-      () async {
+  test('getActivePostsForRoasters returns empty when input is empty', () async {
     final posts = await repo.getActivePostsForRoasters([]);
     expect(posts, isEmpty);
   });
@@ -97,15 +102,20 @@ void main() {
     final ids = [for (var i = 0; i < 35; i++) 'r$i'];
     final now = DateTime(2026, 5, 10);
     for (final rid in ids) {
-      await repo.createPost(_post(
-        roasterId: rid,
-        createdAt: DateTime(2026, 5, 1),
-        expiresAt: DateTime(2026, 6, 1),
-      ));
+      await repo.createPost(
+        _post(
+          roasterId: rid,
+          createdAt: DateTime(2026, 5, 1),
+          expiresAt: DateTime(2026, 6, 1),
+        ),
+      );
     }
 
-    final posts =
-        await repo.getActivePostsForRoasters(ids, limit: 50, now: now);
+    final posts = await repo.getActivePostsForRoasters(
+      ids,
+      limit: 50,
+      now: now,
+    );
     expect(posts.length, 35);
   });
 }

@@ -4,7 +4,7 @@ import '../domain/feed_item.dart';
 
 class FeedRepository {
   FeedRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -68,8 +68,11 @@ class FeedRepository {
     required String tastingId,
     required String userId,
   }) async {
-    final doc =
-        await _tastings.doc(tastingId).collection('likes').doc(userId).get();
+    final doc = await _tastings
+        .doc(tastingId)
+        .collection('likes')
+        .doc(userId)
+        .get();
     return doc.exists;
   }
 

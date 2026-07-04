@@ -87,7 +87,8 @@ class Tasting {
       sweetness: data['sweetness'] as int? ?? 3,
       aftertaste: data['aftertaste'] as int? ?? 3,
       overallRating: (data['overallRating'] as num?)?.toDouble() ?? 0.0,
-      flavorNotes: (data['flavorNotes'] as List<dynamic>?)
+      flavorNotes:
+          (data['flavorNotes'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -96,8 +97,7 @@ class Tasting {
           (data['tastingDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
       likesCount: data['likesCount'] as int? ?? 0,
       commentsCount: data['commentsCount'] as int? ?? 0,
-      createdAt:
-          (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
@@ -228,12 +228,32 @@ class Tasting {
 
   @override
   int get hashCode => Object.hashAll([
-        id, userId, coffeeId, coffeeName, roasterName,
-        brewMethod, grindSize, doseGrams, waterMl, ratio,
-        brewTimeSec, waterTempC, aroma, flavor, acidity,
-        body, sweetness, aftertaste, overallRating, ...flavorNotes, notes,
-        tastingDate, likesCount, commentsCount, createdAt,
-      ]);
+    id,
+    userId,
+    coffeeId,
+    coffeeName,
+    roasterName,
+    brewMethod,
+    grindSize,
+    doseGrams,
+    waterMl,
+    ratio,
+    brewTimeSec,
+    waterTempC,
+    aroma,
+    flavor,
+    acidity,
+    body,
+    sweetness,
+    aftertaste,
+    overallRating,
+    ...flavorNotes,
+    notes,
+    tastingDate,
+    likesCount,
+    commentsCount,
+    createdAt,
+  ]);
 
   @override
   String toString() =>

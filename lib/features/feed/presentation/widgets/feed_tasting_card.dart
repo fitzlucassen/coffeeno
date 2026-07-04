@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'package:coffeeno/core/utils/enum_labels.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
+import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:coffeeno/features/feed/domain/feed_item.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
 
@@ -13,10 +15,7 @@ import 'like_button.dart';
 /// A card showing a single feed tasting entry with user info, coffee details,
 /// rating, notes, and like/comment actions.
 class FeedTastingCard extends StatelessWidget {
-  const FeedTastingCard({
-    super.key,
-    required this.item,
-  });
+  const FeedTastingCard({super.key, required this.item});
 
   final FeedItem item;
 
@@ -125,7 +124,12 @@ class FeedTastingCard extends StatelessWidget {
                       item.brewMethod!.isNotEmpty) ...[
                     const SizedBox(width: 12),
                     Chip(
-                      label: Text(item.brewMethod!),
+                      label: Text(
+                        brewMethodLabelFromStored(
+                          item.brewMethod,
+                          AppLocalizations.of(context),
+                        ),
+                      ),
                       visualDensity: VisualDensity.compact,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),

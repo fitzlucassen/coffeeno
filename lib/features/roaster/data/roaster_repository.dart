@@ -4,7 +4,7 @@ import '../domain/roaster.dart';
 
 class RoasterRepository {
   RoasterRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -47,7 +47,9 @@ class RoasterRepository {
         .orderBy('name')
         .limit(limit)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Roaster.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Roaster.fromFirestore(doc)).toList(),
+        );
   }
 }

@@ -5,13 +5,13 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 AppUser _user(String uid, {String? username}) => AppUser(
-      uid: uid,
-      email: '$uid@x',
-      displayName: uid,
-      username: username ?? uid,
-      roles: {UserRole.user},
-      createdAt: DateTime(2026, 1, 1),
-    );
+  uid: uid,
+  email: '$uid@x',
+  displayName: uid,
+  username: username ?? uid,
+  roles: {UserRole.user},
+  createdAt: DateTime(2026, 1, 1),
+);
 
 void main() {
   late FakeFirebaseFirestore firestore;

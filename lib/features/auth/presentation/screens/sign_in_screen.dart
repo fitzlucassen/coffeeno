@@ -8,6 +8,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../auth_error_messages.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/social_sign_in_button.dart';
 
@@ -57,7 +58,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         context.go(AppRoutes.feed);
       }
     } on FirebaseAuthException catch (e) {
-      setState(() => _errorMessage = _mapAuthError(e.code));
+      setState(
+        () => _errorMessage = authErrorMessage(
+          e.code,
+          AppLocalizations.of(context),
+        ),
+      );
     } catch (_) {
       setState(() => _errorMessage = AppLocalizations.of(context).error);
     } finally {
@@ -90,27 +96,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         context.go(AppRoutes.feed);
       }
     } on FirebaseAuthException catch (e) {
-      setState(() => _errorMessage = _mapAuthError(e.code));
+      setState(
+        () => _errorMessage = authErrorMessage(
+          e.code,
+          AppLocalizations.of(context),
+        ),
+      );
     } catch (e) {
       debugPrint('[COFFEENO] Google sign-in error: $e');
-      setState(() => _errorMessage = e.toString());
+      if (mounted) {
+        setState(() => _errorMessage = AppLocalizations.of(context).error);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  String _mapAuthError(String code) {
-    switch (code) {
-      case 'user-not-found':
-      case 'wrong-password':
-      case 'invalid-credential':
-        return 'Invalid email or password.';
-      case 'user-disabled':
-        return 'This account has been disabled.';
-      case 'too-many-requests':
-        return 'Too many attempts. Please try again later.';
-      default:
-        return 'An error occurred. Please try again.';
     }
   }
 
@@ -156,7 +154,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  validator: Validators.email,
+                  validator: (value) => Validators.email(value, l10n),
                 ),
                 const SizedBox(height: 16),
 
@@ -167,7 +165,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   prefixIcon: Icons.lock_outline,
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
-                  validator: Validators.password,
+                  validator: (value) => Validators.password(value, l10n),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
@@ -263,7 +261,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             controller: resetEmailController,
             label: l10n.email,
             keyboardType: TextInputType.emailAddress,
-            validator: Validators.email,
+            validator: (value) => Validators.email(value, l10n),
           ),
         ),
         actions: [
@@ -279,15 +277,17 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               if (!resetFormKey.currentState!.validate()) return;
               try {
                 final authRepo = ref.read(authRepositoryProvider);
-                await authRepo
-                    .sendPasswordResetEmail(resetEmailController.text.trim());
+                await authRepo.sendPasswordResetEmail(
+                  resetEmailController.text.trim(),
+                );
                 resetEmailController.dispose();
                 if (ctx.mounted) Navigator.of(ctx).pop();
               } catch (e) {
+                debugPrint('[COFFEENO] Password reset error: $e');
                 if (ctx.mounted) {
-                  ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(content: Text(e.toString())),
-                  );
+                  ScaffoldMessenger.of(
+                    ctx,
+                  ).showSnackBar(SnackBar(content: Text(l10n.error)));
                 }
               }
             },

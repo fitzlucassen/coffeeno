@@ -1,5 +1,4 @@
 import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
@@ -9,8 +8,10 @@ import 'package:intl/intl.dart';
 import '../../domain/claim.dart';
 import '../providers/admin_provider.dart';
 
-final _claimUserNameProvider =
-    FutureProvider.family<String, String>((ref, userId) async {
+final _claimUserNameProvider = FutureProvider.family<String, String>((
+  ref,
+  userId,
+) async {
   final userRepo = ref.watch(userRepositoryProvider);
   final user = await userRepo.getUser(userId);
   return user?.displayName ?? userId;
@@ -37,14 +38,18 @@ class AdminClaimsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle_outline,
-                      size: 48,
-                      color: colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.4)),
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 48,
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  ),
                   const SizedBox(height: 8),
-                  Text(l10n.noPendingClaims,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant)),
+                  Text(
+                    l10n.noPendingClaims,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             );
@@ -53,8 +58,7 @@ class AdminClaimsScreen extends ConsumerWidget {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: claims.length,
-            itemBuilder: (context, index) =>
-                _ClaimTile(claim: claims[index]),
+            itemBuilder: (context, index) => _ClaimTile(claim: claims[index]),
           );
         },
       ),
@@ -95,8 +99,10 @@ class _ClaimTile extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(claim.entityName,
-                      style: theme.textTheme.titleMedium),
+                  child: Text(
+                    claim.entityName,
+                    style: theme.textTheme.titleMedium,
+                  ),
                 ),
                 Chip(
                   label: Text(typeLabel),
@@ -107,8 +113,9 @@ class _ClaimTile extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               DateFormat.yMMMd().format(claim.createdAt),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 8),
             _ClaimUserRow(userId: claim.userId),
@@ -139,13 +146,14 @@ class _ClaimTile extends ConsumerWidget {
 
   Future<void> _approve(BuildContext context, WidgetRef ref) async {
     try {
-      final adminUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final adminUid = ref.read(authStateProvider).value?.uid ?? '';
       final repo = ref.read(claimRepositoryProvider);
       await repo.approveClaim(claim.id, adminUid);
     } catch (e) {
+      debugPrint('[COFFEENO] Approve claim failed: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     }
@@ -153,13 +161,14 @@ class _ClaimTile extends ConsumerWidget {
 
   Future<void> _reject(BuildContext context, WidgetRef ref) async {
     try {
-      final adminUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final adminUid = ref.read(authStateProvider).value?.uid ?? '';
       final repo = ref.read(claimRepositoryProvider);
       await repo.rejectClaim(claim.id, adminUid);
     } catch (e) {
+      debugPrint('[COFFEENO] Reject claim failed: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
         );
       }
     }
@@ -186,11 +195,7 @@ class _ClaimUserRow extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
           children: [
-            Icon(
-              Icons.person,
-              size: 18,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            Icon(Icons.person, size: 18, color: colorScheme.onSurfaceVariant),
             const SizedBox(width: 6),
             Expanded(
               child: Text(

@@ -7,8 +7,7 @@ import '../domain/scan_result.dart';
 /// Service that sends OCR text (and optionally the original image) to
 /// Gemini 2.0 Flash and parses the structured coffee data response.
 class GeminiService {
-  GeminiService()
-      : _apiKey = const String.fromEnvironment('GEMINI_API_KEY');
+  GeminiService() : _apiKey = const String.fromEnvironment('GEMINI_API_KEY');
 
   final String _apiKey;
 

@@ -23,10 +23,10 @@ enum StatsPeriod {
   last12Months;
 
   int get durationInDays => switch (this) {
-        StatsPeriod.last30Days => 30,
-        StatsPeriod.last3Months => 90,
-        StatsPeriod.last12Months => 365,
-      };
+    StatsPeriod.last30Days => 30,
+    StatsPeriod.last3Months => 90,
+    StatsPeriod.last12Months => 365,
+  };
 }
 
 /// Aggregated statistics for a roaster's coffees.

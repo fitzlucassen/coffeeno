@@ -5,8 +5,8 @@ import 'package:coffeeno/l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
-class CoffenoApp extends ConsumerWidget {
-  const CoffenoApp({super.key});
+class CoffeenoApp extends ConsumerWidget {
+  const CoffeenoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

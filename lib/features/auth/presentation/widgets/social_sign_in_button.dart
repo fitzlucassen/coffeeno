@@ -6,10 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 /// A full-width Google sign-in button styled as a white/dark card with
 /// the Google "G" icon.
 class SocialSignInButton extends StatelessWidget {
-  const SocialSignInButton({
-    super.key,
-    required this.onPressed,
-  });
+  const SocialSignInButton({super.key, required this.onPressed});
 
   final VoidCallback? onPressed;
 
@@ -29,7 +26,7 @@ class SocialSignInButton extends StatelessWidget {
               ? AppColors.darkTextPrimary
               : AppColors.espresso,
           side: BorderSide(
-            color: isDark ? AppColors.darkBorder : const Color(0xFFE8DDD0),
+            color: isDark ? AppColors.darkBorder : AppColors.border,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(

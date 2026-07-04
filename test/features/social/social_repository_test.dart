@@ -42,15 +42,9 @@ void main() {
     });
 
     test('isFollowing reflects the relationship', () async {
-      expect(
-        await repo.isFollowing(userId: 'alice', targetId: 'bob'),
-        isFalse,
-      );
+      expect(await repo.isFollowing(userId: 'alice', targetId: 'bob'), isFalse);
       await repo.followUser(userId: 'alice', targetId: 'bob');
-      expect(
-        await repo.isFollowing(userId: 'alice', targetId: 'bob'),
-        isTrue,
-      );
+      expect(await repo.isFollowing(userId: 'alice', targetId: 'bob'), isTrue);
     });
   });
 
@@ -76,7 +70,10 @@ void main() {
       await repo.followUser(userId: 'carla', targetId: 'bob');
 
       final followersOfBob = await repo.getFollowers('bob').first;
-      expect(followersOfBob.map((f) => f.userId), containsAll(['alice', 'carla']));
+      expect(
+        followersOfBob.map((f) => f.userId),
+        containsAll(['alice', 'carla']),
+      );
 
       final aliceFollowing = await repo.getFollowing('alice').first;
       expect(aliceFollowing.map((f) => f.userId), ['bob']);
@@ -85,15 +82,36 @@ void main() {
 
   group('searchUsers', () {
     setUp(() async {
-      await seedUser(firestore, uid: 'u_alice',
-          overrides: {'username': 'alice', 'usernameLower': 'alice',
-            'displayName': 'Alice', 'displayNameLower': 'alice'});
-      await seedUser(firestore, uid: 'u_alex',
-          overrides: {'username': 'alex', 'usernameLower': 'alex',
-            'displayName': 'Alex', 'displayNameLower': 'alex'});
-      await seedUser(firestore, uid: 'u_bob',
-          overrides: {'username': 'bob', 'usernameLower': 'bob',
-            'displayName': 'Bob', 'displayNameLower': 'bob'});
+      await seedUser(
+        firestore,
+        uid: 'u_alice',
+        overrides: {
+          'username': 'alice',
+          'usernameLower': 'alice',
+          'displayName': 'Alice',
+          'displayNameLower': 'alice',
+        },
+      );
+      await seedUser(
+        firestore,
+        uid: 'u_alex',
+        overrides: {
+          'username': 'alex',
+          'usernameLower': 'alex',
+          'displayName': 'Alex',
+          'displayNameLower': 'alex',
+        },
+      );
+      await seedUser(
+        firestore,
+        uid: 'u_bob',
+        overrides: {
+          'username': 'bob',
+          'usernameLower': 'bob',
+          'displayName': 'Bob',
+          'displayNameLower': 'bob',
+        },
+      );
     });
 
     test('returns username-prefix matches case-insensitively', () async {
@@ -107,12 +125,14 @@ void main() {
       expect(await repo.searchUsers('   '), isEmpty);
     });
 
-    test('deduplicates a user matched by both username and display name',
-        () async {
-      // "alice" matches both usernameLower and displayNameLower; should appear
-      // once.
-      final results = await repo.searchUsers('alice');
-      expect(results.where((r) => r.uid == 'u_alice').length, 1);
-    });
+    test(
+      'deduplicates a user matched by both username and display name',
+      () async {
+        // "alice" matches both usernameLower and displayNameLower; should appear
+        // once.
+        final results = await repo.searchUsers('alice');
+        expect(results.where((r) => r.uid == 'u_alice').length, 1);
+      },
+    );
   });
 }

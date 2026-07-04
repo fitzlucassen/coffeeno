@@ -12,8 +12,10 @@ final pendingClaimsProvider = StreamProvider<List<Claim>>((ref) {
   return repository.getPendingClaims();
 });
 
-final userClaimsProvider =
-    StreamProvider.family<List<Claim>, String>((ref, userId) {
+final userClaimsProvider = StreamProvider.family<List<Claim>, String>((
+  ref,
+  userId,
+) {
   final repository = ref.watch(claimRepositoryProvider);
   return repository.getUserClaims(userId);
 });

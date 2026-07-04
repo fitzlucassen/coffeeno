@@ -1,15 +1,12 @@
-import 'dart:io';
-
+import 'package:coffeeno/core/services/photo_upload_service.dart';
 import 'package:coffeeno/core/widgets/app_text_field.dart';
 import 'package:coffeeno/core/widgets/profile_photo_picker.dart';
 import 'package:coffeeno/features/farm/domain/farm.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
 
 import '../providers/farm_provider.dart';
 
@@ -78,14 +75,12 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
     if (_pendingPhotoPath == null) return _photoUrl;
     setState(() => _uploadingPhoto = true);
     try {
-      final fileName = '${const Uuid().v4()}.jpg';
-      final ref = FirebaseStorage.instance
-          .ref('farms/${widget.farmId}/$fileName');
-      await ref.putFile(
-        File(_pendingPhotoPath!),
-        SettableMetadata(contentType: 'image/jpeg'),
-      );
-      return await ref.getDownloadURL();
+      return await ref
+          .read(photoUploadServiceProvider)
+          .uploadJpeg(
+            pathPrefix: 'farms/${widget.farmId}',
+            localPath: _pendingPhotoPath!,
+          );
     } finally {
       if (mounted) setState(() => _uploadingPhoto = false);
     }
@@ -127,15 +122,16 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
     final farmAsync = ref.watch(farmDetailProvider(widget.farmId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.editProfileInfo),
-      ),
+      appBar: AppBar(title: Text(l10n.editProfileInfo)),
       body: farmAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('$error')),
+        error: (error, _) {
+          debugPrint('Failed to load farm: $error');
+          return Center(child: Text(l10n.error));
+        },
         data: (farm) {
           if (farm == null) {
-            return const Center(child: Text('Farm not found'));
+            return Center(child: Text(l10n.error));
           }
 
           _prefillControllers(farm);
@@ -157,10 +153,10 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
                   const SizedBox(height: 24),
                   AppTextField(
                     controller: _nameController,
-                    label: 'Name',
+                    label: l10n.farmName,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Name is required';
+                        return l10n.fieldRequired;
                       }
                       return null;
                     },
@@ -168,13 +164,13 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
                   const SizedBox(height: 16),
                   AppTextField(
                     controller: _descriptionController,
-                    label: 'Description',
+                    label: l10n.description,
                     maxLines: 3,
                   ),
                   const SizedBox(height: 16),
                   AppTextField(
                     controller: _urlController,
-                    label: 'Website URL',
+                    label: l10n.websiteUrl,
                     keyboardType: TextInputType.url,
                   ),
                   const SizedBox(height: 16),
@@ -207,9 +203,7 @@ class _EditFarmScreenState extends ConsumerState<EditFarmScreen> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : Text(l10n.save),
                     ),

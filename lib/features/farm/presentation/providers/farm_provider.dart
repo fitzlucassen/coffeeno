@@ -7,8 +7,7 @@ final farmRepositoryProvider = Provider<FarmRepository>((ref) {
   return FarmRepository();
 });
 
-final farmDetailProvider =
-    StreamProvider.family<Farm?, String>((ref, farmId) {
+final farmDetailProvider = StreamProvider.family<Farm?, String>((ref, farmId) {
   final repository = ref.watch(farmRepositoryProvider);
   return repository.watchFarm(farmId);
 });

@@ -60,8 +60,7 @@ void main() {
         createdAt: DateTime(2026, 2, 1),
       );
 
-      final ref =
-          await firestore.collection('claims').add(claim.toFirestore());
+      final ref = await firestore.collection('claims').add(claim.toFirestore());
       final doc = await ref.get();
       final round = Claim.fromFirestore(doc);
 
