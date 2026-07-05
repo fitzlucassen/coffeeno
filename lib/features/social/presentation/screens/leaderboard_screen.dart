@@ -55,10 +55,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _GlobalTab(ref: ref, l10n: l10n),
+          const _GlobalTab(),
           _ByOriginTab(
-            ref: ref,
-            l10n: l10n,
             selectedCountry: _selectedCountry,
             onCountryChanged: (country) {
               setState(() => _selectedCountry = country);
@@ -70,14 +68,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   }
 }
 
-class _GlobalTab extends StatelessWidget {
-  const _GlobalTab({required this.ref, required this.l10n});
-
-  final WidgetRef ref;
-  final AppLocalizations l10n;
+class _GlobalTab extends ConsumerWidget {
+  const _GlobalTab();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final leaderboardAsync = ref.watch(globalLeaderboardProvider);
 
     return leaderboardAsync.when(
@@ -108,21 +104,18 @@ class _GlobalTab extends StatelessWidget {
   }
 }
 
-class _ByOriginTab extends StatelessWidget {
+class _ByOriginTab extends ConsumerWidget {
   const _ByOriginTab({
-    required this.ref,
-    required this.l10n,
     required this.selectedCountry,
     required this.onCountryChanged,
   });
 
-  final WidgetRef ref;
-  final AppLocalizations l10n;
   final String? selectedCountry;
   final ValueChanged<String?> onCountryChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final originsAsync = ref.watch(leaderboardOriginsProvider);
@@ -165,30 +158,21 @@ class _ByOriginTab extends StatelessWidget {
                     ),
                   ),
                 )
-              : _OriginLeaderboard(
-                  ref: ref,
-                  country: selectedCountry!,
-                  l10n: l10n,
-                ),
+              : _OriginLeaderboard(country: selectedCountry!),
         ),
       ],
     );
   }
 }
 
-class _OriginLeaderboard extends StatelessWidget {
-  const _OriginLeaderboard({
-    required this.ref,
-    required this.country,
-    required this.l10n,
-  });
+class _OriginLeaderboard extends ConsumerWidget {
+  const _OriginLeaderboard({required this.country});
 
-  final WidgetRef ref;
   final String country;
-  final AppLocalizations l10n;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final entriesAsync = ref.watch(leaderboardByOriginProvider(country));
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;

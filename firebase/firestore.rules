@@ -28,7 +28,15 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if isAuthenticated();
       allow create: if isOwner(uid);
-      allow update: if isOwner(uid);
+      // The owner may update their own document freely. Any authenticated user
+      // may additionally update *only* another user's `followersCount` — this
+      // is the denormalized follower tally maintained by follow/unfollow, which
+      // writes to the target's doc. Restricting the affected keys to exactly
+      // `followersCount` prevents a follower from touching anything else.
+      allow update: if isOwner(uid)
+        || (isAuthenticated()
+            && request.resource.data.diff(resource.data)
+                .affectedKeys().hasOnly(['followersCount']));
       allow delete: if isOwner(uid);
 
       // Followers subcollection
