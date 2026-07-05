@@ -15,10 +15,11 @@ class LeaderboardRepository {
   static const int _bayesianMinVotes = 3;
 
   /// How many candidates to pull from Firestore before applying the Bayesian
-  /// sort client-side. The server can only order by a stored field, so we fetch
-  /// a wider popularity-ranked set and re-rank it here; this keeps a genuinely
-  /// popular coffee from being excluded just because its raw average sits below
-  /// a cluster of 1-vote 5.0s. Trimmed back to the requested limit afterwards.
+  /// sort client-side. The server orders by `avgRating` (which reuses indexes
+  /// that already exist — see firestore.indexes.json), and we over-fetch a
+  /// wider window so the client-side Bayesian re-rank still has enough context
+  /// to surface genuinely popular coffees rather than a cluster of 1-vote 5.0s.
+  /// Trimmed back to the requested limit afterwards.
   static const int _candidateMultiplier = 4;
 
   /// Sorts entries using a Bayesian average so that coffees with very few
@@ -58,10 +59,11 @@ class LeaderboardRepository {
   Stream<List<LeaderboardEntry>> getGlobalLeaderboard({int limit = 50}) {
     return _coffees
         .where('ratingsCount', isGreaterThanOrEqualTo: 1)
-        // Order by popularity (ratingsCount) rather than raw avgRating so the
-        // candidate window isn't dominated by thinly-rated 5.0s; the Bayesian
-        // sort below then produces the final ranking. See [_candidateMultiplier].
-        .orderBy('ratingsCount', descending: true)
+        // Order by avgRating (reuses the existing ratingsCount+avgRating index,
+        // so no new index build is required). The Bayesian sort below produces
+        // the final ranking; over-fetching via [_candidateMultiplier] keeps
+        // popular coffees from being cut before the re-rank.
+        .orderBy('avgRating', descending: true)
         .limit(limit * _candidateMultiplier)
         .snapshots()
         .map(
@@ -82,7 +84,9 @@ class LeaderboardRepository {
     return _coffees
         .where('originCountry', isEqualTo: originCountry)
         .where('ratingsCount', isGreaterThanOrEqualTo: 1)
-        .orderBy('ratingsCount', descending: true)
+        // Order by avgRating so this reuses the pre-existing
+        // originCountry+ratingsCount+avgRating index (no new index build).
+        .orderBy('avgRating', descending: true)
         .limit(limit * _candidateMultiplier)
         .snapshots()
         .map(
