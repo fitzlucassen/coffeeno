@@ -70,7 +70,10 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                 .then((_) => ref.invalidate(remainingFreeScansProvider));
           }
         }
-        context.push(AppRoutes.scanReview, extra: next.result);
+        // Go straight to the (prefilled, fully editable) add-coffee form.
+        // There's no separate read-only review step: the add-coffee form shows
+        // every extracted field, editable, and prefills from this result.
+        context.push(AppRoutes.addCoffee, extra: next.result);
       }
     });
 

@@ -266,6 +266,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get waterTemperature => 'Temp. eau (°C)';
 
   @override
+  String get automaticMachine => 'Machine automatique';
+
+  @override
+  String get automaticMachineHint =>
+      'La machine gère la dose, l\'eau, la mouture et la température';
+
+  @override
   String get aroma => 'Arôme';
 
   @override
@@ -519,6 +526,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get getSuggestion => 'Suggestion IA';
+
+  @override
+  String get aiSuggestionUpsell =>
+      'Laissez l\'IA trouver l\'infusion parfaite pour ce café. Passez à Premium pour débloquer les suggestions IA.';
 
   @override
   String get suggestedParams => 'Paramètres suggérés';

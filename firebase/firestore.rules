@@ -80,7 +80,17 @@ service cloud.firestore {
     match /tastings/{tastingId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // The owner may update their tasting freely. Any authenticated user may
+      // additionally update *only* the denormalized `likesCount` /
+      // `commentsCount` tallies — these are bumped by the like/comment batches,
+      // which write to the tasting doc even when the actor isn't the owner.
+      // Restricting the affected keys to exactly those two counters prevents a
+      // liker/commenter from altering anything else on someone else's tasting.
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid
+        || request.resource.data.diff(resource.data)
+            .affectedKeys().hasOnly(['likesCount', 'commentsCount'])
+      );
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
 
       // Likes subcollection

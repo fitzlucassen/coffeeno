@@ -18,7 +18,6 @@ import '../../features/tasting/presentation/screens/tasting_detail_screen.dart';
 import '../../features/explore/presentation/screens/explore_screen.dart';
 import '../../features/feed/presentation/screens/feed_screen.dart';
 import '../../features/scanner/presentation/screens/camera_screen.dart';
-import '../../features/scanner/presentation/screens/scan_review_screen.dart';
 import '../../features/social/presentation/screens/blocked_users_screen.dart';
 import '../../features/social/presentation/screens/user_profile_screen.dart';
 import '../../features/social/presentation/screens/followers_screen.dart';
@@ -54,7 +53,6 @@ abstract final class AppRoutes {
   static const addTasting = '/tasting/add/:coffeeId';
   static const tastingDetail = '/tasting/:id';
   static const scan = '/scan';
-  static const scanReview = '/scan/review';
   static const userProfile = '/user/:id';
   static const followers = '/user/:id/followers';
   static const following = '/user/:id/following';
@@ -203,10 +201,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.scan,
         builder: (context, state) => const CameraScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.scanReview,
-        builder: (context, state) => const ScanReviewScreen(),
       ),
       GoRoute(
         path: AppRoutes.userProfile,

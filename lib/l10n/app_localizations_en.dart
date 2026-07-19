@@ -265,6 +265,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get waterTemperature => 'Water Temp (°C)';
 
   @override
+  String get automaticMachine => 'Automatic machine';
+
+  @override
+  String get automaticMachineHint =>
+      'The machine controls dose, water, grind and temperature';
+
+  @override
   String get aroma => 'Aroma';
 
   @override
@@ -513,6 +520,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get getSuggestion => 'Get AI Suggestion';
+
+  @override
+  String get aiSuggestionUpsell =>
+      'Let AI dial in the perfect brew for this coffee. Upgrade to Premium to unlock AI suggestions.';
 
   @override
   String get suggestedParams => 'Suggested Parameters';

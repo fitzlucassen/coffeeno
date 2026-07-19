@@ -9,6 +9,8 @@ import 'package:coffeeno/core/utils/enum_labels.dart';
 import 'package:coffeeno/core/widgets/app_card.dart';
 import 'package:coffeeno/core/widgets/coffee_score_badge.dart';
 import 'package:coffeeno/core/widgets/star_rating.dart';
+import '../../../feed/presentation/widgets/comment_sheet.dart';
+import '../../../feed/presentation/widgets/like_button.dart';
 import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../providers/tasting_provider.dart';
 import '../utils/share_tasting.dart';
@@ -124,35 +126,42 @@ class TastingDetailScreen extends ConsumerWidget {
                           l10n,
                         ),
                       ),
-                      _ParamRow(
-                        icon: Icons.grain_rounded,
-                        label: l10n.grindSize,
-                        value: grindSizeLabelFromStored(
-                          tasting.grindSize,
-                          l10n,
+                      // Grind size is empty for automatic-machine tastings.
+                      if (tasting.grindSize.isNotEmpty)
+                        _ParamRow(
+                          icon: Icons.grain_rounded,
+                          label: l10n.grindSize,
+                          value: grindSizeLabelFromStored(
+                            tasting.grindSize,
+                            l10n,
+                          ),
                         ),
-                      ),
-                      _ParamRow(
-                        icon: Icons.scale_rounded,
-                        label: l10n.dose,
-                        value: '${tasting.doseGrams.toStringAsFixed(1)}g',
-                      ),
-                      _ParamRow(
-                        icon: Icons.water_drop_rounded,
-                        label: l10n.waterAmount,
-                        value: '${tasting.waterMl.toStringAsFixed(0)}ml',
-                      ),
+                      // Dose / water / ratio / time are all controlled by an
+                      // automatic machine, so only show them when recorded.
+                      if (tasting.doseGrams > 0)
+                        _ParamRow(
+                          icon: Icons.scale_rounded,
+                          label: l10n.dose,
+                          value: '${tasting.doseGrams.toStringAsFixed(1)}g',
+                        ),
+                      if (tasting.waterMl > 0)
+                        _ParamRow(
+                          icon: Icons.water_drop_rounded,
+                          label: l10n.waterAmount,
+                          value: '${tasting.waterMl.toStringAsFixed(0)}ml',
+                        ),
                       if (tasting.ratio.isNotEmpty)
                         _ParamRow(
                           icon: Icons.compare_arrows_rounded,
                           label: l10n.ratio,
                           value: tasting.ratio,
                         ),
-                      _ParamRow(
-                        icon: Icons.timer_rounded,
-                        label: l10n.brewTime,
-                        value: _formatBrewTime(tasting.brewTimeSec),
-                      ),
+                      if (tasting.brewTimeSec > 0)
+                        _ParamRow(
+                          icon: Icons.timer_rounded,
+                          label: l10n.brewTime,
+                          value: _formatBrewTime(tasting.brewTimeSec),
+                        ),
                       if (tasting.waterTempC != null)
                         _ParamRow(
                           icon: Icons.thermostat_rounded,
@@ -238,27 +247,35 @@ class TastingDetailScreen extends ConsumerWidget {
                 // Like & comment row
                 Row(
                   children: [
-                    IconButton.outlined(
-                      onPressed: () {
-                        // TODO: implement like toggle
-                      },
-                      icon: const Icon(Icons.favorite_border_rounded),
+                    LikeButton(
+                      tastingId: tasting.id,
+                      likesCount: tasting.likesCount,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${tasting.likesCount}',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                    const SizedBox(width: 16),
-                    Icon(
-                      Icons.comment_outlined,
-                      size: 20,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${tasting.commentsCount}',
-                      style: theme.textTheme.bodyMedium,
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () => showCommentSheet(context, tasting.id),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.comment_outlined,
+                              size: 20,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${tasting.commentsCount}',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     const Spacer(),
                     Text(

@@ -17,6 +17,7 @@ class BrewParamsForm extends StatelessWidget {
     required this.brewTimeMinutes,
     required this.brewTimeSeconds,
     required this.waterTempC,
+    required this.isAutomatic,
     required this.onBrewMethodChanged,
     required this.onGrindSizeChanged,
     required this.onDoseOrWaterChanged,
@@ -32,6 +33,12 @@ class BrewParamsForm extends StatelessWidget {
   final int brewTimeMinutes;
   final int brewTimeSeconds;
   final int? waterTempC;
+
+  /// When true the machine controls the brew parameters (dose, water, grind,
+  /// time, temperature) itself, so those fields are hidden and only the brew
+  /// method is kept. Hiding the fields also removes their FormField validators
+  /// from the tree, so an automatic tasting can be saved without them.
+  final bool isAutomatic;
   final ValueChanged<BrewMethod?> onBrewMethodChanged;
   final ValueChanged<GrindSize?> onGrindSizeChanged;
   final VoidCallback onDoseOrWaterChanged;
@@ -84,159 +91,169 @@ class BrewParamsForm extends StatelessWidget {
           onChanged: onBrewMethodChanged,
           validator: (v) => v == null ? l10n.fieldRequired : null,
         ),
-        const SizedBox(height: 16),
 
-        // Grind size — same keyed pattern as brew method above.
-        DropdownButtonFormField<GrindSize>(
-          key: ValueKey('grindSize-${selectedGrindSize?.name}'),
-          initialValue: selectedGrindSize,
-          decoration: InputDecoration(
-            labelText: l10n.grindSize,
-            prefixIcon: const Icon(Icons.grain_rounded),
-          ),
-          items: GrindSize.values
-              .map(
-                (g) => DropdownMenuItem(
-                  value: g,
-                  child: Text(g.displayLabel(l10n)),
-                ),
-              )
-              .toList(),
-          onChanged: onGrindSizeChanged,
-          validator: (v) => v == null ? l10n.fieldRequired : null,
-        ),
-        const SizedBox(height: 16),
+        // On an automatic machine the user doesn't control dose, water, grind,
+        // time or temperature — the machine does. Hide those fields entirely so
+        // the form stays short and their validators don't block the save.
+        if (isAutomatic)
+          const SizedBox.shrink()
+        else ...[
+          const SizedBox(height: 16),
 
-        // Dose & Water
-        Row(
-          children: [
-            Expanded(
-              child: AppTextField(
-                controller: doseController,
-                label: l10n.dose,
-                prefixIcon: Icons.scale_rounded,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                textInputAction: TextInputAction.next,
-                onChanged: (_) => onDoseOrWaterChanged(),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return l10n.fieldRequired;
-                  if (double.tryParse(v) == null) return l10n.fieldInvalid;
-                  return null;
-                },
-              ),
+          // Grind size — same keyed pattern as brew method above.
+          DropdownButtonFormField<GrindSize>(
+            key: ValueKey('grindSize-${selectedGrindSize?.name}'),
+            initialValue: selectedGrindSize,
+            decoration: InputDecoration(
+              labelText: l10n.grindSize,
+              prefixIcon: const Icon(Icons.grain_rounded),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: AppTextField(
-                controller: waterController,
-                label: l10n.waterAmount,
-                prefixIcon: Icons.water_drop_rounded,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                textInputAction: TextInputAction.next,
-                onChanged: (_) => onDoseOrWaterChanged(),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return l10n.fieldRequired;
-                  if (double.tryParse(v) == null) return l10n.fieldInvalid;
-                  return null;
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-
-        // Ratio display
-        if (ratioDisplay.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              '${l10n.ratio}: $ratioDisplay',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        const SizedBox(height: 16),
-
-        // Brew time
-        Text(l10n.brewTime, style: theme.textTheme.titleSmall),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            // Minutes
-            SizedBox(
-              width: 80,
-              child: DropdownButtonFormField<int>(
-                key: ValueKey('brewMinutes-${_clampMinutes(brewTimeMinutes)}'),
-                initialValue: _clampMinutes(brewTimeMinutes),
-                decoration: InputDecoration(
-                  labelText: l10n.minutesAbbrev,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
+            items: GrindSize.values
+                .map(
+                  (g) => DropdownMenuItem(
+                    value: g,
+                    child: Text(g.displayLabel(l10n)),
                   ),
+                )
+                .toList(),
+            onChanged: onGrindSizeChanged,
+            validator: (v) => v == null ? l10n.fieldRequired : null,
+          ),
+          const SizedBox(height: 16),
+
+          // Dose & Water
+          Row(
+            children: [
+              Expanded(
+                child: AppTextField(
+                  controller: doseController,
+                  label: l10n.dose,
+                  prefixIcon: Icons.scale_rounded,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) => onDoseOrWaterChanged(),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return l10n.fieldRequired;
+                    if (double.tryParse(v) == null) return l10n.fieldInvalid;
+                    return null;
+                  },
                 ),
-                items: List.generate(
-                  16,
-                  (i) => DropdownMenuItem(value: i, child: Text('$i')),
-                ),
-                onChanged: (v) => onBrewTimeChanged(v ?? 0, brewTimeSeconds),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppTextField(
+                  controller: waterController,
+                  label: l10n.waterAmount,
+                  prefixIcon: Icons.water_drop_rounded,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) => onDoseOrWaterChanged(),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return l10n.fieldRequired;
+                    if (double.tryParse(v) == null) return l10n.fieldInvalid;
+                    return null;
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Ratio display
+          if (ratioDisplay.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(':', style: theme.textTheme.titleLarge),
-            ),
-            // Seconds. The suggestion service may return an arbitrary number
-            // of seconds (e.g. 28), but this dropdown only accepts multiples
-            // of 5. Snap to the nearest 5-sec step so `initialValue` always
-            // matches one of the items — otherwise Flutter's dropdown
-            // assertion fires.
-            SizedBox(
-              width: 80,
-              child: DropdownButtonFormField<int>(
-                key: ValueKey('brewSeconds-${_snapToFive(brewTimeSeconds)}'),
-                initialValue: _snapToFive(brewTimeSeconds),
-                decoration: InputDecoration(
-                  labelText: l10n.secondsAbbrev,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
+              padding: const EdgeInsets.only(left: 4),
+              child: Text(
+                '${l10n.ratio}: $ratioDisplay',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w500,
                 ),
-                items: List.generate(
-                  12,
-                  (i) => DropdownMenuItem(
-                    value: i * 5,
-                    child: Text((i * 5).toString().padLeft(2, '0')),
-                  ),
-                ),
-                onChanged: (v) => onBrewTimeChanged(brewTimeMinutes, v ?? 0),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-        // Water temperature. Keyed + initialValue on `waterTempC` so a value
-        // set externally (e.g. from an AI suggestion) actually shows up in the
-        // field — without the key the initialValue is one-shot and the field
-        // stays blank after a suggestion.
-        AppTextField(
-          key: ValueKey('waterTemp-$waterTempC'),
-          initialValue: waterTempC?.toString(),
-          label: l10n.waterTemperature,
-          prefixIcon: Icons.thermostat_rounded,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.done,
-          hint: '93',
-          onChanged: (v) => onWaterTempChanged(int.tryParse(v)),
-        ),
+          // Brew time
+          Text(l10n.brewTime, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              // Minutes
+              SizedBox(
+                width: 80,
+                child: DropdownButtonFormField<int>(
+                  key: ValueKey(
+                    'brewMinutes-${_clampMinutes(brewTimeMinutes)}',
+                  ),
+                  initialValue: _clampMinutes(brewTimeMinutes),
+                  decoration: InputDecoration(
+                    labelText: l10n.minutesAbbrev,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                  ),
+                  items: List.generate(
+                    16,
+                    (i) => DropdownMenuItem(value: i, child: Text('$i')),
+                  ),
+                  onChanged: (v) => onBrewTimeChanged(v ?? 0, brewTimeSeconds),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(':', style: theme.textTheme.titleLarge),
+              ),
+              // Seconds. The suggestion service may return an arbitrary number
+              // of seconds (e.g. 28), but this dropdown only accepts multiples
+              // of 5. Snap to the nearest 5-sec step so `initialValue` always
+              // matches one of the items — otherwise Flutter's dropdown
+              // assertion fires.
+              SizedBox(
+                width: 80,
+                child: DropdownButtonFormField<int>(
+                  key: ValueKey('brewSeconds-${_snapToFive(brewTimeSeconds)}'),
+                  initialValue: _snapToFive(brewTimeSeconds),
+                  decoration: InputDecoration(
+                    labelText: l10n.secondsAbbrev,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                  ),
+                  items: List.generate(
+                    12,
+                    (i) => DropdownMenuItem(
+                      value: i * 5,
+                      child: Text((i * 5).toString().padLeft(2, '0')),
+                    ),
+                  ),
+                  onChanged: (v) => onBrewTimeChanged(brewTimeMinutes, v ?? 0),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Water temperature. Keyed + initialValue on `waterTempC` so a value
+          // set externally (e.g. from an AI suggestion) actually shows up in the
+          // field — without the key the initialValue is one-shot and the field
+          // stays blank after a suggestion.
+          AppTextField(
+            key: ValueKey('waterTemp-$waterTempC'),
+            initialValue: waterTempC?.toString(),
+            label: l10n.waterTemperature,
+            prefixIcon: Icons.thermostat_rounded,
+            keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            hint: '93',
+            onChanged: (v) => onWaterTempChanged(int.tryParse(v)),
+          ),
+        ],
       ],
     );
   }

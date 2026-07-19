@@ -42,6 +42,11 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
   int _brewTimeSeconds = 0;
   int? _waterTempC;
 
+  /// True when brewing on an automatic machine that controls dose, water,
+  /// grind, time and temperature itself. Hides those fields so the user only
+  /// records the brew method and their tasting scores.
+  bool _isAutomatic = false;
+
   int _aroma = 3;
   int _flavor = 3;
   int _acidity = 3;
@@ -186,9 +191,18 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
       );
       final repository = ref.read(tastingRepositoryProvider);
 
-      final dose = double.parse(_doseController.text);
-      final water = double.parse(_waterController.text);
-      final brewTimeSec = (_brewTimeMinutes * 60) + _brewTimeSeconds;
+      // On an automatic machine the brew-parameter fields are hidden, so their
+      // controllers/state may be empty. Fall back to 0 / null rather than
+      // parsing an empty string, and skip the grind size (not captured).
+      final dose = _isAutomatic
+          ? (double.tryParse(_doseController.text) ?? 0)
+          : double.parse(_doseController.text);
+      final water = _isAutomatic
+          ? (double.tryParse(_waterController.text) ?? 0)
+          : double.parse(_waterController.text);
+      final brewTimeSec = _isAutomatic
+          ? 0
+          : (_brewTimeMinutes * 60) + _brewTimeSeconds;
 
       final tasting = Tasting(
         id: '',
@@ -203,10 +217,12 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
         coffeePhotoUrl: coffee?.photoUrl,
         roasterName: coffee?.roaster ?? '',
         brewMethod: _brewMethod!.key,
-        grindSize: _grindSize!.key,
+        // Grind size is not captured on an automatic machine; persist empty so
+        // display sites can omit it rather than showing a bogus default.
+        grindSize: _isAutomatic ? '' : _grindSize!.key,
         doseGrams: dose,
         waterMl: water,
-        ratio: _ratioDisplay,
+        ratio: _isAutomatic ? '' : _ratioDisplay,
         brewTimeSec: brewTimeSec,
         waterTempC: _waterTempC,
         aroma: _aroma,
@@ -341,6 +357,23 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
                     : const Icon(Icons.auto_awesome),
                 label: Text(l10n.getSuggestion),
               ),
+            ] else ...[
+              // Free users still see the AI button, but locked — tapping it
+              // opens the upgrade prompt. Showing (rather than hiding) it is a
+              // deliberate upsell nudge toward the premium subscription.
+              OutlinedButton.icon(
+                onPressed: () =>
+                    showUpgradePrompt(context, l10n.aiSuggestionUpsell),
+                icon: const Icon(Icons.auto_awesome),
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(l10n.getSuggestion),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.lock_rounded, size: 16),
+                  ],
+                ),
+              ),
             ],
 
             if (_suggestionTips != null) ...[
@@ -397,6 +430,19 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
 
             const SizedBox(height: 24),
 
+            // Automatic machine toggle: for espresso machines / capsule
+            // machines where the user doesn't control dose, water, grind, time
+            // or temperature. Turning it on hides those fields.
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              secondary: const Icon(Icons.smart_toy_rounded),
+              title: Text(l10n.automaticMachine),
+              subtitle: Text(l10n.automaticMachineHint),
+              value: _isAutomatic,
+              onChanged: (v) => setState(() => _isAutomatic = v),
+            ),
+            const SizedBox(height: 8),
+
             // ── SECTION 1: Brew Parameters ──
             BrewParamsForm(
               selectedBrewMethod: _brewMethod,
@@ -407,6 +453,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
               brewTimeMinutes: _brewTimeMinutes,
               brewTimeSeconds: _brewTimeSeconds,
               waterTempC: _waterTempC,
+              isAutomatic: _isAutomatic,
               onBrewMethodChanged: (v) => setState(() => _brewMethod = v),
               onGrindSizeChanged: (v) => setState(() => _grindSize = v),
               onDoseOrWaterChanged: _calculateRatio,

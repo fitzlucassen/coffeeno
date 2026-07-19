@@ -584,6 +584,18 @@ abstract class AppLocalizations {
   /// **'Water Temp (°C)'**
   String get waterTemperature;
 
+  /// Toggle label for automatic espresso/capsule machines
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic machine'**
+  String get automaticMachine;
+
+  /// Subtitle explaining the automatic machine toggle
+  ///
+  /// In en, this message translates to:
+  /// **'The machine controls dose, water, grind and temperature'**
+  String get automaticMachineHint;
+
   /// Aroma score label
   ///
   /// In en, this message translates to:
@@ -1039,6 +1051,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get AI Suggestion'**
   String get getSuggestion;
+
+  /// Upsell message shown when a free user taps the locked AI suggestion button
+  ///
+  /// In en, this message translates to:
+  /// **'Let AI dial in the perfect brew for this coffee. Upgrade to Premium to unlock AI suggestions.'**
+  String get aiSuggestionUpsell;
 
   /// Suggested parameters section title
   ///
