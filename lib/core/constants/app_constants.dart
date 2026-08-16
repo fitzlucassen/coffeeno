@@ -126,4 +126,8 @@ abstract final class AppConstants {
 
   static const freeTierMaxCoffees = 10;
   static const freeTierMaxTastingsPerMonth = 7;
+
+  /// Maximum length of a user's profile bio, enforced on the profile-setup and
+  /// edit-profile screens.
+  static const bioMaxLength = 160;
 }

@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/photo_upload_service.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/country_picker_field.dart';
+import '../../../../core/widgets/profile_photo_picker.dart';
 import '../../data/user_repository.dart';
 import '../../domain/app_user.dart';
 import '../providers/auth_provider.dart';
@@ -23,15 +28,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _displayNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _bioController = TextEditingController();
-  final _countryController = TextEditingController();
   bool _isLoading = false;
   bool _prefilled = false;
+  String? _country;
+  String? _avatarUrl;
+  String? _pendingPhotoPath;
+  bool _uploadingPhoto = false;
 
   void _prefill(AppUser user) {
     _displayNameController.text = user.displayName;
     _usernameController.text = user.username;
     _bioController.text = user.bio ?? '';
-    _countryController.text = user.country ?? '';
+    _country = user.country;
+    _avatarUrl = user.avatarUrl;
     _prefilled = true;
   }
 
@@ -40,8 +49,36 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _displayNameController.dispose();
     _usernameController.dispose();
     _bioController.dispose();
-    _countryController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickPhoto() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (image == null) return;
+    setState(() => _pendingPhotoPath = image.path);
+  }
+
+  /// Uploads a freshly picked avatar (if any) and returns the URL to persist,
+  /// falling back to the existing avatar when nothing new was picked.
+  Future<String?> _uploadPendingPhoto(String uid) async {
+    if (_pendingPhotoPath == null) return _avatarUrl;
+    setState(() => _uploadingPhoto = true);
+    try {
+      return await ref
+          .read(photoUploadServiceProvider)
+          .uploadJpeg(
+            pathPrefix: 'users/$uid',
+            localPath: _pendingPhotoPath!,
+          );
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
   }
 
   Future<void> _save() async {
@@ -55,6 +92,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       final userRepo = ref.read(userRepositoryProvider);
 
+      // Upload any freshly picked avatar before writing so we never persist a
+      // stale URL.
+      final finalAvatarUrl = await _uploadPendingPhoto(uid);
+
       await userRepo.updateUser(
         uid,
         UserRepository.buildProfileUpdate(
@@ -62,8 +103,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           username: _usernameController.text,
           bio: _bioController.text,
           includeBio: true,
-          country: _countryController.text,
+          country: _country,
           includeCountry: true,
+          avatarUrl: finalAvatarUrl,
+          includeAvatar: true,
         ),
       );
 
@@ -104,6 +147,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 16),
+                ProfilePhotoPicker(
+                  photoUrl: _avatarUrl,
+                  pendingPath: _pendingPhotoPath,
+                  uploading: _uploadingPhoto,
+                  onTap: _pickPhoto,
+                  fallbackIcon: Icons.person_outline,
+                ),
+                const SizedBox(height: 24),
                 AppTextField(
                   controller: _displayNameController,
                   label: l10n.displayName,
@@ -127,14 +178,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   prefixIcon: Icons.short_text,
                   textInputAction: TextInputAction.next,
                   maxLines: 3,
+                  maxLength: AppConstants.bioMaxLength,
                 ),
                 const SizedBox(height: 16),
-                AppTextField(
-                  controller: _countryController,
-                  label: l10n.country,
-                  prefixIcon: Icons.public,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _save(),
+                CountryPickerField(
+                  value: _country,
+                  onChanged: (v) => setState(() => _country = v),
                 ),
                 const SizedBox(height: 32),
                 AppButton(

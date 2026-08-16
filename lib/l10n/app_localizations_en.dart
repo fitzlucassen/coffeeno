@@ -1071,6 +1071,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get city => 'City';
 
   @override
+  String get noMatchingCoffees => 'No matching coffees';
+
+  @override
+  String get tryAdjustingFilters => 'Try adjusting your filters';
+
+  @override
+  String get notesHint => 'How was it? Any special observations...';
+
+  @override
+  String get selectBrewMethodRequired => 'Please select a brew method';
+
+  @override
   String get freshnessNotificationTitle => 'Time to brew!';
 
   @override

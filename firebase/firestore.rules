@@ -72,7 +72,18 @@ service cloud.firestore {
     match /coffees/{coffeeId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.uid == request.auth.uid;
+      // The owner may update their coffee freely. Any authenticated user may
+      // additionally update *only* the denormalized `avgRating` / `ratingsCount`
+      // tallies — these are recomputed by the add/delete-tasting transaction,
+      // which writes to the coffee doc even when the taster isn't the coffee's
+      // owner (e.g. rating a coffee discovered in Explore). Restricting the
+      // affected keys to exactly those two counters prevents a taster from
+      // altering anything else on someone else's coffee.
+      allow update: if isAuthenticated() && (
+        resource.data.uid == request.auth.uid
+        || request.resource.data.diff(resource.data)
+            .affectedKeys().hasOnly(['avgRating', 'ratingsCount'])
+      );
       allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
     }
 

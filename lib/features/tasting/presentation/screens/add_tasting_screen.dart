@@ -164,6 +164,19 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // A brew method is always required; grind size is required only when the
+    // brew parameters are shown (i.e. not an automatic machine). Guarding here
+    // avoids a null-check crash on `_brewMethod!.key` / `_grindSize!.key` below,
+    // which previously surfaced as an unexplained generic error on save.
+    if (_brewMethod == null || (!_isAutomatic && _grindSize == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).selectBrewMethodRequired),
+        ),
+      );
+      return;
+    }
+
     final isPremium = ref.read(isPremiumProvider);
     final currentUser = ref.read(authStateProvider).value;
     final userId = currentUser?.uid;
@@ -505,7 +518,7 @@ class _AddTastingScreenState extends ConsumerState<AddTastingScreen> {
             const SizedBox(height: 12),
             AppTextField(
               controller: _notesController,
-              hint: 'How was it? Any special observations...',
+              hint: l10n.notesHint,
               maxLines: 5,
               minLines: 3,
               textInputAction: TextInputAction.newline,

@@ -2096,6 +2096,30 @@ abstract class AppLocalizations {
   /// **'City'**
   String get city;
 
+  /// Empty library state when filters/search match nothing
+  ///
+  /// In en, this message translates to:
+  /// **'No matching coffees'**
+  String get noMatchingCoffees;
+
+  /// Empty library subtitle prompting to change filters
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your filters'**
+  String get tryAdjustingFilters;
+
+  /// Placeholder for the free-text tasting notes field
+  ///
+  /// In en, this message translates to:
+  /// **'How was it? Any special observations...'**
+  String get notesHint;
+
+  /// Validation shown when saving a tasting without a brew method
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a brew method'**
+  String get selectBrewMethodRequired;
+
   /// Freshness reminder notification title
   ///
   /// In en, this message translates to:

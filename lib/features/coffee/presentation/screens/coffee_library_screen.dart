@@ -245,14 +245,14 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              hasFilters ? 'No matching coffees' : l10n.noCoffeesYet,
+              hasFilters ? l10n.noMatchingCoffees : l10n.noCoffeesYet,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               hasFilters
-                  ? 'Try adjusting your filters'
+                  ? l10n.tryAdjustingFilters
                   : l10n.noCoffeesYetSubtitle,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,

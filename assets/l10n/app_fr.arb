@@ -365,6 +365,10 @@
   "description": "Description",
   "websiteUrl": "Site web",
   "city": "Ville",
+  "noMatchingCoffees": "Aucun café correspondant",
+  "tryAdjustingFilters": "Essayez d'ajuster vos filtres",
+  "notesHint": "Alors, c'était comment ? Des observations particulières...",
+  "selectBrewMethodRequired": "Veuillez sélectionner une méthode d'infusion",
   "freshnessNotificationTitle": "C'est l'heure de l'infusion !",
   "freshnessNotificationBody": "Votre {coffee} de {roaster} quitte sa fraîcheur optimale — préparez-le bientôt !",
   "freshnessNotificationBodyNoRoaster": "Votre {coffee} quitte sa fraîcheur optimale — préparez-le bientôt !"

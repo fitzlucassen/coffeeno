@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:coffeeno/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_router.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/photo_upload_service.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/profile_photo_picker.dart';
 import '../../data/user_repository.dart';
 import '../../domain/app_user.dart';
 import '../providers/auth_provider.dart';
@@ -25,30 +28,37 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _usernameController = TextEditingController();
   final _bioController = TextEditingController();
   bool _isLoading = false;
+  bool _prefilled = false;
+  String? _avatarUrl;
+  String? _pendingPhotoPath;
+  bool _uploadingPhoto = false;
 
   @override
   void initState() {
     super.initState();
-    _prefillFromExisting();
+    // Seed a best-effort fallback from the auth account (Google display name /
+    // photo, or the email prefix as a username). This is NOT locking: once the
+    // Firestore user doc becomes available in build() it overrides these, which
+    // is what stops the just-entered name/username from being clobbered by the
+    // email prefix (e.g. "AdrianF" → "hvivas249").
+    final authUser = ref.read(authStateProvider).value;
+    if (authUser != null) {
+      _displayNameController.text = authUser.displayName ?? '';
+      final emailPrefix = authUser.email?.split('@').first ?? '';
+      _usernameController.text = emailPrefix.replaceAll(
+        RegExp(r'[^a-zA-Z0-9_]'),
+        '',
+      );
+      _avatarUrl = authUser.photoURL;
+    }
   }
 
-  void _prefillFromExisting() {
-    final existingUser = ref.read(currentUserProvider).value;
-    if (existingUser != null) {
-      _displayNameController.text = existingUser.displayName;
-      _usernameController.text = existingUser.username;
-      _bioController.text = existingUser.bio ?? '';
-    } else {
-      final user = ref.read(authStateProvider).value;
-      if (user != null) {
-        _displayNameController.text = user.displayName ?? '';
-        final emailPrefix = user.email?.split('@').first ?? '';
-        _usernameController.text = emailPrefix.replaceAll(
-          RegExp(r'[^a-zA-Z0-9_]'),
-          '',
-        );
-      }
-    }
+  void _prefill(AppUser user) {
+    _displayNameController.text = user.displayName;
+    _usernameController.text = user.username;
+    _bioController.text = user.bio ?? '';
+    _avatarUrl = user.avatarUrl;
+    _prefilled = true;
   }
 
   @override
@@ -57,6 +67,32 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     _usernameController.dispose();
     _bioController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickPhoto() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (image == null) return;
+    setState(() => _pendingPhotoPath = image.path);
+  }
+
+  /// Uploads a freshly picked avatar (if any) and returns the URL to persist,
+  /// falling back to whatever avatar is already set.
+  Future<String?> _uploadPendingPhoto(String uid) async {
+    if (_pendingPhotoPath == null) return _avatarUrl;
+    setState(() => _uploadingPhoto = true);
+    try {
+      return await ref
+          .read(photoUploadServiceProvider)
+          .uploadJpeg(pathPrefix: 'users/$uid', localPath: _pendingPhotoPath!);
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
   }
 
   Future<void> _completeSetup() async {
@@ -70,6 +106,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
       final userRepo = ref.read(userRepositoryProvider);
 
+      // Upload any freshly picked avatar first so both branches persist the
+      // final URL.
+      final finalAvatarUrl = await _uploadPendingPhoto(user.uid);
+
       // Check whether a Firestore user doc already exists (Google sign-in may
       // not have created one yet).
       final existing = await userRepo.getUser(user.uid);
@@ -82,6 +122,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             username: _usernameController.text,
             bio: _bioController.text,
             includeBio: true,
+            avatarUrl: finalAvatarUrl,
+            includeAvatar: true,
           ),
         );
       } else {
@@ -94,7 +136,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           bio: _bioController.text.trim().isEmpty
               ? null
               : _bioController.text.trim(),
-          avatarUrl: user.photoURL,
+          avatarUrl: finalAvatarUrl ?? user.photoURL,
           createdAt: DateTime.now(),
         );
         await userRepo.createUser(appUser);
@@ -139,8 +181,14 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+
+    // Once the real Firestore user doc is available, prefill from it (overriding
+    // the auth fallback seeded in initState) so an existing name/username is
+    // never replaced by the email-prefix guess.
+    final currentUser = ref.watch(currentUserProvider).value;
+    if (!_prefilled && currentUser != null) {
+      _prefill(currentUser);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -161,41 +209,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               children: [
                 const SizedBox(height: 32),
 
-                // ── Avatar placeholder ──
-                GestureDetector(
-                  onTap: () {
-                    // TODO: implement image picker for avatar
-                  },
-                  child: Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      CircleAvatar(
-                        radius: 56,
-                        backgroundColor: isDark
-                            ? AppColors.darkCard
-                            : AppColors.terracottaMuted.withValues(alpha: 0.3),
-                        child: Icon(
-                          Icons.person_outline,
-                          size: 48,
-                          color: isDark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.espressoMuted,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.camera_alt_outlined,
-                          size: 18,
-                          color: theme.colorScheme.onPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
+                // ── Avatar ──
+                ProfilePhotoPicker(
+                  photoUrl: _avatarUrl,
+                  pendingPath: _pendingPhotoPath,
+                  uploading: _uploadingPhoto,
+                  onTap: _pickPhoto,
+                  fallbackIcon: Icons.person_outline,
                 ),
                 const SizedBox(height: 32),
 
@@ -227,6 +247,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   prefixIcon: Icons.short_text,
                   textInputAction: TextInputAction.done,
                   maxLines: 3,
+                  maxLength: AppConstants.bioMaxLength,
                   onSubmitted: (_) => _completeSetup(),
                 ),
                 const SizedBox(height: 32),

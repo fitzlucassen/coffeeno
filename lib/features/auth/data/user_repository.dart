@@ -59,6 +59,8 @@ class UserRepository {
     bool includeBio = false,
     String? country,
     bool includeCountry = false,
+    String? avatarUrl,
+    bool includeAvatar = false,
   }) {
     final trimmedName = displayName.trim();
     final normalizedUsername = username.trim().toLowerCase();
@@ -75,6 +77,9 @@ class UserRepository {
         'country': (trimmedCountry == null || trimmedCountry.isEmpty)
             ? null
             : trimmedCountry,
+      // avatarUrl is written only when explicitly included so a plain
+      // name/bio edit never wipes an existing photo. A null value clears it.
+      if (includeAvatar) 'avatarUrl': avatarUrl,
     };
   }
 

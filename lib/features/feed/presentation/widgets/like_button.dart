@@ -45,6 +45,19 @@ class _LikeButtonState extends ConsumerState<LikeButton>
   }
 
   @override
+  void didUpdateWidget(LikeButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Once the parent stream delivers a new authoritative count, drop the
+    // optimistic override so the two can't drift. Keeping the optimistic count
+    // until the parent catches up is what prevents the count from flashing the
+    // new value and then reverting to the stale (pre-like) count — the reported
+    // "shows 1 then goes back to 0" bug on the feed.
+    if (widget.likesCount != oldWidget.likesCount) {
+      _optimisticCount = null;
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -78,20 +91,15 @@ class _LikeButtonState extends ConsumerState<LikeButton>
           userId: userId,
         );
       }
-      // Invalidate to refresh the liked state from Firestore.
+      // Invalidate to refresh the liked state from Firestore. The optimistic
+      // overrides are intentionally NOT cleared here: the optimistic count is
+      // reconciled in didUpdateWidget once the parent stream delivers the new
+      // count, and the optimistic liked flag is cleared by the ref.listen in
+      // build() once the refreshed provider agrees. Clearing them eagerly here
+      // is what made the count snap back to the stale parent value.
       ref.invalidate(
         tastingLikedProvider((tastingId: widget.tastingId, userId: userId)),
       );
-      // Clear the optimistic overrides on success so the authoritative values
-      // (the refreshed provider + the streamed likesCount from the parent)
-      // take over again. Without this they stay sticky for the widget's life
-      // and the displayed count drifts from Firestore.
-      if (mounted) {
-        setState(() {
-          _optimisticLiked = null;
-          _optimisticCount = null;
-        });
-      }
     } catch (_) {
       // Revert on error.
       if (mounted) {
@@ -111,9 +119,18 @@ class _LikeButtonState extends ConsumerState<LikeButton>
     if (currentUser == null) return const SizedBox.shrink();
 
     final userId = currentUser.uid;
-    final likedAsync = ref.watch(
-      tastingLikedProvider((tastingId: widget.tastingId, userId: userId)),
-    );
+    final likedProvider = tastingLikedProvider((
+      tastingId: widget.tastingId,
+      userId: userId,
+    ));
+    // Clear the optimistic liked flag once the refreshed provider agrees with
+    // it, so the authoritative value takes back over without a visible flip.
+    ref.listen(likedProvider, (previous, next) {
+      if (_optimisticLiked != null && next.value == _optimisticLiked) {
+        setState(() => _optimisticLiked = null);
+      }
+    });
+    final likedAsync = ref.watch(likedProvider);
 
     final isLiked = _optimisticLiked ?? likedAsync.value ?? false;
     final count = _optimisticCount ?? widget.likesCount;

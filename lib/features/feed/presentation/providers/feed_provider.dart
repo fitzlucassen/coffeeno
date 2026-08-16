@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -58,25 +57,30 @@ final _targetedRoasterPostsProvider = FutureProvider<List<RoasterPost>>((
 /// emission. Roaster posts are best-effort — if that query fails (missing
 /// index, permissions, offline), we still yield the tastings so the user never
 /// stares at an infinite spinner because of a secondary data source.
-final mergedFeedProvider = StreamProvider<List<FeedEntry>>((ref) async* {
+final mergedFeedProvider = StreamProvider<List<FeedEntry>>((ref) {
   final blocked = ref.watch(blockedUidsProvider);
-  final tastingsStream = ref.watch(feedRepositoryProvider).getFeed();
 
-  await for (final tastings in tastingsStream) {
-    List<RoasterPost> posts;
-    try {
-      posts = await ref.read(_targetedRoasterPostsProvider.future);
-    } catch (e) {
-      debugPrint('[FEED] mergedFeed: falling back to empty roaster posts — $e');
-      posts = const <RoasterPost>[];
-    }
+  // Roaster posts are a best-effort secondary source. Read their current value
+  // reactively rather than awaiting them inside the tastings loop: awaiting
+  // coupled every live tasting update (a like/comment count change) to that
+  // fetch, so counts appeared to "stick" on the feed. Mapping the tastings
+  // stream directly means each Firestore snapshot flows through immediately.
+  // A null value (still loading, missing index, offline) is treated as empty
+  // so the feed still renders tastings; when the posts resolve or refresh,
+  // ref.watch re-runs this provider and folds them in.
+  final posts =
+      ref.watch(_targetedRoasterPostsProvider).value ?? const <RoasterPost>[];
 
-    yield mergeFeedEntries(
-      tastings: tastings,
-      roasterPosts: posts,
-      blockedUids: blocked,
-    );
-  }
+  return ref
+      .watch(feedRepositoryProvider)
+      .getFeed()
+      .map(
+        (tastings) => mergeFeedEntries(
+          tastings: tastings,
+          roasterPosts: posts,
+          blockedUids: blocked,
+        ),
+      );
 });
 
 /// Checks whether the current user has liked a specific tasting.
