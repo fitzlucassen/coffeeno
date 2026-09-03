@@ -47,14 +47,31 @@ class CoffeeDetailScreen extends ConsumerWidget {
     );
     if (confirmed != true) return;
 
-    // Cancel any pending freshness notification before deleting.
-    final notificationService = ref.read(freshnessNotificationProvider);
-    await notificationService.init();
-    await notificationService.cancelForCoffee(coffeeId);
+    final userId = ref.read(authStateProvider).value?.uid;
+    if (userId == null) return;
 
-    final repository = ref.read(coffeeRepositoryProvider);
-    await repository.deleteCoffee(coffeeId);
-    if (context.mounted) context.go(AppRoutes.library);
+    try {
+      // Cancel any pending freshness notification before deleting. Guarded so a
+      // notification-plugin failure can't abort the actual delete.
+      try {
+        final notificationService = ref.read(freshnessNotificationProvider);
+        await notificationService.init();
+        await notificationService.cancelForCoffee(coffeeId);
+      } catch (e) {
+        debugPrint('[COFFEENO] Cancelling freshness notification failed: $e');
+      }
+
+      final repository = ref.read(coffeeRepositoryProvider);
+      await repository.deleteCoffee(coffeeId, userId: userId);
+      if (context.mounted) context.go(AppRoutes.library);
+    } catch (e) {
+      debugPrint('[COFFEENO] Coffee delete failed: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).error)),
+        );
+      }
+    }
   }
 
   Future<void> _updatePhoto(BuildContext context, WidgetRef ref) async {
@@ -110,6 +127,13 @@ class CoffeeDetailScreen extends ConsumerWidget {
             return Center(child: Text(l10n.error));
           }
 
+          // Owner-only actions: the security rules forbid a non-owner from
+          // updating (photo) or deleting someone else's coffee, so showing these
+          // on a coffee opened from Explore/feed would just fail silently.
+          final isOwner =
+              coffee.uid == ref.watch(authStateProvider).value?.uid;
+          final canEditPhoto = isOwner && ref.watch(isPremiumProvider);
+
           return CustomScrollView(
             slivers: [
               // Hero image
@@ -117,21 +141,22 @@ class CoffeeDetailScreen extends ConsumerWidget {
                 expandedHeight: 260,
                 pinned: true,
                 actions: [
-                  if (ref.watch(isPremiumProvider))
+                  if (canEditPhoto)
                     IconButton(
                       icon: const Icon(Icons.add_a_photo_outlined),
                       tooltip: l10n.changePhoto,
                       onPressed: () => _updatePhoto(context, ref),
                     ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded),
-                    tooltip: l10n.delete,
-                    onPressed: () => _deleteCoffee(context, ref),
-                  ),
+                  if (isOwner)
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded),
+                      tooltip: l10n.delete,
+                      onPressed: () => _deleteCoffee(context, ref),
+                    ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: GestureDetector(
-                    onTap: ref.watch(isPremiumProvider)
+                    onTap: canEditPhoto
                         ? () => _updatePhoto(context, ref)
                         : null,
                     child: coffee.photoUrl != null
@@ -254,7 +279,10 @@ class CoffeeDetailScreen extends ConsumerWidget {
                             : null,
                         description: coffee.farmDescription,
                         url: coffee.farmUrl,
-                        fallbackName: null,
+                        // Show the scanned farm/region name even before (or
+                        // without) AI enrichment, so the section isn't blank for
+                        // free-tier coffees. Mirrors the roaster card's fallback.
+                        fallbackName: coffee.farmName ?? coffee.originRegion,
                         bottomSpacing: 24,
                       ),
 
@@ -384,7 +412,12 @@ class _CommunityRatingSection extends ConsumerWidget {
 
     return ratingAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
+      error: (e, _) {
+        // Don't fail the page, but surface the cause in logs — this section
+        // silently vanishing was previously indistinguishable from "no data".
+        debugPrint('[COFFEENO] Community rating lookup failed: $e');
+        return const SizedBox.shrink();
+      },
       data: (result) {
         if (result == null) return const SizedBox.shrink();
 

@@ -7,6 +7,7 @@ import 'package:coffeeno/core/router/app_router.dart';
 import 'package:coffeeno/features/auth/presentation/providers/auth_provider.dart';
 import 'package:coffeeno/features/social/presentation/providers/block_provider.dart';
 import 'package:coffeeno/features/social/presentation/providers/social_provider.dart';
+import 'package:coffeeno/features/subscription/presentation/providers/subscription_provider.dart';
 import 'package:coffeeno/features/gamification/presentation/widgets/expert_badge.dart';
 import 'package:coffeeno/features/social/presentation/widgets/follow_button.dart';
 import 'package:coffeeno/features/social/presentation/widgets/user_avatar.dart';
@@ -35,6 +36,31 @@ void _showSettingsSheet(
             ),
           ),
           const SizedBox(height: 16),
+          // Premium entry point. For free users this is the primary way to
+          // discover what a subscription unlocks (the paywall lists the
+          // features); premium users see their status instead.
+          if (ref.read(isPremiumProvider))
+            ListTile(
+              leading: Icon(
+                Icons.workspace_premium_rounded,
+                color: colorScheme.primary,
+              ),
+              title: Text(l10n.premium),
+              trailing: Icon(Icons.check_circle, color: colorScheme.primary),
+            )
+          else
+            ListTile(
+              leading: Icon(
+                Icons.workspace_premium_rounded,
+                color: colorScheme.primary,
+              ),
+              title: Text(l10n.upgradeToPremium),
+              subtitle: Text(l10n.premiumFeatures),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                context.push(AppRoutes.paywall);
+              },
+            ),
           if (isAdmin)
             ListTile(
               leading: Icon(

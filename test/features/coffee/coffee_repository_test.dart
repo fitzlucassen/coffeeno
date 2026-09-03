@@ -53,23 +53,45 @@ void main() {
     expect(fetched!.name, 'Sidama');
   });
 
-  test('deleteCoffee removes the coffee and all its tastings', () async {
-    final coffeeId = await repo.addCoffee(_coffee());
-    // Seed two linked tastings and an unrelated one.
-    await firestore.collection('tastings').add({'coffeeId': coffeeId});
-    await firestore.collection('tastings').add({'coffeeId': coffeeId});
-    await firestore.collection('tastings').add({'coffeeId': 'other'});
+  test(
+    'deleteCoffee removes the coffee and only the deleting user\'s tastings',
+    () async {
+      final coffeeId = await repo.addCoffee(_coffee(uid: 'me'));
+      // Two of the deleting user's tastings, one from another user on the same
+      // coffee, and one unrelated tasting.
+      await firestore.collection('tastings').add({
+        'coffeeId': coffeeId,
+        'userId': 'me',
+      });
+      await firestore.collection('tastings').add({
+        'coffeeId': coffeeId,
+        'userId': 'me',
+      });
+      await firestore.collection('tastings').add({
+        'coffeeId': coffeeId,
+        'userId': 'other',
+      });
+      await firestore.collection('tastings').add({
+        'coffeeId': 'other',
+        'userId': 'me',
+      });
 
-    await repo.deleteCoffee(coffeeId);
+      await repo.deleteCoffee(coffeeId, userId: 'me');
 
-    expect(
-      (await firestore.collection('coffees').doc(coffeeId).get()).exists,
-      isFalse,
-    );
-    final remaining = await firestore.collection('tastings').get();
-    expect(remaining.docs.length, 1);
-    expect(remaining.docs.first.data()['coffeeId'], 'other');
-  });
+      expect(
+        (await firestore.collection('coffees').doc(coffeeId).get()).exists,
+        isFalse,
+      );
+      final remaining = await firestore.collection('tastings').get();
+      // The other user's tasting on this coffee survives (rules forbid deleting
+      // it); so does the unrelated one.
+      final remainingKeys = remaining.docs
+          .map((d) => '${d.data()['coffeeId']}/${d.data()['userId']}')
+          .toList();
+      expect(remainingKeys, containsAll(['$coffeeId/other', 'other/me']));
+      expect(remainingKeys.length, 2);
+    },
+  );
 
   test('getUserCoffees streams only that user\'s coffees', () async {
     await repo.addCoffee(_coffee(uid: 'a'));

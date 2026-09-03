@@ -29,16 +29,34 @@ class CoffeeEnrichmentOrchestrator {
 
   /// Fire-and-forget wrapper: runs [resolveEntities] and swallows/logs errors
   /// so a background enrichment can never surface as an unhandled exception.
-  void resolveInBackground(String coffeeId, Coffee coffee) {
-    resolveEntities(coffeeId, coffee).catchError((Object e) {
+  ///
+  /// [allowAiCreation] gates the paid AI lookup/creation of *new* roaster/farm
+  /// docs. Linking to already-existing entities (the reuse path) always runs, so
+  /// even free-tier coffees get roaster/farm links whenever another user has
+  /// already had those entities created.
+  void resolveInBackground(
+    String coffeeId,
+    Coffee coffee, {
+    bool allowAiCreation = true,
+  }) {
+    resolveEntities(
+      coffeeId,
+      coffee,
+      allowAiCreation: allowAiCreation,
+    ).catchError((Object e) {
       debugPrint('[COFFEENO] Enrichment failed for $coffeeId: $e');
     });
   }
 
   /// Links the coffee to existing roaster/farm docs when they exist, otherwise
-  /// asks the AI service for details and creates them, then writes the entity
-  /// references back onto the coffee via a targeted partial update.
-  Future<void> resolveEntities(String coffeeId, Coffee coffee) async {
+  /// (when [allowAiCreation] is true) asks the AI service for details and
+  /// creates them, then writes the entity references back onto the coffee via a
+  /// targeted partial update.
+  Future<void> resolveEntities(
+    String coffeeId,
+    Coffee coffee, {
+    bool allowAiCreation = true,
+  }) async {
     final now = DateTime.now();
     String? roasterId;
     String? farmId;
@@ -75,7 +93,9 @@ class CoffeeEnrichmentOrchestrator {
         coffee.farmName!.isNotEmpty &&
         existingFarm == null;
 
-    if ((needsRoasterInfo || needsFarmInfo) && enrichmentService.isAvailable) {
+    if (allowAiCreation &&
+        (needsRoasterInfo || needsFarmInfo) &&
+        enrichmentService.isAvailable) {
       final result = await enrichmentService.lookupInfo(
         roaster: coffee.roaster,
         farmName: coffee.farmName,

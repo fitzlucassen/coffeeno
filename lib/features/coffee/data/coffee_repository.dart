@@ -71,11 +71,19 @@ class CoffeeRepository {
     await _collection.doc(coffeeId).update(data);
   }
 
-  /// Deletes a coffee document and all its associated tastings.
-  Future<void> deleteCoffee(String coffeeId) async {
+  /// Deletes a coffee document and the deleting user's own tastings on it.
+  ///
+  /// Only [userId]'s tastings are removed: the security rules forbid deleting
+  /// tastings authored by anyone else (a coffee discovered in Explore may carry
+  /// tastings from several users), so including them would make the whole batch
+  /// permission-denied and silently abort the delete. Other users' tastings are
+  /// left as harmless orphans — the tasting flow already tolerates a tasting
+  /// whose parent coffee no longer exists.
+  Future<void> deleteCoffee(String coffeeId, {required String userId}) async {
     final tastingsSnapshot = await _firestore
         .collection('tastings')
         .where('coffeeId', isEqualTo: coffeeId)
+        .where('userId', isEqualTo: userId)
         .get();
 
     final batch = _firestore.batch();

@@ -189,9 +189,13 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
     final userId = ref.read(authStateProvider).value?.uid;
     if (userId == null) return;
 
-    // Captured once up front so it can be used after later awaits without
-    // touching BuildContext across async gaps.
+    // Captured once up front so they can be used after later awaits without
+    // touching BuildContext across async gaps. The router in particular must be
+    // captured here: the "similar coffee" snackbar outlives this screen (we
+    // navigate to the library right after showing it), so its action can't rely
+    // on this screen's now-disposed context — GoRouter.of is app-stable.
     final l10n = AppLocalizations.of(context);
+    final router = GoRouter.of(context);
 
     if (!isPremium) {
       final coffeeCount = await ref
@@ -218,7 +222,7 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
             content: Text(l10n.similarCoffeeAlert(similar.roaster)),
             action: SnackBarAction(
               label: l10n.viewSimilar,
-              onPressed: () => context.push('/coffee/${similar.id}'),
+              onPressed: () => router.push('/coffee/${similar.id}'),
             ),
             duration: const Duration(seconds: 5),
           ),
@@ -291,11 +295,13 @@ class _AddCoffeeScreenState extends ConsumerState<AddCoffeeScreen> {
             });
       });
 
-      if (isPremium) {
-        ref
-            .read(coffeeEnrichmentOrchestratorProvider)
-            .resolveInBackground(coffeeId, coffee);
-      }
+      // Always resolve entity links in the background: the reuse path (linking
+      // to a roaster/farm another user already created) is free, so free-tier
+      // coffees still get roaster/farm links. Only the paid AI creation of new
+      // entities is gated behind premium.
+      ref
+          .read(coffeeEnrichmentOrchestratorProvider)
+          .resolveInBackground(coffeeId, coffee, allowAiCreation: isPremium);
 
       if (mounted) context.go(AppRoutes.library);
     } catch (e) {
