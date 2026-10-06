@@ -123,8 +123,7 @@ To make a user admin, set `role: 'admin'` on their document in the `users` colle
 
 - Flutter SDK 3.41+
 - Firebase CLI (`npm install -g firebase-tools`)
-- A Firebase project with Auth, Firestore, Storage enabled
-- A Gemini API key (for AI features)
+- A Firebase project with Auth, Firestore, Storage, App Check and Firebase AI Logic (Gemini Developer API) enabled
 
 ### Setup
 
@@ -141,8 +140,13 @@ flutter gen-l10n
 flutterfire configure
 
 # Run the app
-flutter run --dart-define=GEMINI_API_KEY=your_key_here
+flutter run
 ```
+
+On first debug launch, App Check prints a debug token to the console
+(`Enter this debug secret into the allow list...`). Register it in Firebase
+console → App Check → Apps → Manage debug tokens, otherwise AI features are
+rejected while App Check enforcement is on.
 
 ### Commands
 
@@ -153,11 +157,12 @@ dart format lib/ test/   # Format code
 flutter gen-l10n         # Regenerate l10n
 ```
 
-### Environment Variables
+### AI (Gemini)
 
-| Variable | Required | Purpose |
-|---|---|---|
-| `GEMINI_API_KEY` | For AI features | Passed via `--dart-define`. Enables scan extraction, enrichment, brew suggestions |
+Scan extraction, enrichment and brew suggestions call Gemini through Firebase
+AI Logic (`firebase_ai`), protected by App Check. No Gemini API key ships in
+the app — never add one back via `--dart-define`: anything compiled into the
+binary can be extracted from the published app.
 
 ## Payment (not yet wired)
 

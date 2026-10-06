@@ -66,4 +66,4 @@ dart run build_runner build --delete-conflicting-outputs
 - Firestore collections: users, coffees, tastings, feed
 - Storage path: users/{uid}/ for uploads
 - Security rules in firebase/firestore.rules
-- Gemini API key passed via --dart-define=GEMINI_API_KEY=xxx
+- Gemini is called via Firebase AI Logic (`firebase_ai`) + App Check — build models with `createJsonGeminiModel` (lib/core/services/gemini_model.dart). Never ship an API key in the app (`--dart-define` values are extractable from the binary; a leaked key got the old Gemini project suspended)

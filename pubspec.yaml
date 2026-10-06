@@ -17,6 +17,7 @@ dependencies:
   firebase_auth: ^6.4.0
   cloud_firestore: ^6.3.0
   firebase_storage: ^13.3.0
+  firebase_app_check: ^0.4.8
   google_sign_in: ^7.2.0
 
   # State management
@@ -31,7 +32,7 @@ dependencies:
   google_mlkit_text_recognition: ^0.15.1
 
   # AI
-  google_generative_ai: ^0.4.0
+  firebase_ai: ^4.0.0
 
   # UI
   cupertino_icons: ^1.0.8
@@ -69,7 +70,7 @@ dev_dependencies:
   riverpod_generator: ^4.0.3
   build_runner: ^2.4.0
   mockito: ^5.4.0
-  fake_cloud_firestore: ^4.0.0
+  fake_cloud_firestore: ^4.3.0
   firebase_auth_mocks: ^0.15.0
   flutter_launcher_icons: ^0.14.4
 

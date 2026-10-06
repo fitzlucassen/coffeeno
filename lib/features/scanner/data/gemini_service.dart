@@ -1,16 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 
+import '../../../core/services/gemini_model.dart';
 import '../domain/scan_result.dart';
 
 /// Service that sends OCR text (and optionally the original image) to
-/// Gemini 2.0 Flash and parses the structured coffee data response.
+/// Gemini and parses the structured coffee data response.
 class GeminiService {
-  GeminiService() : _apiKey = const String.fromEnvironment('GEMINI_API_KEY');
-
-  final String _apiKey;
-
   static const _systemPrompt = '''
 You are a coffee bag data extractor. Given OCR text from a coffee bag, extract structured data. Return ONLY valid JSON with these fields:
 {
@@ -41,28 +38,16 @@ Rules:
     required String ocrText,
     Uint8List? imageBytes,
   }) async {
-    if (_apiKey.isEmpty) {
-      throw Exception(
-        'GEMINI_API_KEY is not set. '
-        'Pass it at build time with --dart-define=GEMINI_API_KEY=<key>',
-      );
-    }
-
-    final model = GenerativeModel(
-      model: 'gemini-2.5-flash',
-      apiKey: _apiKey,
-      systemInstruction: Content.system(_systemPrompt),
-      generationConfig: GenerationConfig(
-        temperature: 0.1,
-        responseMimeType: 'application/json',
-      ),
+    final model = createJsonGeminiModel(
+      systemPrompt: _systemPrompt,
+      temperature: 0.1,
     );
 
     final parts = <Part>[];
 
     // Optionally include the image for better extraction.
     if (imageBytes != null) {
-      parts.add(DataPart('image/jpeg', imageBytes));
+      parts.add(InlineDataPart('image/jpeg', imageBytes));
     }
 
     parts.add(TextPart('OCR text from coffee bag:\n\n$ocrText'));

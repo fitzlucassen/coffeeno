@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+
+import '../../../core/services/gemini_model.dart';
 
 class CoffeeEnrichmentResult {
   const CoffeeEnrichmentResult({
@@ -30,12 +32,7 @@ class CoffeeEnrichmentResult {
 }
 
 class CoffeeEnrichmentService {
-  CoffeeEnrichmentService()
-    : _apiKey = const String.fromEnvironment('GEMINI_API_KEY');
-
-  final String _apiKey;
-
-  bool get isAvailable => _apiKey.isNotEmpty;
+  bool get isAvailable => isGeminiAvailable;
 
   static const _systemPrompt = '''
 You are a specialty coffee knowledge assistant. Given a coffee roaster name and optionally a farm name, country, and region, provide factual information.
@@ -68,17 +65,12 @@ Rules:
     String? originCountry,
     String? originRegion,
   }) async {
-    if (_apiKey.isEmpty) return const CoffeeEnrichmentResult();
+    if (!isAvailable) return const CoffeeEnrichmentResult();
 
     try {
-      final model = GenerativeModel(
-        model: 'gemini-2.5-flash',
-        apiKey: _apiKey,
-        systemInstruction: Content.system(_systemPrompt),
-        generationConfig: GenerationConfig(
-          temperature: 0.1,
-          responseMimeType: 'application/json',
-        ),
+      final model = createJsonGeminiModel(
+        systemPrompt: _systemPrompt,
+        temperature: 0.1,
       );
 
       final parts = <String>['Roaster: $roaster'];
